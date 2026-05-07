@@ -1,7 +1,7 @@
 const list = (req, res) => {
-  res.send('respond with a resource');
+  res.render("users/index");
 };
 
 module.exports = {
-  list
+  list,
 };

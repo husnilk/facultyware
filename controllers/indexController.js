@@ -2,18 +2,14 @@ const bcrypt = require("bcryptjs");
 const db = require("../lib/db");
 
 const index = (req, res) => {
-  res.render("index", { title: "Express" });
-};
-
-const home = (req, res) => {
   res.render("home", { title: "Home", user: req.session.username });
 };
 
 const loginPage = (req, res) => {
   if (req.session.userId) {
-    return res.redirect("/home");
+    return res.redirect("/");
   }
-  res.render("login", { title: "Login", error: null });
+  res.render("login", { layout: false, title: "Login", error: null });
 };
 
 const login = async (req, res, next) => {
@@ -26,6 +22,7 @@ const login = async (req, res, next) => {
 
     if (rows.length === 0) {
       return res.render("login", {
+        layout: false,
         title: "Login",
         error: "Invalid username or password",
       });
@@ -36,6 +33,7 @@ const login = async (req, res, next) => {
 
     if (!isMatch) {
       return res.render("login", {
+        layout: false,
         title: "Login",
         error: "Invalid username or password",
       });
@@ -45,7 +43,7 @@ const login = async (req, res, next) => {
     req.session.userId = user.id;
     req.session.username = user.username;
 
-    res.redirect("/home");
+    res.redirect("/");
   } catch (err) {
     next(err);
   }
@@ -62,8 +60,7 @@ const logout = (req, res, next) => {
 
 module.exports = {
   index,
-  home,
   loginPage,
   login,
-  logout
+  logout,
 };

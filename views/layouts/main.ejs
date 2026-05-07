@@ -71,16 +71,26 @@
       href="/assets/apple-touch-icon.png"
     />
 
+    <!-- <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css"
+    />
+  -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/js/all.min.js"
+      defer
+    ></script>
+
     <link rel="stylesheet" href="/assets/styles.css" />
 
-    <script src="/assets/js/basecoat.js?v=0.3.11" defer></script>
+    <!-- <script src="/assets/js/basecoat.js?v=0.3.11" defer></script>
     <script src="/assets/js/command.js?v=0.3.11" defer></script>
     <script src="/assets/js/dropdown-menu.js?v=0.3.11" defer></script>
     <script src="/assets/js/popover.js?v=0.3.11" defer></script>
     <script src="/assets/js/select.js?v=0.3.11" defer></script>
     <script src="/assets/js/sidebar.js?v=0.3.11" defer></script>
     <script src="/assets/js/tabs.js?v=0.3.11" defer></script>
-    <script src="/assets/js/toast.js?v=0.3.11" defer></script>
+    <script src="/assets/js/toast.js?v=0.3.11" defer></script> -->
 
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
@@ -146,69 +156,16 @@
       })();
     </script>
 
+    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
+      <nav aria-label="Sidebar navigation">
+        <%- include("../partials/header_aside") %> <%-
+        include("../partials/nav_aside") %> <%-
+        include('../partials/footer_aside') %>
+      </nav>
+    </aside>
+
     <main id="content">
-      <div class="p-4 md:p-6 xl:p-12">
-        <div class="max-w-screen-lg mx-auto">
-          <section class="grid gap-6 md:gap-10">
-            <div
-              class="flex flex-col gap-6 justify-center items-center min-h-screen"
-            >
-
-            <form method="POST" class="w-full max-w-md" action="login">
-              <div id="logincard" class="card w-full max-w-md">
-                <header>
-                  <h2>Login to your account</h2>
-                  <p>Enter your details below to login to your account</p>
-                </header>
-                <section>
-                  
-                  <% if (error) { %>
-                    <div class="bg-destructive/15 text-destructive text-sm p-3 rounded-md border border-destructive/20 text-center">
-                      <%= error %>
-                    </div>
-                  <% } %>
-
-                  <div class="form grid gap-6">
-                    <div class="grid gap-2">
-                      <label for="username">Email</label>
-                      <input 
-                        type="text" 
-                        id="username" 
-                        name="username"
-                        placeholder="username" 
-                        required 
-                        />
-                    </div>
-                    <div class="grid gap-2">
-                      <div class="flex items-center gap-2">
-                        <label for="password">Password</label>
-                        
-                      </div>
-                      <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        placeholder="password"
-                        required
-                      />
-                      <a
-                          href="#"
-                          class="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                          >Forgot your password?</a
-                        >
-                    </div>
-                  </div>
-                </section>
-                <footer class="flex flex-col items-center gap-2">
-                  <button type="submit" class="btn w-full">Login</button>
-                </footer>
-              </div>
-            </form>
-            </div>
-            
-          </section>
-        </div>
-      </div>
+      <%- include("../partials/header_main") %> <%-body%>
     </main>
 
     <div id="toaster" class="toaster"></div>

@@ -1,0 +1,55 @@
+<div class="p-4 md:p-6 xl:p-12">
+  <div class="max-w-screen-lg mx-auto flex flex-col gap-8">
+    <header class="flex flex-col gap-2">
+      <div class="flex items-center gap-2 text-sm text-muted-foreground">
+        <a href="/acl" class="hover:text-foreground">Role Management</a>
+        <span>/</span>
+        <span class="text-foreground font-medium">New Role</span>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+        Create New Role
+      </h1>
+      <p class="sm:text-lg text-muted-foreground">
+        Enter the role name and select its permissions.
+      </p>
+    </header>
+
+    <div class="card">
+      <section>
+        <form action="/acl/roles" method="POST" class="grid gap-8">
+          <div class="grid gap-4 max-w-md">
+            <div class="grid gap-2">
+              <label for="role-name">Role Name</label>
+              <input type="text" id="role-name" name="name" placeholder="e.g. Moderator" required class="input">
+            </div>
+          </div>
+
+          <div class="grid gap-4">
+            <div class="flex flex-col gap-1">
+              <h2 class="text-xl font-semibold">Permissions</h2>
+              <p class="text-sm text-muted-foreground">Assign granular actions to this role.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 rounded-md bg-muted/30 border border-dashed">
+              <% permissions.forEach(permission => { %>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-foreground transition-colors">
+                  <input 
+                    type="checkbox" 
+                    name="permissions" 
+                    value="<%= permission.id %>" 
+                    class="input"
+                  >
+                  <%= permission.name %>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+
+          <footer class="flex justify-end gap-2 p-0 bg-transparent border-none">
+            <a href="/acl" class="btn-outline">Cancel</a>
+            <button type="submit" class="btn">Create Role</button>
+          </footer>
+        </form>
+      </section>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<div class="p-4 md:p-6 xl:p-12">
+  <div class="max-w-screen-xl mx-auto flex flex-col gap-8">
+    <header class="flex flex-col gap-2">
+      <div class="flex items-center gap-2 text-sm text-muted-foreground">
+        <a href="/acl" class="hover:text-foreground">ACL Management</a>
+        <span>/</span>
+        <span class="text-foreground font-medium">Permissions</span>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+        Permission Management
+      </h1>
+      <p class="sm:text-lg text-muted-foreground">
+        Granular actions that can be assigned to roles.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="flex flex-col gap-8">
+        <section class="card">
+          <header>
+            <h2>Add Permission</h2>
+            <p>Create a new granular action.</p>
+          </header>
+          <section>
+            <form hx-post="/acl/permissions" hx-target="body" hx-select="body" class="grid gap-4">
+              <div class="grid gap-2">
+                <label for="perm-name">Permission Name</label>
+                <input type="text" id="perm-name" name="name" placeholder="e.g. view_reports" required class="input">
+              </div>
+              <footer class="flex justify-end mt-2">
+                <button type="submit" class="btn">Create Permission</button>
+              </footer>
+            </form>
+          </section>
+        </section>
+      </div>
+
+      <div class="md:col-span-1 lg:col-span-2">
+        <section class="card">
+          <header>
+            <h2>Permissions List</h2>
+            <p>Manage existing permissions.</p>
+          </header>
+          <section>
+            <ul class="grid gap-2 md:grid-cols-2">
+              <% permissions.forEach(permission => { %>
+                <%- include('../partials/acl/permission-row', { permission, editing: false }) %>
+              <% }) %>
+            </ul>
+          </section>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

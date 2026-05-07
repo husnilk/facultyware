@@ -1,0 +1,32 @@
+<li class="flex items-center justify-between p-2 rounded-md bg-muted/50 text-sm" id="perm-<%= permission.id %>">
+  <% if (locals.editing) { %>
+    <form hx-post="/acl/permissions/<%= permission.id %>" hx-target="#perm-<%= permission.id %>" hx-swap="outerHTML" class="flex gap-2 w-full">
+      <input type="text" name="name" value="<%= permission.name %>" required class="input flex-1 h-8 text-sm">
+      <div class="flex gap-1">
+        <button type="submit" class="btn-sm h-8 px-2">Save</button>
+        <button type="button" class="btn-outline-sm h-8 px-2" hx-get="/acl/permissions/<%= permission.id %>" hx-target="#perm-<%= permission.id %>" hx-swap="outerHTML">Cancel</button>
+      </div>
+    </form>
+  <% } else { %>
+    <span><%= permission.name %></span>
+    <div class="flex gap-1">
+      <button 
+        class="text-muted-foreground hover:text-foreground"
+        hx-get="/acl/permissions/<%= permission.id %>/edit"
+        hx-target="#perm-<%= permission.id %>"
+        hx-swap="outerHTML"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+      </button>
+      <button 
+        class="text-destructive hover:text-destructive/80"
+        hx-delete="/acl/permissions/<%= permission.id %>"
+        hx-target="#perm-<%= permission.id %>"
+        hx-swap="outerHTML"
+        hx-confirm="Are you sure you want to delete this permission? It will be removed from all roles."
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+  <% } %>
+</li>
