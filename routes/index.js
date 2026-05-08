@@ -10,6 +10,9 @@ router.get("/login", indexController.loginPage);
 
 router.post("/login", indexController.login);
 
+router.get("/password", isAuthenticated, indexController.passwordPage);
+router.post("/password", isAuthenticated, indexController.changePassword);
+
 router.get("/logout", indexController.logout);
 
 module.exports = router;

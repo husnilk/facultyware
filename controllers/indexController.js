@@ -58,9 +58,102 @@ const logout = (req, res, next) => {
   });
 };
 
+const passwordPage = (req, res) => {
+  res.render("password", {
+    title: "Change Password",
+    user: req.session.username,
+    error: null,
+    success: null,
+  });
+};
+
+const changePassword = async (req, res, next) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+
+  try {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.render("password", {
+        title: "Change Password",
+        user: req.session.username,
+        error: "All fields are required.",
+        success: null,
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.render("password", {
+        title: "Change Password",
+        user: req.session.username,
+        error: "New password and confirmation do not match.",
+        success: null,
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.render("password", {
+        title: "Change Password",
+        user: req.session.username,
+        error: "New password must be at least 8 characters long.",
+        success: null,
+      });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.render("password", {
+        title: "Change Password",
+        user: req.session.username,
+        error: "New password must be different from current password.",
+        success: null,
+      });
+    }
+
+    const [[user]] = await db.query("SELECT id, password FROM users WHERE id = ?", [
+      req.session.userId,
+    ]);
+
+    if (!user) {
+      req.session.destroy(() => {
+        res.redirect("/login");
+      });
+      return;
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+
+    if (!isCurrentPasswordValid) {
+      return res.render("password", {
+        title: "Change Password",
+        user: req.session.username,
+        error: "Current password is incorrect.",
+        success: null,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.query("UPDATE users SET password = ? WHERE id = ?", [
+      hashedPassword,
+      user.id,
+    ]);
+
+    return res.render("password", {
+      title: "Change Password",
+      user: req.session.username,
+      error: null,
+      success: "Password changed successfully.",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   index,
   loginPage,
   login,
   logout,
+  passwordPage,
+  changePassword,
 };
