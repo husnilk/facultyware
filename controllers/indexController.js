@@ -123,7 +123,12 @@ const changePassword = async (req, res, next) => {
       });
     }
 
-    if (currentPassword === newPassword) {
+    const isNewPasswordSameAsCurrent = await bcrypt.compare(
+      newPassword,
+      user.password,
+    );
+
+    if (isNewPasswordSameAsCurrent) {
       return res.render("password", {
         title: "Change Password",
         user: req.session.username,
