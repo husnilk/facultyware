@@ -98,15 +98,6 @@ const changePassword = async (req, res, next) => {
       });
     }
 
-    if (currentPassword === newPassword) {
-      return res.render("password", {
-        title: "Change Password",
-        user: req.session.username,
-        error: "New password must be different from current password.",
-        success: null,
-      });
-    }
-
     const [[user]] = await db.query("SELECT id, password FROM users WHERE id = ?", [
       req.session.userId,
     ]);
@@ -132,7 +123,16 @@ const changePassword = async (req, res, next) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    if (currentPassword === newPassword) {
+      return res.render("password", {
+        title: "Change Password",
+        user: req.session.username,
+        error: "New password must be different from current password.",
+        success: null,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
     await db.query("UPDATE users SET password = ? WHERE id = ?", [
       hashedPassword,
       user.id,
