@@ -1,0 +1,55 @@
+<div class="p-6 md:p-10 xl:p-16">
+  <div class="max-w-4xl mx-auto flex flex-col gap-8">
+    <header class="flex flex-col gap-2">
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Edit Unit</h1>
+      <p class="text-muted-foreground">Update details for: <strong><%= unit.name %></strong></p>
+    </header>
+
+    <div class="card p-6 md:p-8">
+      <form action="/units/<%= unit.id %>" method="POST" class="form grid gap-6">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label for="name">Unit Name</label>
+            <input type="text" id="name" name="name" value="<%= unit.name %>" required>
+          </div>
+          <div class="grid gap-2">
+            <label for="code">Unit Code</label>
+            <input type="text" id="code" name="code" value="<%= unit.code %>" required>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label for="type">Unit Type</label>
+            <select id="type" name="type" class="w-full">
+              <option value="faculty" <%= unit.type === 'faculty' ? 'selected' : '' %>>Faculty</option>
+              <option value="department" <%= unit.type === 'department' ? 'selected' : '' %>>Department</option>
+              <option value="office" <%= unit.type === 'office' ? 'selected' : '' %>>Office</option>
+              <option value="lab" <%= unit.type === 'lab' ? 'selected' : '' %>>Laboratory</option>
+              <option value="center" <%= unit.type === 'center' ? 'selected' : '' %>>Center</option>
+            </select>
+          </div>
+          <div class="grid gap-2">
+            <label for="parent_id">Parent Unit</label>
+            <select id="parent_id" name="parent_id" class="w-full">
+              <option value="">None (Root Unit)</option>
+              <% parents.forEach(parent => { %>
+                <option value="<%= parent.id %>" <%= unit.parent_id === parent.id ? 'selected' : '' %>><%= parent.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid gap-2">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="4"><%= unit.description %></textarea>
+        </div>
+
+        <footer class="flex items-center justify-end gap-3 pt-4 border-t">
+          <a href="/units" class="btn-ghost">Cancel</a>
+          <button type="submit" class="btn">Update Unit</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+</div>

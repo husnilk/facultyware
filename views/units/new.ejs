@@ -1,0 +1,55 @@
+<div class="p-6 md:p-10 xl:p-16">
+  <div class="max-w-4xl mx-auto flex flex-col gap-8">
+    <header class="flex flex-col gap-2">
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Create New Unit</h1>
+      <p class="text-muted-foreground">Add a new organization unit to the hierarchy.</p>
+    </header>
+
+    <div class="card p-6 md:p-8">
+      <form action="/units" method="POST" class="form grid gap-6">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label for="name">Unit Name</label>
+            <input type="text" id="name" name="name" placeholder="Department of Computer Science" required>
+          </div>
+          <div class="grid gap-2">
+            <label for="code">Unit Code</label>
+            <input type="text" id="code" name="code" placeholder="CS-DEPT" required>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label for="type">Unit Type</label>
+            <select id="type" name="type" class="w-full">
+              <option value="faculty">Faculty</option>
+              <option value="department" selected>Department</option>
+              <option value="office">Office</option>
+              <option value="lab">Laboratory</option>
+              <option value="center">Center</option>
+            </select>
+          </div>
+          <div class="grid gap-2">
+            <label for="parent_id">Parent Unit</label>
+            <select id="parent_id" name="parent_id" class="w-full">
+              <option value="">None (Root Unit)</option>
+              <% parents.forEach(parent => { %>
+                <option value="<%= parent.id %>"><%= parent.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid gap-2">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" placeholder="Optional unit description..." rows="4"></textarea>
+        </div>
+
+        <footer class="flex items-center justify-end gap-3 pt-4 border-t">
+          <a href="/units" class="btn-ghost">Cancel</a>
+          <button type="submit" class="btn">Create Unit</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+</div>

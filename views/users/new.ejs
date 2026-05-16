@@ -1,0 +1,60 @@
+<div class="p-6 md:p-10 xl:p-16">
+  <div class="max-w-4xl mx-auto flex flex-col gap-8">
+    <header class="flex flex-col gap-2">
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Create New User</h1>
+      <p class="text-muted-foreground">Fill in the details to add a new system user.</p>
+    </header>
+
+    <div class="card p-6 md:p-8">
+      <form action="/users" method="POST" class="form grid gap-6">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="johndoe" required>
+          </div>
+          <div class="grid gap-2">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label for="fullname">Full Name</label>
+            <input type="text" id="fullname" name="fullname" placeholder="John Doe">
+          </div>
+          <div class="grid gap-2">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="john@example.com">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between p-4 border rounded-md bg-muted/20">
+          <div class="flex flex-col gap-0.5">
+            <span class="text-sm font-medium">Account Status</span>
+            <span class="text-xs text-muted-foreground">Enable or disable this user account.</span>
+          </div>
+          <input type="checkbox" name="active" role="switch" class="input" checked value="1">
+        </div>
+
+        <div class="grid gap-2">
+          <label>Assigned Roles</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border rounded-md bg-muted/20">
+            <% roles.forEach(role => { %>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="roles" value="<%= role.id %>" class="checkbox">
+                <span class="text-sm font-medium leading-none"><%= role.name %></span>
+              </label>
+            <% }) %>
+          </div>
+          <p class="text-[10px] text-muted-foreground">Select one or more roles for this user.</p>
+        </div>
+
+        <footer class="flex items-center justify-end gap-3 pt-4 border-t">
+          <a href="/users" class="btn-ghost">Cancel</a>
+          <button type="submit" class="btn">Create User</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+</div>

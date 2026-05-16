@@ -29,6 +29,15 @@ const login = async (req, res, next) => {
     }
 
     const user = rows[0];
+
+    if (user.active === 0) {
+      return res.render("login", {
+        layout: false,
+        title: "Login",
+        error: "Your account is deactivated. Please contact administrator.",
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {

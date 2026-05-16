@@ -1,0 +1,54 @@
+<div class="p-4 md:p-6 xl:p-12">
+  <div class="max-w-screen-xl mx-auto flex flex-col gap-8">
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex flex-col gap-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+          User Management
+        </h1>
+        <p class="sm:text-lg text-muted-foreground">
+          Manage system users and their assigned roles.
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <a href="/users/new" class="btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+          Add User
+        </a>
+      </div>
+    </header>
+
+    <div class="card p-0 overflow-hidden">
+      <header class="p-4 border-b bg-muted/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="relative w-full sm:w-72">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input 
+            type="text" 
+            name="search" 
+            placeholder="Search users..." 
+            class="input pl-10"
+            hx-get="/users"
+            hx-trigger="keyup changed delay:500ms, search"
+            hx-target="#users-table-body"
+            value="<%= search || '' %>"
+          >
+        </div>
+      </header>
+      
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <%- include('../partials/users/table_rows', { users: users }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
