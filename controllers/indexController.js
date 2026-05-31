@@ -6,51 +6,61 @@ const index = (req, res) => {
 };
 
 const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+  res.render("home", { title: "Home", user: req.session.name });
 };
 
+// 1. Menampilkan Halaman Login
 const loginPage = (req, res) => {
+  // JIKA SUDAH LOGIN: Arahkan ke equipment-loans (konsisten)
   if (req.session.userId) {
-    return res.redirect("/home");
+    return res.redirect("/equipment-loans");
   }
   res.render("login", { title: "Login", error: null });
 };
 
+// 2. Memproses Login
 const login = async (req, res, next) => {
-  const { username, password } = req.body;
+  // Variabel 'name' ini berisi teks apapun yang diketik user di form input HTML
+  const { name, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    // FITUR BARU: Cari kecocokan di kolom 'name' ATAU kolom 'email'
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE name = ? OR email = ?", 
+      [name, name] // Variabel 'name' dimasukkan 2 kali untuk mengisi kedua tanda tanya (?)
+    );
 
+    // Jika nama/email tidak ada di database
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Nama/Email atau password salah!", // Pesan error diperbaiki
       });
     }
 
     const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
 
+    // Jika password salah
     if (!isMatch) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Nama/Email atau password salah!", // Pesan error diperbaiki
       });
     }
 
-    // Set session
+    // Set session setelah sukses
     req.session.userId = user.id;
-    req.session.username = user.username;
+    req.session.name = user.name;
 
-    res.redirect("/home");
+    // JIKA SUKSES LOGIN: Arahkan ke equipment-loans
+    res.redirect("/equipment-loans");
   } catch (err) {
     next(err);
   }
 };
 
+// 3. Proses Logout
 const logout = (req, res, next) => {
   req.session.destroy((err) => {
     if (err) {
