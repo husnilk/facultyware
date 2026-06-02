@@ -1,4 +1,24 @@
 {
+<<<<<<< HEAD
+  "name": "tb-pweb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+=======
   "name": "central-panel",
   "version": "0.0.0",
   "private": true,
@@ -17,6 +37,7 @@
     "express-session": "^1.19.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
+>>>>>>> da927990f9e15ec6cd7098eaa235f4ab88840e4e
     "mysql2": "^3.22.3"
   }
 }
