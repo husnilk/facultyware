@@ -9,52 +9,71 @@ const home = (req, res) => {
   res.render("home", { title: "Home", user: req.session.name });
 };
 
+// Helper: cek apakah user punya permission tertentu
+const hasPermission = async (userId, permissionName) => {
+  const [rows] = await db.query(
+    `SELECT 1
+     FROM permissions p
+     JOIN role_has_permissions rhp ON p.id = rhp.permission_id
+     JOIN model_has_roles mhr      ON rhp.role_id = mhr.role_id
+     WHERE mhr.model_id = ?
+       AND mhr.model_type = 'App\\\\Models\\\\User'
+       AND p.name = ?
+     LIMIT 1`,
+    [userId, permissionName]
+  );
+  return rows.length > 0;
+};
+
 // 1. Menampilkan Halaman Login
-const loginPage = (req, res) => {
-  // JIKA SUDAH LOGIN: Arahkan ke equipment-loans (konsisten)
-  if (req.session.userId) {
+const loginPage = async (req, res) => {
+  if (!req.session.userId) {
+    return res.render("login", { title: "Login", error: null });
+  }
+  // Sudah login — arahkan ke halaman yang sesuai dengan role
+  try {
+    const isManager = await hasPermission(req.session.userId, "manage-equipment-loans");
+    return res.redirect(isManager ? "/manager" : "/equipment-loans");
+  } catch {
     return res.redirect("/equipment-loans");
   }
-  res.render("login", { title: "Login", error: null });
 };
 
 // 2. Memproses Login
 const login = async (req, res, next) => {
-  // Variabel 'name' ini berisi teks apapun yang diketik user di form input HTML
   const { name, password } = req.body;
 
   try {
-    // FITUR BARU: Cari kecocokan di kolom 'name' ATAU kolom 'email'
+    // Cari user berdasarkan name ATAU email
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE name = ? OR email = ?", 
-      [name, name] // Variabel 'name' dimasukkan 2 kali untuk mengisi kedua tanda tanya (?)
+      "SELECT * FROM users WHERE name = ? OR email = ?",
+      [name, name]
     );
 
-    // Jika nama/email tidak ada di database
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Nama/Email atau password salah!", // Pesan error diperbaiki
+        error: "Nama/Email atau password salah!",
       });
     }
 
     const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
 
-    // Jika password salah
     if (!isMatch) {
       return res.render("login", {
         title: "Login",
-        error: "Nama/Email atau password salah!", // Pesan error diperbaiki
+        error: "Nama/Email atau password salah!",
       });
     }
 
-    // Set session setelah sukses
+    // Simpan session
     req.session.userId = user.id;
     req.session.name = user.name;
 
-    // JIKA SUKSES LOGIN: Arahkan ke equipment-loans
-    res.redirect("/equipment-loans");
+    // Redirect berdasarkan role
+    const isManager = await hasPermission(user.id, "manage-equipment-loans");
+    res.redirect(isManager ? "/manager" : "/equipment-loans");
   } catch (err) {
     next(err);
   }
