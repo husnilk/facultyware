@@ -3,16 +3,9 @@ const db = require('../lib/db');
 // 1. Equipment Loans Dashboard
 const index = async (req, res, next) => {
   try {
-    const userId = req.session.userId; 
-    
-    // Ensure the logged-in user is an employee
-    const [employee] = await db.query('SELECT id FROM employees WHERE id = ?', [userId]);
-    if (employee.length === 0) {
-        return res.status(403).send('Access Denied: Only employees can access this feature.');
-    }
-    const employeeId = employee[0].id;
+    const userId = req.session.userId; // this is users.id
 
-    // Fetch loan data with equipment name and asset code
+    // Fetch loan data for the logged-in user (employee_id matches users.id in this app)
     const [rows] = await db.query(`
       SELECT el.*, a.name AS equipment_name, a.code AS asset_code 
       FROM equipment_loans el
@@ -20,7 +13,7 @@ const index = async (req, res, next) => {
       JOIN assets a ON eq.asset_id = a.id
       WHERE el.employee_id = ?
       ORDER BY el.created_at DESC
-    `, [employeeId]);
+    `, [userId]);
 
     res.render('equipment-loans/index', { title: 'Equipment Loans', data: rows });
   } catch (err) {

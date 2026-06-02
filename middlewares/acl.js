@@ -25,13 +25,16 @@ const checkPermission = (requiredPermissions) => {
       : [requiredPermissions];
 
     try {
-      // Query to check if the user has a role that contains any of the required permissions
+      // DB uses Spatie Laravel Permission pattern:
+      // model_has_roles  (role_id, model_type, model_id)  → model_id = users.id
+      // role_has_permissions (permission_id, role_id)
+      // permissions (id, name, guard_name)
       const query = `
         SELECT DISTINCT p.name 
         FROM permissions p
         JOIN role_has_permissions rhp ON p.id = rhp.permission_id
-        JOIN user_has_roles uhr ON rhp.role_id = uhr.role_id
-        WHERE uhr.user_id = ? AND p.name IN (?)
+        JOIN model_has_roles mhr ON rhp.role_id = mhr.role_id
+        WHERE mhr.model_id = ? AND mhr.model_type = 'App\\\\Models\\\\User' AND p.name IN (?)
       `;
 
       const [rows] = await db.query(query, [req.session.userId, permissionsArray]);
