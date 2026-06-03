@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (
+            stored
+              ? stored === "dark"
+              : matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+
+        const apply = (dark) => {
+          document.documentElement.classList.toggle("dark", dark);
+          try {
+            localStorage.setItem("themeMode", dark ? "dark" : "light");
+          } catch (_) {}
+        };
+
+        document.addEventListener("basecoat:theme", (event) => {
+          const mode = event.detail?.mode;
+          apply(
+            mode === "dark"
+              ? true
+              : mode === "light"
+                ? false
+                : !document.documentElement.classList.contains("dark"),
+          );
+        });
+      })();
+    </script>
+
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme)
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+        } catch (event) {
+          console.error(
+            "Could not apply theme variant from localStorage",
+            event,
+          );
+        }
+      })();
+    </script>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Language" content="en" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Basecoat</title>
+    <meta
+      name="description"
+      content="A components library built with Tailwind CSS that works with any web stack."
+    />
+    <meta name="title" content="Basecoat" />
+    <meta
+      name="keywords"
+      content="components,component library,component system,UI,UI kit,shadcn,shadcn/ui,Tailwind CSS,Tailwind,CSS,HTML,Jinja,Nunjucks,JS,JavaScript,vanilla JS,vanilla JavaScript"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/apple-touch-icon.png"
+    />
+
+    <!-- <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/js/all.min.js"
+      defer
+    ></script> -->
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <!-- <script src="/assets/js/basecoat.js?v=0.3.11" defer></script>
+    <script src="/assets/js/command.js?v=0.3.11" defer></script>
+    <script src="/assets/js/dropdown-menu.js?v=0.3.11" defer></script>
+    <script src="/assets/js/popover.js?v=0.3.11" defer></script>
+    <script src="/assets/js/select.js?v=0.3.11" defer></script>
+    <script src="/assets/js/sidebar.js?v=0.3.11" defer></script>
+    <script src="/assets/js/tabs.js?v=0.3.11" defer></script>
+    <script src="/assets/js/toast.js?v=0.3.11" defer></script> -->
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/django.min.js"></script>
+    <script>
+      const highlight = () => {
+        if (!window.hljs) return;
+        document
+          .querySelectorAll(
+            "pre code:not([data-highlighted]), code.highlight:not([data-highlighted])",
+          )
+          .forEach((el) => hljs.highlightElement(el));
+      };
+
+      if (!window._hljsInit) {
+        window._hljsInit = true;
+        document.addEventListener("DOMContentLoaded", highlight);
+        document.addEventListener("htmx:afterSwap", highlight);
+      }
+    </script>
+    <script>
+      document.addEventListener("htmx:historyRestore", () => {
+        if (window.basecoat) window.basecoat.initAll();
+      });
+    </script>
+  </head>
+  <body>
+    <script>
+      (() => {
+        document.addEventListener("DOMContentLoaded", () => {
+          const sidebar = document.getElementById("sidebar");
+          if (!sidebar) return;
+
+          const updateCurrentLinks = () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            const currentSearch = window.location.search;
+            const currentKey = `${currentPath}${currentSearch}`;
+
+            sidebar.querySelectorAll("a, button").forEach((item) => {
+              const href = item.getAttribute("href");
+              if (!href) {
+                item.removeAttribute("aria-current");
+                return;
+              }
+
+              const url = new URL(href, window.location.origin);
+              const itemPath = url.pathname.replace(/\/$/, "");
+              const itemKey = `${itemPath}${url.search}`;
+
+              if (itemKey === currentKey) {
+                item.setAttribute("aria-current", "page");
+              } else {
+                item.removeAttribute("aria-current");
+              }
+            });
+          };
+
+          document.addEventListener("htmx:afterSettle", updateCurrentLinks);
+          window.addEventListener("popstate", updateCurrentLinks);
+          updateCurrentLinks();
+        });
+      })();
+    </script>
+
+    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
+      <nav aria-label="Sidebar navigation">
+        <header>
+          <a href="/" class="btn-ghost p-2 h-12 w-full justify-start">
+            <div
+              class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 256 256"
+                class="h-4 w-4"
+              >
+                <rect width="256" height="256" fill="none"></rect>
+                <line
+                  x1="208"
+                  y1="128"
+                  x2="128"
+                  y2="208"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="32"
+                ></line>
+                <line
+                  x1="192"
+                  y1="40"
+                  x2="40"
+                  y2="192"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="32"
+                ></line>
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-medium">Basecoat</span>
+              <span class="truncate text-xs">v0.3.11</span>
+            </div>
+          </a>
+        </header>
+
+        <section
+          class="scrollbar [&amp;_[data-new-link]::after]:content-[&#39;New&#39;] [&amp;_[data-new-link]::after]:ml-auto [&amp;_[data-new-link]::after]:text-xs [&amp;_[data-new-link]::after]:font-medium [&amp;_[data-new-link]::after]:bg-sidebar-primary [&amp;_[data-new-link]::after]:text-sidebar-primary-foreground [&amp;_[data-new-link]::after]:px-2 [&amp;_[data-new-link]::after]:py-0.5 [&amp;_[data-new-link]::after]:rounded-md"
+        >
+          <div role="group" aria-labelledby="group-label-sidebar-content-1">
+            <h3 id="group-label-sidebar-content-1">Getting started</h3>
+
+            <ul>
+              <li>
+                <a
+                  href="/introduction"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4" />
+                    <path d="M12 8h.01" />
+                  </svg>
+                  <span>Introduction</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/installation"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="m7 11 2-2-2-2" />
+                    <path d="M11 13h4" />
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  </svg>
+                  <span>Installation</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/kitchen-sink"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect width="7" height="9" x="3" y="3" rx="1" />
+                    <rect width="7" height="5" x="14" y="3" rx="1" />
+                    <rect width="7" height="9" x="14" y="12" rx="1" />
+                    <rect width="7" height="5" x="3" y="16" rx="1" />
+                  </svg>
+                  <span>Kitchen sink</span>
+                </a>
+              </li>
+
+              <li>
+                <a href="https://github.com/hunvreus/basecoat" target="_blank">
+                  <svg
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <title>GitHub</title>
+                    <path
+                      d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+                    />
+                  </svg>
+                  <span>GitHub</span>
+                </a>
+              </li>
+
+              <li>
+                <a href="https://basecoatui.com/chat" target="_blank">
+                  <svg
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <title>Discord</title>
+                    <path
+                      d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"
+                    />
+                  </svg>
+                  <span>Discord</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div role="group" aria-labelledby="group-label-sidebar-content-2">
+            <h3 id="group-label-sidebar-content-2">Components</h3>
+
+            <ul>
+              <li>
+                <a
+                  href="/components/accordion"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Accordion</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/alert"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Alert</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/alert-dialog"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Alert Dialog</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/avatar"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Avatar</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/badge"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Badge</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/breadcrumb"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Breadcrumb</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/button"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Button</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/button-group"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Button Group</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/card"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Card</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/checkbox"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Checkbox</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/command"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Command</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/combobox"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Combobox</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/dialog"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Dialog</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/dropdown-menu"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Dropdown Menu</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/empty"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Empty</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/field"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Field</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/form"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Form</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/input"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Input</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/input-group"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Input Group</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/item"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Item</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/kbd"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Kbd</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/label"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Label</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/pagination"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Pagination</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/popover"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Popover</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/progress"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Progress</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/radio-group"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Radio Group</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/select"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Select</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/sidebar"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Sidebar</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/skeleton"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Skeleton</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/slider"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Slider</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/spinner"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                  data-new-link="true"
+                >
+                  <span>Spinner</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/switch"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Switch</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/table"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Table</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/tabs"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Tabs</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/textarea"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Textarea</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/theme-switcher"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Theme Switcher</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/toast"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Toast</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/components/tooltip"
+                  hx-boost="true"
+                  hx-select="#content"
+                  hx-target="#content"
+                  hx-swap="outerHTML"
+                >
+                  <span>Tooltip</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <footer>
+          <div id="popover-387533" class="popover">
+            <button
+              id="popover-387533-trigger"
+              type="button"
+              aria-expanded="false"
+              aria-controls="popover-387533-popover"
+              class="btn-ghost p-2 h-12 w-full flex items-center justify-start"
+              data-keep-mobile-sidebar-open=""
+            >
+              <img
+                src="https://github.com/hunvreus.png"
+                class="rounded-lg shrink-0 size-8"
+              />
+              <div class="grid flex-1 text-left text-sm leading-tight">
+                <span class="truncate font-medium">Ronan Berder</span>
+                <span class="truncate text-xs">@hunvreus</span>
+              </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m7 15 5 5 5-5" />
+                <path d="m7 9 5-5 5 5" />
+              </svg>
+            </button>
+            <div
+              id="popover-387533-popover"
+              data-popover
+              aria-hidden="true"
+              data-side="top"
+              class="w-[271px] md:w-[239px]"
+            >
+              <div class="grid gap-4">
+                <header class="grid gap-1.5">
+                  <h2 class="font-semibold">I hope you like Basecoat...</h2>
+                  <p class="text-muted-foreground text-sm">
+                    My name is
+                    <a href="https://ronanberder.com" target="_blank">Ronan</a>
+                    and I made this (and
+                    <a
+                      class="underline underline-offset-4"
+                      href="https://pagescms.org"
+                      target="_target"
+                      >other things</a
+                    >). If you find it useful, please consider sponsoring me on
+                    GitHub or following me on X.
+                  </p>
+                </header>
+                <footer class="grid gap-2">
+                  <a
+                    href="https://github.com/sponsors/hunvreus"
+                    class="btn-sm"
+                    target="_blank"
+                    >Sponsor me on GitHub</a
+                  >
+                  <a
+                    href="https://x.com/hunvreus"
+                    class="btn-sm-outline"
+                    target="_blank"
+                    >Follow me on X</a
+                  >
+                </footer>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </nav>
+    </aside>
+
+    <main id="content">
+      <header
+        class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10"
+      >
+        <div class="flex h-14 w-full items-center gap-2 px-4">
+          <button
+            type="button"
+            onclick="
+              document.dispatchEvent(new CustomEvent('basecoat:sidebar'))
+            "
+            aria-label="Toggle sidebar"
+            data-tooltip="Toggle sidebar"
+            data-side="bottom"
+            data-align="start"
+            class="btn-sm-icon-ghost mr-auto size-7 -ml-1.5"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M9 3v18" />
+            </svg>
+          </button>
+          <select class="select h-8 leading-none" id="theme-select">
+            <option value="">Default</option>
+            <option value="claude">Claude</option>
+            <option value="doom-64">Doom 64</option>
+            <option value="supabase">Supabase</option>
+          </select>
+          <script>
+            (() => {
+              const themeSelect = document.getElementById("theme-select");
+              const storedTheme = localStorage.getItem("themeVariant");
+              if (themeSelect && storedTheme) themeSelect.value = storedTheme;
+              themeSelect.addEventListener("change", () => {
+                const newTheme = themeSelect.value;
+                document.documentElement.classList.forEach((c) => {
+                  if (c.startsWith("theme-"))
+                    document.documentElement.classList.remove(c);
+                });
+                if (newTheme) {
+                  document.documentElement.classList.add(`theme-${newTheme}`);
+                  localStorage.setItem("themeVariant", newTheme);
+                } else {
+                  localStorage.removeItem("themeVariant");
+                }
+              });
+            })();
+          </script>
+
+          <button
+            type="button"
+            aria-label="Toggle dark mode"
+            data-tooltip="Toggle dark mode"
+            data-side="bottom"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))"
+            class="btn-icon-outline size-8"
+          >
+            <span class="hidden dark:block"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.41" /></svg
+            ></span>
+            <span class="block dark:hidden"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg
+            ></span>
+          </button>
+          <a
+            href="https://github.com/hunvreus/basecoat"
+            class="btn-icon size-8"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-tooltip="GitHub repository"
+            data-side="bottom"
+            data-align="end"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+              />
+              <path d="M9 18c-4.51 2-5-2-7-2" />
+            </svg>
+          </a>
+        </div>
+      </header>
+
+      <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto">
+      
+      <header class="flex flex-col gap-4 mb-8">
+        <h1 class="text-2xl font-bold tracking-tight">Kelola Data Kategori</h1>
+        <div class="flex w-full items-center justify-start gap-2">
+           <a class="btn" href="/kategori/create">Tambah Kategori</a>
+        </div>
+      </header>
+
+      <div class="card p-4">
+         <table class="table">
+            <thead>
+               <tr>
+                  <th>No</th>
+                  <th>Nama Kategori</th>
+                  <th>Deskripsi</th>
+                  <th>Dibuat Pada</th>
+                  <th>Aksi</th>
+               </tr>
+            </thead>
+            <tbody>
+               <% categories.forEach((kategori, index) => { %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= kategori.name %></td>
+                    <td><%= kategori.description ? kategori.description : '-' %></td>
+                    <td><%= kategori.created_at ? new Date(kategori.created_at).toLocaleDateString('id-ID') : '-' %></td>
+                    <td class="flex gap-2">
+                        <a href="/kategori/edit/<%= kategori.id %>" class="btn-sm">Edit</a>
+                        <form action="/kategori/delete/<%= kategori.id %>" method="POST" onsubmit="return confirm('Yakin mau hapus kategori ini?');">
+                        <button type="submit" class="btn-sm-outline text-red-500">Hapus</button>
+                    </form>
+                    </td>
+                </tr>
+            <% }) %>
+            </tbody>
+         </table>
+      </div>
+
+    </div>
+  </div>
+    </main>
+
+    <div id="toaster" class="toaster"></div>
+  </body>
+</html>

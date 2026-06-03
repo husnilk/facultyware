@@ -1,0 +1,15 @@
+<% items.forEach((item, index) => { %>
+  <tr>
+     <td><%= index + 1 %></td>
+     <td><%= item.code %></td>
+     <td><%= item.name %></td>
+     <td><%= item.unit %></td>
+     <td><%= item.minimal_quantity %></td>
+     <td class="flex gap-2">
+        <a href="/item/edit/<%= item.id %>" class="btn-sm">Edit</a>
+        <form action="/item/delete/<%= item.id %>" method="POST" onsubmit="return confirm('Yakin?');">
+           <button type="submit" class="btn-sm-outline text-red-500">Hapus</button>
+        </form>
+     </td>
+  </tr>
+<% }) %>

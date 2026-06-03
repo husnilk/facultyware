@@ -44,6 +44,12 @@ app.use(session({
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+const kategoriRouter = require('./routes/kategori');
+app.use('/kategori', kategoriRouter);
+
+const itemRouter = require('./routes/item');
+app.use('/item', itemRouter);
+
 // catch 404 and forward to error handler
 app.use(notFoundHandler);
 
