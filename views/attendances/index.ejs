@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f7f7f7; }
+    .card { background: white; padding: 24px; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { border: 1px solid #ddd; padding: 10px; }
+    th { background: #f0f0f0; }
+    input { padding: 10px; width: 300px; }
+    button, .btn { padding: 10px 16px; display: inline-block; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Data Kehadiran Event</h1>
+
+    <form method="GET" action="/attendances">
+      <input type="text" name="search" placeholder="Cari event/nama/email/ticket/status" value="<%= search %>">
+      <button type="submit">Cari</button>
+      <a href="/attendances">Reset</a>
+    </form>
+
+    <a class="btn" href="/attendances/recap">Lihat Rekap</a>
+    <a class="btn" href="/attendances/export/excel">Export Excel</a>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Event</th>
+          <th>Peserta</th>
+          <th>Email</th>
+          <th>Ticket</th>
+          <th>Status</th>
+          <th>Metode</th>
+          <th>Check-in</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (attendances.length === 0) { %>
+          <tr>
+            <td colspan="8">Belum ada data kehadiran.</td>
+          </tr>
+        <% } %>
+
+        <% attendances.forEach((item, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td><%= item.event_title %></td>
+            <td><%= item.participant_name %></td>
+            <td><%= item.participant_email %></td>
+            <td><%= item.ticket_number %></td>
+            <td><%= item.status %></td>
+            <td><%= item.attendance_method %></td>
+            <td><%= item.checked_in_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <p>Halaman <%= page %> dari <%= totalPages %></p>
+
+    <% if (page > 1) { %>
+      <a href="/attendances?page=<%= page - 1 %>&search=<%= search %>">Sebelumnya</a>
+    <% } %>
+
+    <% if (page < totalPages) { %>
+      <a href="/attendances?page=<%= page + 1 %>&search=<%= search %>">Berikutnya</a>
+    <% } %>
+  </div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f7f7f7; }
+    .card { background: white; padding: 24px; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { border: 1px solid #ddd; padding: 10px; }
+    th { background: #f0f0f0; }
+    input { padding: 10px; width: 300px; }
+    button { padding: 10px 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Riwayat Reminder</h1>
+
+    <form method="GET" action="/reminders/history">
+      <input type="text" name="search" placeholder="Cari event/channel/pesan" value="<%= search %>">
+      <button type="submit">Cari</button>
+      <a href="/reminders/history">Reset</a>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Event</th>
+          <th>Channel</th>
+          <th>Pesan</th>
+          <th>Dikirim Oleh</th>
+          <th>Waktu</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (reminders.length === 0) { %>
+          <tr>
+            <td colspan="6">Belum ada data reminder.</td>
+          </tr>
+        <% } %>
+
+        <% reminders.forEach((item, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td><%= item.event_title %></td>
+            <td><%= item.channel %></td>
+            <td><%= item.message %></td>
+            <td><%= item.sender_name || '-' %></td>
+            <td><%= item.sent_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <p>Halaman <%= page %> dari <%= totalPages %></p>
+
+    <% if (page > 1) { %>
+      <a href="/reminders/history?page=<%= page - 1 %>&search=<%= search %>">Sebelumnya</a>
+    <% } %>
+
+    <% if (page < totalPages) { %>
+      <a href="/reminders/history?page=<%= page + 1 %>&search=<%= search %>">Berikutnya</a>
+    <% } %>
+
+    <br><br>
+    <a href="/reminders">Kembali ke Kirim Reminder</a>
+  </div>
+</body>
+</html>
