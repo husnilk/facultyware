@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f7f7f7; }
+    .card { background: white; padding: 24px; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { border: 1px solid #ddd; padding: 10px; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Rekap Kehadiran Event</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Event</th>
+          <th>Total Terdaftar</th>
+          <th>Hadir</th>
+          <th>Partial</th>
+          <th>No Show</th>
+          <th>Belum Check-in</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (recaps.length === 0) { %>
+          <tr>
+            <td colspan="7">Belum ada data rekap.</td>
+          </tr>
+        <% } %>
+
+        <% recaps.forEach((item, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td><%= item.event_title %></td>
+            <td><%= item.total_registered %></td>
+            <td><%= item.total_present || 0 %></td>
+            <td><%= item.total_partial || 0 %></td>
+            <td><%= item.total_no_show || 0 %></td>
+            <td><%= item.total_not_checked_in || 0 %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <br>
+    <a href="/attendances">Kembali ke Data Kehadiran</a>
+  </div>
+</body>
+</html>

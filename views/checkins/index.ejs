@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f7f7f7; }
+    .card { background: white; padding: 24px; border-radius: 10px; max-width: 760px; margin: auto; }
+    label { display: block; margin-top: 14px; font-weight: bold; }
+    input, select { width: 100%; padding: 10px; margin-top: 6px; }
+    button { margin-top: 18px; padding: 10px 18px; cursor: pointer; }
+    .success { background: #d1fae5; padding: 12px; margin-bottom: 12px; }
+    .error { background: #fee2e2; padding: 12px; margin-bottom: 12px; }
+    .result { background: #f0f9ff; padding: 12px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Check-in Peserta</h1>
+
+    <% if (success) { %>
+      <div class="success"><%= success %></div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="error"><%= error %></div>
+    <% } %>
+
+    <form action="/checkins/process" method="POST">
+      <label>Ticket Number</label>
+      <input type="text" name="ticket_number" value="<%= form.ticket_number || '' %>" placeholder="Masukkan ticket number peserta" required>
+
+      <label>Metode Check-in</label>
+      <select name="attendance_method">
+        <option value="manual">Manual</option>
+        <option value="qr_scan">QR Scan</option>
+        <option value="system">System</option>
+      </select>
+
+      <button type="submit">Proses Check-in</button>
+    </form>
+
+    <% if (result) { %>
+      <div class="result">
+        <h3>Data Peserta</h3>
+        <p><strong>Event:</strong> <%= result.event_title %></p>
+        <p><strong>Nama:</strong> <%= result.participant_name %></p>
+        <p><strong>Email:</strong> <%= result.participant_email %></p>
+        <p><strong>Ticket:</strong> <%= result.ticket_number %></p>
+      </div>
+    <% } %>
+
+    <br>
+    <a href="/attendances">Lihat Data Kehadiran</a>
+  </div>
+</body>
+</html>

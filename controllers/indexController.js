@@ -13,6 +13,7 @@ const loginPage = (req, res) => {
   if (req.session.userId) {
     return res.redirect("/home");
   }
+
   res.render("login", { title: "Login", error: null });
 };
 
@@ -20,9 +21,22 @@ const login = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    if (!username || !password) {
+      return res.render("login", {
+        title: "Login",
+        error: "Username/email dan password wajib diisi",
+      });
+    }
+
+    const [rows] = await db.query(
+      `
+      SELECT *
+      FROM users
+      WHERE username = ? OR email = ? OR name = ?
+      LIMIT 1
+      `,
+      [username, username, username]
+    );
 
     if (rows.length === 0) {
       return res.render("login", {
@@ -41,9 +55,9 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Set session
     req.session.userId = user.id;
-    req.session.username = user.username;
+    req.session.username = user.username || user.name;
+    req.session.email = user.email;
 
     res.redirect("/home");
   } catch (err) {
@@ -56,6 +70,7 @@ const logout = (req, res, next) => {
     if (err) {
       return next(err);
     }
+
     res.redirect("/login");
   });
 };
@@ -65,5 +80,5 @@ module.exports = {
   home,
   loginPage,
   login,
-  logout
+  logout,
 };
