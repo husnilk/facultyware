@@ -21,6 +21,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+var adminRouter = require('./routes/admin');
+app.use('/admin', adminRouter);
 
 // Session configuration
 const sessionStore = new MySQLStore({
