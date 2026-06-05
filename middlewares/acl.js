@@ -34,7 +34,7 @@ const checkPermission = (requiredPermissions) => {
         FROM permissions p
         JOIN role_has_permissions rhp ON p.id = rhp.permission_id
         JOIN model_has_roles mhr ON rhp.role_id = mhr.role_id
-        WHERE mhr.model_id = ? AND mhr.model_type = 'App\\\\Models\\\\User' AND p.name IN (?)
+        WHERE mhr.model_id = ? AND mhr.model_type = 'User' AND p.name IN (?)
       `;
 
       const [rows] = await db.query(query, [req.session.userId, permissionsArray]);

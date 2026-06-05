@@ -4,7 +4,9 @@ const db = require('../lib/db');
 const index = async (req, res, next) => {
   try {
     const userId = req.session.userId; // this is users.id
-
+    
+    const [userRows] = await db.query(`SELECT name, email FROM users WHERE id = ?`, [userId]);
+    const currentUser = userRows[0];
     // Fetch loan data for the logged-in user (employee_id matches users.id in this app)
     const [rows] = await db.query(`
       SELECT el.*, a.name AS equipment_name, a.code AS asset_code 
@@ -15,7 +17,12 @@ const index = async (req, res, next) => {
       ORDER BY el.created_at DESC
     `, [userId]);
 
-    res.render('equipment-loans/index', { title: 'Equipment Loans', data: rows });
+    res.render('equipment-loans/index', { 
+      title: 'Peminjaman Peralatan', 
+      data: rows, 
+      user: currentUser
+    
+    });
   } catch (err) {
     next(err);
   }
@@ -104,7 +111,7 @@ const cancel = async (req, res, next) => {
 
   try {
     await db.query(
-      'UPDATE equipment_loans SET status = "rejected" WHERE id = ? AND employee_id = ? AND status = "requested"',
+      'UPDATE equipment_loans SET status = "cancelled" WHERE id = ? AND employee_id = ? AND status = "requested"',
       [loanId, userId]
     );
     res.redirect('/equipment-loans');

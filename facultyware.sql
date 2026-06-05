@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 01, 2026 at 04:34 PM
+-- Generation Time: Jun 05, 2026 at 06:00 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -47,18 +47,9 @@ CREATE TABLE `assets` (
 --
 
 INSERT INTO `assets` (`id`, `name`, `code`, `type`, `acquisition_type`, `acquisition_date`, `acquisition_cost`, `asset_grant_id`, `condition`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Laptop Dell Latitude 5520', 'AST-001', 'equipment', 'procurement', '2022-06-01', 18500000.00, NULL, 'good', 'available', '2022-06-01 01:00:00', '2025-01-01 01:00:00'),
-(2, 'Laptop Lenovo ThinkPad E15', 'AST-002', 'equipment', 'procurement', '2022-06-01', 16800000.00, NULL, 'good', 'available', '2022-06-01 01:00:00', '2025-01-01 01:00:00'),
-(3, 'Proyektor Epson EB-X41', 'AST-003', 'equipment', 'procurement', '2022-07-15', 9500000.00, NULL, 'good', 'available', '2022-07-15 01:00:00', '2025-01-01 01:00:00'),
-(4, 'Proyektor BenQ MH550', 'AST-004', 'equipment', 'grant', '2022-08-01', 8700000.00, 1, 'good', 'available', '2022-08-01 01:00:00', '2025-01-01 01:00:00'),
-(5, 'Kamera DSLR Canon EOS 2000D', 'AST-005', 'equipment', 'grant', '2023-04-10', 7200000.00, 2, 'good', 'in_use', '2023-04-10 01:00:00', '2025-01-01 01:00:00'),
-(6, 'Tripod Kamera Profesional', 'AST-006', 'equipment', 'procurement', '2023-04-10', 850000.00, NULL, 'good', 'available', '2023-04-10 01:00:00', '2025-01-01 01:00:00'),
-(7, 'Mikrofon Rode NT-USB', 'AST-007', 'equipment', 'procurement', '2023-05-20', 2100000.00, NULL, 'good', 'available', '2023-05-20 01:00:00', '2025-01-01 01:00:00'),
-(8, 'Switch Cisco Catalyst 2960', 'AST-008', 'equipment', 'grant', '2022-09-01', 12500000.00, 1, 'good', 'in_use', '2022-09-01 01:00:00', '2025-01-01 01:00:00'),
-(9, 'Router Cisco ISR 4321', 'AST-009', 'equipment', 'grant', '2022-09-01', 22000000.00, 1, 'good', 'available', '2022-09-01 01:00:00', '2025-01-01 01:00:00'),
-(10, 'Oscilloscope Rigol DS1054Z', 'AST-010', 'equipment', 'procurement', '2023-02-14', 5500000.00, NULL, 'minor_damage', 'maintenance', '2023-02-14 01:00:00', '2025-01-01 01:00:00'),
-(11, 'Laptop HP ProBook 450 G9', 'AST-011', 'equipment', 'procurement', '2023-08-01', 14200000.00, NULL, 'good', 'available', '2023-08-01 01:00:00', '2025-01-01 01:00:00'),
-(12, 'Tablet Samsung Galaxy Tab S7', 'AST-012', 'equipment', 'procurement', '2023-09-15', 8900000.00, NULL, 'good', 'available', '2023-09-15 01:00:00', '2025-01-01 01:00:00');
+(1, 'Laptop Inventaris Lab SI', 'AST-LPT-001', 'equipment', 'procurement', '0000-00-00', NULL, NULL, 'good', 'available', '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(2, 'Proyektor Ruang Kelas', 'AST-PRJ-001', 'equipment', 'procurement', '0000-00-00', NULL, NULL, 'good', 'available', '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(3, 'Router MikroTik Lab Jaringan', 'AST-SRV-001', 'equipment', 'procurement', '0000-00-00', NULL, NULL, 'good', 'available', '2026-05-31 02:04:10', '2026-05-31 02:04:10');
 
 -- --------------------------------------------------------
 
@@ -108,14 +99,6 @@ CREATE TABLE `asset_grants` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `asset_grants`
---
-
-INSERT INTO `asset_grants` (`id`, `name`, `source`, `grant_date`, `description`, `created_at`, `updated_at`) VALUES
-(1, 'Hibah DIKTI 2022', 'Kementerian Pendidikan dan Kebudayaan', '2022-05-10', 'Pengadaan peralatan lab melalui Program Hibah DIKTI', '2022-05-10 01:00:00', '2022-05-10 01:00:00'),
-(2, 'Hibah BOPTN 2023', 'BOPTN Universitas', '2023-03-15', 'Pengadaan alat multimedia dari dana BOPTN', '2023-03-15 01:00:00', '2023-03-15 01:00:00');
 
 -- --------------------------------------------------------
 
@@ -591,16 +574,8 @@ CREATE TABLE `employees` (
 --
 
 INSERT INTO `employees` (`id`, `employee_number`, `national_id_number`, `tax_id_number`, `name`, `birth_place`, `birth_date`, `gender`, `religion`, `marital_status`, `address`, `phone_number`, `organization_unit_id`, `hire_date`, `employment_status_id`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'EMP001', NULL, NULL, 'admin', 'Jakarta', '1980-03-15', 'male', NULL, 'married', 'Jl. Merdeka No.1, Jakarta', '081200000001', 6, '2010-01-01', 1, 'active', '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(2, 'EMP002', NULL, NULL, 'Budi Santoso', 'Bandung', '1985-06-20', 'male', NULL, 'married', 'Jl. Pahlawan No.12, Bandung', '081200000002', 3, '2012-03-01', 1, 'active', '2025-01-02 00:00:00', '2025-01-02 00:00:00'),
-(3, 'EMP003', NULL, NULL, 'Siti Rahayu', 'Surabaya', '1990-09-05', 'female', NULL, 'single', 'Jl. Pemuda No.7, Surabaya', '081200000003', 3, '2015-07-01', 2, 'active', '2025-01-02 00:00:00', '2025-01-02 00:00:00'),
-(4, 'EMP004', NULL, NULL, 'Ahmad Fauzi', 'Yogyakarta', '1988-11-12', 'male', NULL, 'married', 'Jl. Malioboro No.45, Yogyakarta', '081200000004', 4, '2013-09-01', 1, 'active', '2025-01-03 00:00:00', '2025-01-03 00:00:00'),
-(5, 'EMP005', NULL, NULL, 'Dewi Kusuma', 'Semarang', '1992-04-28', 'female', NULL, 'married', 'Jl. Pemuda No.33, Semarang', '081200000005', 4, '2016-02-01', 2, 'active', '2025-01-03 00:00:00', '2025-01-03 00:00:00'),
-(6, 'EMP006', NULL, NULL, 'Rizky Pratama', 'Medan', '1995-08-17', 'male', NULL, 'single', 'Jl. Sudirman No.20, Medan', '081200000006', 5, '2020-01-01', 3, 'active', '2025-01-04 00:00:00', '2025-01-04 00:00:00'),
-(7, 'EMP007', NULL, NULL, 'Nurul Hidayah', 'Makassar', '1993-12-03', 'female', NULL, 'single', 'Jl. AP Pettarani No.10, Makassar', '081200000007', 5, '2019-06-01', 3, 'active', '2025-01-04 00:00:00', '2025-01-04 00:00:00'),
-(8, 'EMP008', NULL, NULL, 'Hendra Wijaya', 'Palembang', '1982-02-25', 'male', NULL, 'married', 'Jl. Jendral Sudirman No.5, Palembang', '081200000008', 6, '2011-04-01', 1, 'active', '2025-01-05 00:00:00', '2025-01-05 00:00:00'),
-(9, 'EMP009', NULL, NULL, 'Mega Silviana', 'Malang', '1994-07-14', 'female', NULL, 'single', 'Jl. Ijen No.8, Malang', '081200000009', 3, '2021-03-01', 4, 'active', '2025-01-05 00:00:00', '2025-01-05 00:00:00'),
-(10, 'EMP010', NULL, NULL, 'Fajar Nugroho', 'Solo', '1991-05-30', 'male', NULL, 'married', 'Jl. Slamet Riyadi No.15, Solo', '081200000010', 4, '2018-08-01', 2, 'active', '2025-01-06 00:00:00', '2025-01-06 00:00:00');
+(1, 'MHS-001', NULL, NULL, 'Wanda', 'Padang', '2004-01-01', 'female', 'Islam', 'single', 'Padang', '081234567890', 1, '2024-08-01', 1, 'active', '2026-05-31 01:38:16', '2026-05-31 01:38:16'),
+(2, 'PJ-001', NULL, NULL, 'Penanggung Jawab Peralatan', 'Padang', '1990-01-01', 'male', NULL, 'single', 'Padang', '081111111111', 1, '2024-01-01', 2, 'active', '2026-06-05 13:31:37', '2026-06-05 13:31:37');
 
 -- --------------------------------------------------------
 
@@ -634,10 +609,8 @@ CREATE TABLE `employment_statuses` (
 --
 
 INSERT INTO `employment_statuses` (`id`, `name`, `description`, `created_at`, `updated_at`) VALUES
-(1, 'PNS', 'Pegawai Negeri Sipil', '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(2, 'PPPK', 'Pegawai Pemerintah dengan Perjanjian Kerja', '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(3, 'Honorer', 'Tenaga Honorer', '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(4, 'Tetap Yayasan', 'Pegawai Tetap Yayasan', '2025-01-01 00:00:00', '2025-01-01 00:00:00');
+(1, 'Mahasiswa', 'Mahasiswa yang memiliki hak akses untuk meminjam fasilitas', '2026-05-31 01:38:16', '2026-05-31 01:38:16'),
+(2, 'Penanggung Jawab', 'Penanggung Jawab Peralatan Lab', '2026-06-05 13:31:37', '2026-06-05 13:31:37');
 
 -- --------------------------------------------------------
 
@@ -665,18 +638,9 @@ CREATE TABLE `equipments` (
 --
 
 INSERT INTO `equipments` (`id`, `asset_id`, `brand`, `model`, `serial_number`, `specification`, `purchase_link`, `photo`, `depreciation_value`, `useful_life`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Dell', 'Latitude 5520', 'DL5520-2022-001', 'Intel Core i5-1135G7, RAM 16GB, SSD 512GB, Windows 11 Pro', NULL, NULL, 1850000.00, 5, '2022-06-01 01:00:00', '2025-01-01 01:00:00'),
-(2, 2, 'Lenovo', 'ThinkPad E15', 'LVE15-2022-002', 'Intel Core i5-1135G7, RAM 8GB, SSD 256GB, Windows 11 Home', NULL, NULL, 1680000.00, 5, '2022-06-01 01:00:00', '2025-01-01 01:00:00'),
-(3, 3, 'Epson', 'EB-X41', 'EPS-X41-2022-001', 'XGA 1024x768, 3600 lumens, Throw Ratio 1.2:1', NULL, NULL, 950000.00, 5, '2022-07-15 01:00:00', '2025-01-01 01:00:00'),
-(4, 4, 'BenQ', 'MH550', 'BNQ-MH550-2022', '1080p Full HD, 3500 lumens, HDMI, VGA', NULL, NULL, 870000.00, 5, '2022-08-01 01:00:00', '2025-01-01 01:00:00'),
-(5, 5, 'Canon', 'EOS 2000D', 'CAN-2000D-2023', '24.1 MP, APS-C CMOS, Full HD video, kit lens 18-55mm', NULL, NULL, 720000.00, 5, '2023-04-10 01:00:00', '2025-01-01 01:00:00'),
-(6, 6, 'Benro', 'T800EX', 'BNR-T800-2023', 'Max load 4kg, aluminium alloy, tinggi max 162cm', NULL, NULL, 85000.00, 5, '2023-04-10 01:00:00', '2025-01-01 01:00:00'),
-(7, 7, 'Rode', 'NT-USB', 'RODE-NT-2023', 'USB condenser microphone, 16-bit 48kHz, pop filter included', NULL, NULL, 210000.00, 5, '2023-05-20 01:00:00', '2025-01-01 01:00:00'),
-(8, 8, 'Cisco', 'Catalyst 2960', 'CIS-2960-2022', '24 x 10/100 FastEthernet, 2 x SFP uplinks', NULL, NULL, 1250000.00, 7, '2022-09-01 01:00:00', '2025-01-01 01:00:00'),
-(9, 9, 'Cisco', 'ISR 4321', 'CIS-4321-2022', 'Dual WAN, 2 x GE ports, 2 NIM slots, throughput 100Mbps', NULL, NULL, 2200000.00, 7, '2022-09-01 01:00:00', '2025-01-01 01:00:00'),
-(10, 10, 'Rigol', 'DS1054Z', 'RGL-DS1054-2023', '4-channel, 50MHz bandwidth, 12Mpts memory depth', NULL, NULL, 550000.00, 7, '2023-02-14 01:00:00', '2025-01-01 01:00:00'),
-(11, 11, 'HP', 'ProBook 450 G9', 'HP450G9-2023-001', 'Intel Core i7-1255U, RAM 16GB, SSD 512GB, Windows 11 Pro', NULL, NULL, 1420000.00, 5, '2023-08-01 01:00:00', '2025-01-01 01:00:00'),
-(12, 12, 'Samsung', 'Galaxy Tab S7', 'SAM-TABS7-2023', '11\" LTPS TFT, 6GB RAM, 128GB storage, S-Pen included', NULL, NULL, 890000.00, 4, '2023-09-15 01:00:00', '2025-01-01 01:00:00');
+(1, 1, 'Lenovo', 'ThinkPad T14', 'SN-LNV-112233', NULL, NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(2, 2, 'Epson', 'EB-X51', 'SN-EPS-998877', NULL, NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(3, 3, 'MikroTik', 'RB750Gr3', 'SN-MTK-554433', NULL, NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10');
 
 -- --------------------------------------------------------
 
@@ -685,12 +649,12 @@ INSERT INTO `equipments` (`id`, `asset_id`, `brand`, `model`, `serial_number`, `
 --
 
 CREATE TABLE `equipment_loans` (
-  `id` bigint UNSIGNED NOT NULL, 
+  `id` bigint UNSIGNED NOT NULL,
   `equipment_id` bigint UNSIGNED NOT NULL,
   `employee_id` bigint UNSIGNED NOT NULL,
   `start_date` date NOT NULL,
   `end_date` date DEFAULT NULL,
-  `status` enum('requested','approved','rejected','returned') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('requested','approved','returned','rejected','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approved_by` bigint UNSIGNED DEFAULT NULL,
   `approved_by_id` bigint UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -702,21 +666,8 @@ CREATE TABLE `equipment_loans` (
 --
 
 INSERT INTO `equipment_loans` (`id`, `equipment_id`, `employee_id`, `start_date`, `end_date`, `status`, `approved_by`, `approved_by_id`, `created_at`, `updated_at`) VALUES
-(1, 1, 3, '2025-02-01', '2025-02-07', 'returned', 1, 1, '2025-01-30 02:00:00', '2025-02-07 09:00:00'),
-(2, 3, 6, '2025-02-10', '2025-02-12', 'returned', 8, 8, '2025-02-09 03:00:00', '2025-02-12 10:00:00'),
-(3, 4, 7, '2025-02-15', '2025-02-18', 'returned', 8, 8, '2025-02-14 04:00:00', '2025-02-18 08:00:00'),
-(4, 2, 9, '2025-03-01', '2025-03-03', 'returned', 1, 1, '2025-02-28 01:00:00', '2025-03-03 07:00:00'),
-(5, 7, 10, '2025-03-10', '2025-03-12', 'returned', 8, 8, '2025-03-09 02:30:00', '2025-03-12 09:30:00'),
-(6, 5, 2, '2025-05-01', NULL, 'approved', 1, 1, '2025-04-29 01:00:00', '2025-04-29 03:00:00'),
-(7, 8, 4, '2025-05-05', NULL, 'approved', 1, 1, '2025-05-03 02:00:00', '2025-05-03 04:00:00'),
-(8, 11, 5, '2025-05-10', NULL, 'approved', 8, 8, '2025-05-08 01:30:00', '2025-05-08 03:30:00'),
-(9, 12, 6, '2025-05-15', NULL, 'approved', 8, 8, '2025-05-13 07:00:00', '2025-05-13 09:00:00'),
-(10, 1, 7, '2025-06-01', '2025-06-05', 'requested', NULL, 1, '2025-05-28 03:00:00', '2025-05-28 03:00:00'),
-(11, 3, 9, '2025-06-02', '2025-06-04', 'requested', NULL, 1, '2025-05-29 06:00:00', '2025-05-29 06:00:00'),
-(12, 6, 10, '2025-06-03', '2025-06-03', 'requested', NULL, 1, '2025-05-30 01:00:00', '2025-05-30 01:00:00'),
-(13, 9, 3, '2025-04-01', '2025-04-07', 'rejected', 1, 1, '2025-03-30 02:00:00', '2025-03-30 07:00:00'),
-(14, 10, 6, '2025-04-05', '2025-04-06', 'rejected', 8, 8, '2025-04-04 04:00:00', '2025-04-04 06:00:00'),
-(15, 1, 1, '2026-06-03', '2026-06-11', 'requested', NULL, 1, NULL, NULL);
+(1, 1, 1, '2026-05-31', '2026-05-31', 'cancelled', NULL, 1, NULL, NULL),
+(2, 3, 1, '2026-06-05', '2026-06-05', 'requested', NULL, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -949,26 +900,6 @@ CREATE TABLE `event_reminders` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `express_sessions`
---
-
-CREATE TABLE `express_sessions` (
-  `session_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `expires` int UNSIGNED NOT NULL,
-  `data` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `express_sessions`
---
-
-INSERT INTO `express_sessions` (`session_id`, `expires`, `data`) VALUES
-('0C1cVLLCS9nXIwpYlokF7-vZMMbyddkN', 1780416590, '{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-02T16:09:47.259Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"name\":\"admin\"}'),
-('xo79UtRvRG1wvwun6HgdEpvFiPkQro1P', 1780415881, '{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-02T15:58:00.793Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":11,\"name\":\"ahmad\"}');
 
 -- --------------------------------------------------------
 
@@ -1531,6 +1462,14 @@ CREATE TABLE `model_has_roles` (
   `model_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `model_has_roles`
+--
+
+INSERT INTO `model_has_roles` (`role_id`, `model_type`, `model_id`) VALUES
+(1, 'User', 1),
+(2, 'User', 2);
+
 -- --------------------------------------------------------
 
 --
@@ -1682,12 +1621,7 @@ CREATE TABLE `organization_units` (
 --
 
 INSERT INTO `organization_units` (`id`, `name`, `code`, `parent_id`, `type`, `description`, `organization_unit_id`, `created_at`, `updated_at`) VALUES
-(1, 'Universitas Maju Bangsa', 'UMB', NULL, 'university', 'Universitas induk', 1, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(2, 'Fakultas Teknik', 'FT', 1, 'faculty', 'Fakultas Teknik dan Teknologi', 1, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(3, 'Jurusan Teknik Informatika', 'FT-TI', 2, 'department', 'Jurusan Teknik Informatika', 2, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(4, 'Jurusan Teknik Elektro', 'FT-TE', 2, 'department', 'Jurusan Teknik Elektro', 2, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(5, 'Lab Jaringan Komputer', 'FT-LAB1', 3, 'lab', 'Laboratorium Jaringan dan Keamanan', 3, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(6, 'Unit Sarana dan Prasarana', 'USP', 1, 'unit', 'Unit pengelola sarana dan prasarana', 1, '2025-01-01 00:00:00', '2025-01-01 00:00:00');
+(1, 'Sistem Informasi', 'SI', NULL, 'department', NULL, 0, '2026-05-31 01:38:16', '2026-05-31 01:38:16');
 
 -- --------------------------------------------------------
 
@@ -1917,6 +1851,13 @@ CREATE TABLE `permissions` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `permissions`
+--
+
+INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at`) VALUES
+(1, 'manage-equipment-loans', 'web', '2026-06-05 13:31:37', '2026-06-05 13:31:37');
+
 -- --------------------------------------------------------
 
 --
@@ -1999,6 +1940,14 @@ CREATE TABLE `roles` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `roles`
+--
+
+INSERT INTO `roles` (`id`, `name`, `guard_name`, `created_at`, `updated_at`) VALUES
+(1, 'pengguna', 'web', '2026-06-05 13:17:37', '2026-06-05 13:17:37'),
+(2, 'pj_peralatan', 'web', '2026-06-05 13:31:37', '2026-06-05 13:31:37');
+
 -- --------------------------------------------------------
 
 --
@@ -2009,6 +1958,13 @@ CREATE TABLE `role_has_permissions` (
   `permission_id` bigint UNSIGNED NOT NULL,
   `role_id` bigint UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `role_has_permissions`
+--
+
+INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
+(1, 2);
 
 -- --------------------------------------------------------
 
@@ -2112,9 +2068,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('aHbUZBuVsbvqpxXgEUkdP_7ljUkmrq2j', NULL, NULL, NULL, '{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-02T16:13:11.978Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"name\":\"admin\"}', 1780416841),
-('I-BE4_OfKb5XCV3mnc66v6b7ILIDI1Ar', NULL, NULL, NULL, '{\"cookie\":{\"originalMaxAge\":86399999,\"expires\":\"2026-06-02T16:10:54.402Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"name\":\"admin\"}', 1780416655),
-('kzRWIdu4VqeUZ8v_fgcSD38i0qEeJFbB', NULL, NULL, NULL, '{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-02T16:00:11.583Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":11,\"name\":\"ahmad\"}', 1780416186);
+('6um-YIwf5Jgfbw2CurkffRccsUqPpwEO', NULL, NULL, NULL, '{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-06T17:43:29.004Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"name\":\"Wanda Fitriardi\"}', 1780768094);
 
 -- --------------------------------------------------------
 
@@ -2256,102 +2210,6 @@ CREATE TABLE `student_request_active_references` (
   `signed_at` datetime DEFAULT NULL,
   `sign_reason` text,
   `status` varchar(45) DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_request_grad_references`
---
-
-CREATE TABLE `student_request_grad_references` (
-  `id` bigint UNSIGNED NOT NULL,
-  `student_requests_id` bigint UNSIGNED NOT NULL,
-  `cover_letter_department_file` varchar(45) DEFAULT NULL,
-  `proof_o_grad_registration_file` varchar(45) DEFAULT NULL,
-  `checked_by` bigint UNSIGNED NOT NULL,
-  `checked_at` datetime DEFAULT NULL,
-  `check_reason` text,
-  `signed_by` bigint UNSIGNED NOT NULL,
-  `signed_at` datetime DEFAULT NULL,
-  `sign_reason` text,
-  `status` varchar(45) DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_request_refund`
---
-
-CREATE TABLE `student_request_refund` (
-  `id` bigint UNSIGNED NOT NULL,
-  `student_request_id` bigint UNSIGNED DEFAULT NULL,
-  `refund_type` enum('UKT','PI') DEFAULT NULL,
-  `reason` text,
-  `refund_nominal` int DEFAULT NULL,
-  `application_letter_file` varchar(45) DEFAULT NULL,
-  `ukt_payment_receipt_file` varchar(45) DEFAULT NULL,
-  `rector_decree_file` varchar(45) DEFAULT NULL,
-  `saving_book_fiel` varchar(45) DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_request_refund_approvals`
---
-
-CREATE TABLE `student_request_refund_approvals` (
-  `id` bigint UNSIGNED NOT NULL,
-  `student_request_refund_id` bigint UNSIGNED NOT NULL,
-  `level` varchar(45) DEFAULT NULL,
-  `approved_by` bigint UNSIGNED NOT NULL,
-  `approval_reason` varchar(45) DEFAULT NULL,
-  `approval_position` varchar(45) DEFAULT NULL,
-  `status` int DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_request_resignation`
---
-
-CREATE TABLE `student_request_resignation` (
-  `id` bigint UNSIGNED NOT NULL,
-  `student_requests_id` bigint UNSIGNED NOT NULL,
-  `student_address` text,
-  `student_hp` varchar(45) DEFAULT NULL,
-  `current_gpa` double DEFAULT NULL,
-  `current_credits` int DEFAULT NULL,
-  `reasons` varchar(45) DEFAULT NULL,
-  `application_letter_file` varchar(45) DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_request_resignation_approvals`
---
-
-CREATE TABLE `student_request_resignation_approvals` (
-  `id` bigint UNSIGNED NOT NULL,
-  `student_request_resignation_id` bigint UNSIGNED NOT NULL,
-  `level` varchar(45) DEFAULT NULL,
-  `approved_by` bigint UNSIGNED NOT NULL,
-  `approval_reason` varchar(45) DEFAULT NULL,
-  `approval_position` varchar(45) DEFAULT NULL,
-  `status` int DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -2561,17 +2419,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'admin', 'admin@fakultas.ac.id', '2025-01-01 00:00:00', '$2b$10$BPe.cUkHkpbeEkAGTaKVPuwuWhFdteKFnbfPSROIu1Zt4jnmzD3gC', NULL, NULL, NULL, NULL, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-(2, 'Budi Santoso', 'budi.santoso@fakultas.ac.id', '2025-01-02 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-02 00:00:00', '2025-01-02 00:00:00'),
-(3, 'Siti Rahayu', 'siti.rahayu@fakultas.ac.id', '2025-01-02 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-02 00:00:00', '2025-01-02 00:00:00'),
-(4, 'Ahmad Fauzi', 'ahmad.fauzi@fakultas.ac.id', '2025-01-03 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-03 00:00:00', '2025-01-03 00:00:00'),
-(5, 'Dewi Kusuma', 'dewi.kusuma@fakultas.ac.id', '2025-01-03 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-03 00:00:00', '2025-01-03 00:00:00'),
-(6, 'Rizky Pratama', 'rizky.pratama@fakultas.ac.id', '2025-01-04 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-04 00:00:00', '2025-01-04 00:00:00'),
-(7, 'Nurul Hidayah', 'nurul.hidayah@fakultas.ac.id', '2025-01-04 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-04 00:00:00', '2025-01-04 00:00:00'),
-(8, 'Hendra Wijaya', 'hendra.wijaya@fakultas.ac.id', '2025-01-05 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-05 00:00:00', '2025-01-05 00:00:00'),
-(9, 'Mega Silviana', 'mega.silviana@fakultas.ac.id', '2025-01-05 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-05 00:00:00', '2025-01-05 00:00:00'),
-(10, 'Fajar Nugroho', 'fajar.nugroho@fakultas.ac.id', '2025-01-06 00:00:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uX/xJ5a9e', NULL, NULL, NULL, NULL, '2025-01-06 00:00:00', '2025-01-06 00:00:00'),
-(12, 'ahmad', 'ahmad@gmail.com', NULL, '$2b$10$BPe.cUkHkpbeEkAGTaKVPuwuWhFdteKFnbfPSROIu1Zt4jnmzD3gC', NULL, NULL, NULL, NULL, NULL, NULL);
+(1, 'Wanda', 'wanda@fti.unand.ac.id', NULL, '$2a$12$t89UzBkJIQFioO5XqYb2qO.p6FNMs/Rn9.quZSnSaaVS85O4NKUHq', NULL, NULL, NULL, NULL, '2026-05-31 00:44:22', '2026-05-31 00:44:22'),
+(2, 'PJ Peralatan', 'pj.peralatan@fti.unand.ac.id', NULL, '$2a$12$U/b0y8wjPAeUwhhN70GczORdD1XyrRtN8bUgoRDWNSBz09IARxMJS', NULL, NULL, NULL, NULL, '2026-06-05 13:31:37', '2026-06-05 13:31:37');
 
 --
 -- Indexes for dumped tables
@@ -2918,12 +2767,6 @@ ALTER TABLE `event_reminders`
   ADD PRIMARY KEY (`id`),
   ADD KEY `event_reminders_event_id_foreign` (`event_id`),
   ADD KEY `event_reminders_sent_by_foreign` (`sent_by`);
-
---
--- Indexes for table `express_sessions`
---
-ALTER TABLE `express_sessions`
-  ADD PRIMARY KEY (`session_id`);
 
 --
 -- Indexes for table `failed_jobs`
@@ -3461,45 +3304,6 @@ ALTER TABLE `student_request_active_references`
   ADD KEY `fk_student_request_recomendations_employees2_idx` (`checked_by`);
 
 --
--- Indexes for table `student_request_grad_references`
---
-ALTER TABLE `student_request_grad_references`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_student_request_recomendations_student_requests1_idx` (`student_requests_id`),
-  ADD KEY `fk_student_request_recomendations_employees1_idx` (`signed_by`),
-  ADD KEY `fk_student_request_recomendations_employees2_idx` (`checked_by`);
-
---
--- Indexes for table `student_request_refund`
---
-ALTER TABLE `student_request_refund`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_student_request_refund_student_requests1_idx` (`student_request_id`);
-
---
--- Indexes for table `student_request_refund_approvals`
---
-ALTER TABLE `student_request_refund_approvals`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_student_request_refund_approvals_student_request_refund1_idx` (`student_request_refund_id`),
-  ADD KEY `fk_student_request_refund_approvals_employees1_idx` (`approved_by`);
-
---
--- Indexes for table `student_request_resignation`
---
-ALTER TABLE `student_request_resignation`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_student_request_resignation_student_requests1_idx` (`student_requests_id`);
-
---
--- Indexes for table `student_request_resignation_approvals`
---
-ALTER TABLE `student_request_resignation_approvals`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_student_request_refund_approvals_employees1_idx` (`approved_by`),
-  ADD KEY `fk_student_request_refund_approvals_student_request_refund1_idx` (`student_request_resignation_id`);
-
---
 -- Indexes for table `surveys`
 --
 ALTER TABLE `surveys`
@@ -3600,7 +3404,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `assets`
 --
 ALTER TABLE `assets`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `asset_audits`
@@ -3618,7 +3422,7 @@ ALTER TABLE `asset_audit_details`
 -- AUTO_INCREMENT for table `asset_grants`
 --
 ALTER TABLE `asset_grants`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `asset_insurances`
@@ -3744,7 +3548,7 @@ ALTER TABLE `education_histories`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `employee_grades`
@@ -3756,19 +3560,19 @@ ALTER TABLE `employee_grades`
 -- AUTO_INCREMENT for table `employment_statuses`
 --
 ALTER TABLE `employment_statuses`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `equipments`
 --
 ALTER TABLE `equipments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `equipment_loans`
 --
 ALTER TABLE `equipment_loans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `equipment_maintenance_requests`
@@ -4050,7 +3854,7 @@ ALTER TABLE `official_travel_members`
 -- AUTO_INCREMENT for table `organization_units`
 --
 ALTER TABLE `organization_units`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `overtime_approval_logs`
@@ -4122,7 +3926,7 @@ ALTER TABLE `partner_potential_fields`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `publications`
@@ -4152,7 +3956,7 @@ ALTER TABLE `research_members`
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `rooms`
@@ -4266,7 +4070,7 @@ ALTER TABLE `travel_expenses`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
@@ -4901,40 +4705,6 @@ ALTER TABLE `student_request_active_references`
   ADD CONSTRAINT `fk_student_request_recomendations_employees1` FOREIGN KEY (`signed_by`) REFERENCES `employees` (`id`),
   ADD CONSTRAINT `fk_student_request_recomendations_employees2` FOREIGN KEY (`checked_by`) REFERENCES `employees` (`id`),
   ADD CONSTRAINT `fk_student_request_recomendations_student_requests1` FOREIGN KEY (`student_requests_id`) REFERENCES `student_requests` (`id`);
-
---
--- Constraints for table `student_request_grad_references`
---
-ALTER TABLE `student_request_grad_references`
-  ADD CONSTRAINT `fk_student_request_recomendations_employees10` FOREIGN KEY (`signed_by`) REFERENCES `employees` (`id`),
-  ADD CONSTRAINT `fk_student_request_recomendations_employees20` FOREIGN KEY (`checked_by`) REFERENCES `employees` (`id`),
-  ADD CONSTRAINT `fk_student_request_recomendations_student_requests10` FOREIGN KEY (`student_requests_id`) REFERENCES `student_requests` (`id`);
-
---
--- Constraints for table `student_request_refund`
---
-ALTER TABLE `student_request_refund`
-  ADD CONSTRAINT `fk_student_request_refund_student_requests1` FOREIGN KEY (`student_request_id`) REFERENCES `student_requests` (`id`);
-
---
--- Constraints for table `student_request_refund_approvals`
---
-ALTER TABLE `student_request_refund_approvals`
-  ADD CONSTRAINT `fk_student_request_refund_approvals_employees1` FOREIGN KEY (`approved_by`) REFERENCES `employees` (`id`),
-  ADD CONSTRAINT `fk_student_request_refund_approvals_student_request_refund1` FOREIGN KEY (`student_request_refund_id`) REFERENCES `student_request_refund` (`id`);
-
---
--- Constraints for table `student_request_resignation`
---
-ALTER TABLE `student_request_resignation`
-  ADD CONSTRAINT `fk_student_request_resignation_student_requests1` FOREIGN KEY (`student_requests_id`) REFERENCES `student_requests` (`id`);
-
---
--- Constraints for table `student_request_resignation_approvals`
---
-ALTER TABLE `student_request_resignation_approvals`
-  ADD CONSTRAINT `fk_student_request_refund_approvals_employees10` FOREIGN KEY (`approved_by`) REFERENCES `employees` (`id`),
-  ADD CONSTRAINT `fk_student_request_refund_approvals_student_request_refund10` FOREIGN KEY (`student_request_resignation_id`) REFERENCES `student_request_resignation` (`id`);
 
 --
 -- Constraints for table `surveys`

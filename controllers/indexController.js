@@ -10,6 +10,7 @@ const home = (req, res) => {
 };
 
 // Helper: cek apakah user punya permission tertentu
+// Helper: cek apakah user punya permission tertentu
 const hasPermission = async (userId, permissionName) => {
   const [rows] = await db.query(
     `SELECT 1
@@ -17,7 +18,7 @@ const hasPermission = async (userId, permissionName) => {
      JOIN role_has_permissions rhp ON p.id = rhp.permission_id
      JOIN model_has_roles mhr      ON rhp.role_id = mhr.role_id
      WHERE mhr.model_id = ?
-       AND mhr.model_type = 'App\\\\Models\\\\User'
+       AND mhr.model_type = 'User' 
        AND p.name = ?
      LIMIT 1`,
     [userId, permissionName]
