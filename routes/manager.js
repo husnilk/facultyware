@@ -6,6 +6,12 @@ const { checkPermission } = require('../middlewares/acl');
 
 const canManage = [isAuthenticated, checkPermission('manage-equipment-loans')];
 
+// Dashboard – peminjaman yang sedang berlangsung
+router.get('/ongoing', ...canManage, ctrl.ongoing);
+
+// Export PDF – peminjaman yang sedang berlangsung
+router.get('/ongoing/export', ...canManage, ctrl.exportOngoingPDF);
+
 // Dashboard – riwayat peminjaman (search & filter via query string)
 router.get('/', ...canManage, ctrl.index);
 
@@ -17,6 +23,15 @@ router.get('/report/preview', ...canManage, ctrl.previewReport);
 
 // Export PDF
 router.get('/report/export', ...canManage, ctrl.exportPDF);
+
+// Export CSV (status peminjaman)
+router.get('/report/export-csv', ...canManage, ctrl.exportCSV);
+
+// Reject a single loan
+router.post('/loan/:id/reject', ...canManage, ctrl.rejectLoan);
+
+// Bulk cancel selected loans
+router.post('/loans/cancel', ...canManage, ctrl.cancelLoans);
 
 // ── API endpoints ──────────────────────────────
 // Total semua peminjaman
