@@ -1,6 +1,6 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 var express = require('express');
-var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
@@ -28,6 +28,17 @@ const sessionStore = new MySQLStore({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+
+  createDatabaseTable: false, // Melarang Express mengotak-atik tabel di database
+  schema: {
+    tableName: 'sessions', // Ubah menjadi 'sssion' jika memang namanya persis seperti itu
+    columnNames: {
+      session_id: 'id',           // Menerjemahkan session_id menjadi id
+      expires: 'last_activity',   // Menerjemahkan expires menjadi last_activity
+      data: 'payload'             // Menerjemahkan data menjadi payload
+    }
+  }
+  
 });
 
 app.use(session({
@@ -44,6 +55,8 @@ app.use(session({
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+app.use('/equipment-loans', require('./routes/equipment-loans'));
+app.use('/manager', require('./routes/manager'));
 // catch 404 and forward to error handler
 app.use(notFoundHandler);
 
