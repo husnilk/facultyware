@@ -1,101 +1,72 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/assets/styles.css" />
-</head>
-<body class="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-    <div class="w-full max-w-md">
-        <div class="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden p-6 md:p-8">
-            <h1 class="text-2xl font-bold text-center mb-6">New Loan Request</h1>
-            
-            <form action="/equipment-loans/create" method="POST" class="flex flex-col gap-4">
-                <div class="flex flex-col gap-2">
-                    <label for="equipment_id" class="text-sm font-medium">Select Equipment</label>
-                    <select name="equipment_id" id="equipment_id" required class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-                        <option value="" disabled selected>-- Select Asset --</option>
-                        <% equipments.forEach(eq => { %>
-                            <option value="<%= eq.id %>"><%= eq.asset_code %> - <%= eq.equipment_name %></option>
-                        <% }) %>
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-2">
-                        <label for="start_date" class="text-sm font-medium">Start Date</label>
-                        <input type="date" name="start_date" id="start_date" required class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs">
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <label for="end_date" class="text-sm font-medium">End Date</label>
-                        <input type="date" name="end_date" id="end_date" required class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs">
-                    </div>
-                </div>
-
-                <div class="flex gap-3 mt-4">
-                    <a href="/equipment-loans" class="flex-1 text-center h-9 px-4 py-2 rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground">Cancel</a>
-                    <button type="submit" class="flex-1 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</body>
-</html> -->
-
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title><%= title %> - Facultyware</title>
+    <title><%= title %> - SIMPEL</title>
     <link rel="stylesheet" href="/assets/styles.css" />
   </head>
-  <body class="bg-background">
-    <div class="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
-      
-      <div class="w-full max-w-md">
-        <div class="flex flex-col gap-6 rounded-xl border bg-card text-card-foreground shadow-sm p-6 md:p-8">
-          
-          <div class="flex flex-col items-center gap-2 text-center mb-2">
-            <h1 class="text-2xl font-bold">New Loan Request</h1>
-            <p class="text-balance text-muted-foreground">
-              Fill out the form below to request equipment
-            </p>
-          </div>
+  <body class="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
 
-          <form action="/equipment-loans/create" method="POST" class="flex flex-col gap-5">
-            <div class="flex flex-col gap-2">
-              <label for="equipment_id" class="text-sm font-medium">Select Equipment</label>
-              <select name="equipment_id" id="equipment_id" required class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-                <option value="" disabled selected>-- Select Asset --</option>
+    <div class="w-full max-w-md">
+      <div data-slot="card" class="flex flex-col gap-6 rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden p-6 md:p-8">
+        
+        <form action="/equipment-loans/create" method="POST">
+          <div data-slot="field-group" class="group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 [&>[data-slot=field-group]]:gap-4">
+            
+            <div class="flex flex-col items-center gap-2 text-center">
+              <h1 class="text-2xl font-bold">Pengajuan Peminjaman</h1>
+              <p class="text-balance text-muted-foreground text-sm">
+                Isi formulir di bawah ini untuk mengajukan peralatan
+              </p>
+            </div>
+
+            <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-3 data-[invalid=true]:text-destructive flex-col [&>*]:w-full [&>.sr-only]:w-auto">
+              <label data-slot="field-label" class="items-center text-sm font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50" for="equipment_id">
+                Pilih Peralatan
+              </label>
+              <select name="equipment_id" id="equipment_id" data-slot="input" required 
+                      onchange="this.classList.replace('text-muted-foreground', 'text-foreground')"
+                      class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30 text-muted-foreground [&_option]:text-foreground">
+                <option value="" disabled selected>-- Pilih Aset --</option>
                 <% equipments.forEach(eq => { %>
-                  <option value="<%= eq.id %>"><%= eq.asset_code %> - <%= eq.equipment_name %></option>
+                  <option value="<%= eq.id %>"><%= eq.equipment_name %></option>
                 <% }) %>
               </select>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-              <div class="flex flex-col gap-2">
-                <label for="start_date" class="text-sm font-medium">Start Date</label>
-                <input type="date" name="start_date" id="start_date" required class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
+              
+              <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-3 data-[invalid=true]:text-destructive flex-col [&>*]:w-full [&>.sr-only]:w-auto">
+                <label data-slot="field-label" class="items-center text-sm font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50" for="start_date">
+                  Tanggal Mulai
+                </label>
+                <input type="date" name="start_date" id="start_date" data-slot="input" required 
+                       onchange="this.classList.replace('text-muted-foreground', 'text-foreground')"
+                       class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 text-muted-foreground" />
               </div>
-              <div class="flex flex-col gap-2">
-                <label for="end_date" class="text-sm font-medium">End Date</label>
-                <input type="date" name="end_date" id="end_date" required class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-              </div>
-            </div>
 
-            <div class="flex gap-3 mt-4">
-              <a href="/equipment-loans" class="flex-1 inline-flex items-center justify-center h-9 px-4 py-2 rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
-                Cancel
+              <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-3 data-[invalid=true]:text-destructive flex-col [&>*]:w-full [&>.sr-only]:w-auto">
+                <label data-slot="field-label" class="items-center text-sm font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50" for="end_date">
+                  Tanggal Selesai
+                </label>
+                <input type="date" name="end_date" id="end_date" data-slot="input" required 
+                       onchange="this.classList.replace('text-muted-foreground', 'text-foreground')"
+                       class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 text-muted-foreground" />
+              </div>
+            </div> <div class="grid grid-cols-2 gap-4 mt-2">
+              <a href="/equipment-loans" data-slot="button" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                Batal
               </a>
-              <button type="submit" class="flex-1 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm transition-colors">
-                Submit Request
+              
+              <button type="submit" data-slot="button" data-variant="default" data-size="default" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 has-[>svg]:px-3">
+                Ajukan
               </button>
             </div>
-          </form>
 
-        </div>
+          </div>
+        </form>
+
       </div>
     </div>
   </body>
