@@ -123,11 +123,14 @@ const detail = async (req, res, next) => {
 
 // ─────────────────────────────────────────────
 // 3. Preview laporan (HTML, sebelum export PDF)
+//    Hanya menampilkan status: rejected & returned
 // ─────────────────────────────────────────────
 const previewReport = async (req, res, next) => {
   try {
     const { conditions, params } = buildFilters(req.query);
-    const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    // Paksa hanya rejected dan returned
+    conditions.push("el.status IN ('rejected', 'returned')");
+    const where = 'WHERE ' + conditions.join(' AND ');
 
     const [rows] = await db.query(
       `${BASE_SELECT} ${where} ORDER BY el.created_at DESC`,
@@ -147,11 +150,14 @@ const previewReport = async (req, res, next) => {
 
 // ─────────────────────────────────────────────
 // 4. Export PDF
+//    Hanya menampilkan status: rejected & returned
 // ─────────────────────────────────────────────
 const exportPDF = async (req, res, next) => {
   try {
     const { conditions, params } = buildFilters(req.query);
-    const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    // Paksa hanya rejected dan returned
+    conditions.push("el.status IN ('rejected', 'returned')");
+    const where = 'WHERE ' + conditions.join(' AND ');
 
     const [rows] = await db.query(
       `${BASE_SELECT} ${where} ORDER BY el.created_at DESC`,
@@ -360,11 +366,13 @@ const exportOngoingPDF = async (req, res, next) => {
 };
 
 // ─────────────────────────────────────────────
-// 5. API – total peminjaman
+// 5. API – total peminjaman selesai (returned + rejected)
 // ─────────────────────────────────────────────
 const apiTotalLoans = async (req, res, next) => {
   try {
-    const [rows] = await db.query('SELECT COUNT(*) AS total FROM equipment_loans');
+    const [rows] = await db.query(
+      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status IN ('returned', 'rejected')`
+    );
     res.json({ total: rows[0].total });
   } catch (err) {
     next(err);
@@ -372,12 +380,12 @@ const apiTotalLoans = async (req, res, next) => {
 };
 
 // ─────────────────────────────────────────────
-// 6. API – peminjaman belum dikembalikan
+// 6. API – peminjaman dibatalkan (rejected)
 // ─────────────────────────────────────────────
 const apiUnreturnedLoans = async (req, res, next) => {
   try {
     const [rows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status IN ('requested', 'approved')`
+      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status = 'rejected'`
     );
     res.json({ total: rows[0].total });
   } catch (err) {
