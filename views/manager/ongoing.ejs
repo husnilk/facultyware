@@ -77,12 +77,6 @@
                   <span>Riwayat Peminjaman</span>
                 </a>
               </li>
-              <li>
-                <a href="/manager/report/preview">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                  <span>Preview Laporan</span>
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -132,33 +126,47 @@
           </div>
 
           <!-- Search & Filter -->
-          <form method="GET" action="/manager/ongoing" class="bg-card border rounded-xl p-4 flex flex-col sm:flex-row gap-3 shadow-sm">
-            <div class="flex-1">
-              <input
-                type="text"
-                name="search"
-                value="<%= filters.search || '' %>"
-                placeholder="Cari kode aset, nama peralatan, atau peminjam…"
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-              />
+          <form method="GET" action="/manager/ongoing" class="bg-card border rounded-xl p-4 shadow-sm flex flex-col gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-4">
+                <label class="text-xs font-medium text-muted-foreground">Pencarian</label>
+                <input
+                  type="text"
+                  name="search"
+                  value="<%= filters.search || '' %>"
+                  placeholder="Cari kode aset, nama peralatan, atau peminjam…"
+                  class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="filter-status" class="text-xs font-medium text-muted-foreground">Status</label>
+                <select id="filter-status" name="status" class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                  <option value="">Semua Status</option>
+                  <option value="requested" <%= filters.status === 'requested' ? 'selected' : '' %>>Diminta</option>
+                  <option value="approved"  <%= filters.status === 'approved'  ? 'selected' : '' %>>Disetujui</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="filter-date-from" class="text-xs font-medium text-muted-foreground">Tanggal Mulai</label>
+                <input id="filter-date-from" type="date" name="date_from" value="<%= filters.date_from || '' %>"
+                  class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="filter-date-to" class="text-xs font-medium text-muted-foreground">Tanggal Selesai</label>
+                <input id="filter-date-to" type="date" name="date_to" value="<%= filters.date_to || '' %>"
+                  class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" />
+              </div>
+              <div class="flex items-end gap-2">
+                <button type="submit" class="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm transition-colors">
+                  Filter
+                </button>
+                <% if (Object.values(filters).some(v => v)) { %>
+                  <a href="/manager/ongoing" class="h-9 px-4 inline-flex items-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent transition-colors">
+                    Reset
+                  </a>
+                <% } %>
+              </div>
             </div>
-            <select name="status" class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-              <option value="">Semua Status</option>
-              <option value="requested"  <%= filters.status === 'requested'  ? 'selected' : '' %>>Diminta</option>
-              <option value="approved"   <%= filters.status === 'approved'   ? 'selected' : '' %>>Disetujui</option>
-            </select>
-            <input type="date" name="date_from" value="<%= filters.date_from || '' %>" title="Dari tanggal"
-              class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" />
-            <input type="date" name="date_to" value="<%= filters.date_to || '' %>" title="Sampai tanggal"
-              class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" />
-            <button type="submit" class="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm transition-colors">
-              Filter
-            </button>
-            <% if (Object.values(filters).some(v => v)) { %>
-              <a href="/manager/ongoing" class="h-9 px-4 inline-flex items-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent transition-colors">
-                Reset
-              </a>
-            <% } %>
           </form>
 
           <!-- Table -->
@@ -244,6 +252,7 @@
     <script src="/assets/js/basecoat.js"></script>
     <script src="/assets/js/sidebar.js"></script>
     <script>
+      // Checkbox select-all
       document.addEventListener('DOMContentLoaded', () => {
         const selectAll = document.getElementById('selectAll');
         if (!selectAll) return;
