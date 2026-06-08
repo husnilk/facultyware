@@ -29,7 +29,7 @@ const checkPermission = (requiredPermissions) => {
       // model_has_roles  (role_id, model_type, model_id)  → model_id = users.id
       // role_has_permissions (permission_id, role_id)
       // permissions (id, name, guard_name)
-      const modelTypes = ['App\\Models\\User', 'App\\User'];
+      const modelTypes = ['App\\Models\\User', 'App\\User', 'User'];
       const query = `
         SELECT DISTINCT p.name 
         FROM permissions p

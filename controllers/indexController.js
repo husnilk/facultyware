@@ -11,7 +11,7 @@ const home = (req, res) => {
 
 // Helper: cek apakah user punya permission tertentu
 const hasPermission = async (userId, permissionName) => {
-  const modelTypes = ['App\\Models\\User', 'App\\User'];
+  const modelTypes = ['App\\Models\\User', 'App\\User', 'User'];
   const [rows] = await db.query(
     `SELECT 1
      FROM permissions p
@@ -42,32 +42,6 @@ const hasPermission = async (userId, permissionName) => {
   return directRows.length > 0;
 };
 
-const isManagerFallback = async (user) => {
-  const [permRows] = await db.query('SELECT COUNT(*) AS total FROM permissions');
-  const [roleRows] = await db.query('SELECT COUNT(*) AS total FROM role_has_permissions');
-  const [modelRoleRows] = await db.query('SELECT COUNT(*) AS total FROM model_has_roles');
-  const [modelPermRows] = await db.query('SELECT COUNT(*) AS total FROM model_has_permissions');
-
-  const hasPermissionData = permRows[0].total > 0 || roleRows[0].total > 0 || modelRoleRows[0].total > 0 || modelPermRows[0].total > 0;
-  if (!hasPermissionData) {
-    if (process.env.MANAGER_USER_IDS) {
-      const allowedIds = process.env.MANAGER_USER_IDS.split(',').map((id) => id.trim()).filter(Boolean).map(Number);
-      if (allowedIds.includes(user.id)) {
-        return true;
-      }
-    }
-    if (process.env.MANAGER_USERS) {
-      const allowedUsers = process.env.MANAGER_USERS.split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
-      if (allowedUsers.includes(user.name.toLowerCase()) || allowedUsers.includes(user.email.toLowerCase())) {
-        return true;
-      }
-    }
-    return user.id === 1 || user.name.toLowerCase() === 'admin' || user.email.toLowerCase() === 'admin@fakultas.ac.id';
-  }
-
-  return false;
-};
-
 // 1. Menampilkan Halaman Login
 const loginPage = async (req, res) => {
   if (!req.session.userId) {
@@ -76,14 +50,7 @@ const loginPage = async (req, res) => {
   // Sudah login — arahkan ke halaman yang sesuai dengan role
   try {
     const isManager = await hasPermission(req.session.userId, "manage-equipment-loans");
-    if (isManager) {
-      return res.redirect("/manager");
-    }
-
-    const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [req.session.userId]);
-    const user = rows[0];
-    const fallbackManager = await isManagerFallback(user);
-    return res.redirect(fallbackManager ? "/manager" : "/equipment-loans");
+    return res.redirect(isManager ? "/manager" : "/equipment-loans");
   } catch (err) {
     console.error("Login session validation error:", err);
     return res.render("login", {
@@ -107,7 +74,7 @@ const login = async (req, res, next) => {
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Nama/Email atau password salah!",
+        error: "Username atau password salah!",
       });
     }
 
@@ -117,7 +84,7 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return res.render("login", {
         title: "Login",
-        error: "Nama/Email atau password salah!",
+        error: "Username atau password salah!",
       });
     }
 
@@ -127,12 +94,7 @@ const login = async (req, res, next) => {
 
     // Redirect berdasarkan role
     const isManager = await hasPermission(user.id, "manage-equipment-loans");
-    if (isManager) {
-      return res.redirect("/manager");
-    }
-
-    const fallbackManager = await isManagerFallback(user);
-    return res.redirect(fallbackManager ? "/manager" : "/equipment-loans");
+    return res.redirect(isManager ? "/manager" : "/equipment-loans");
   } catch (err) {
     console.error("Login error:", err);
     return res.render("login", {

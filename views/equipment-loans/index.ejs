@@ -19,14 +19,14 @@
         });
       })();
     </script>
-    <script>
+    <!-- <script>
       (function () {
         try {
           const storedTheme = localStorage.getItem("themeVariant");
           if (storedTheme) document.documentElement.classList.add(`theme-${storedTheme}`);
         } catch (event) { console.error("Could not apply theme variant", event); }
       })();
-    </script>
+    </script> -->
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -56,9 +56,8 @@
         });
       })();
     </script>
-
-    <aside id="sidebar" class="sidebar bg-background" data-side="left" aria-hidden="false">
-      <nav aria-label="Sidebar navigation" class="flex flex-col h-full">
+    <aside id="sidebar" class="sidebar group fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 aria-[hidden=true]:opacity-0 aria-[hidden=true]:pointer-events-none md:relative md:inset-auto md:z-auto md:w-72 md:bg-transparent md:opacity-100 md:pointer-events-auto flex flex-col h-full" data-side="left" aria-hidden="true" data-breakpoint="768">
+      <nav aria-label="Sidebar navigation" class="absolute inset-y-0 left-0 w-72 bg-background border-r transform transition-transform duration-300 ease-in-out group-aria-[hidden=true]:-translate-x-full md:relative md:translate-x-0 flex flex-col h-full">
         
         <header>
           <a href="/equipment-loans" class="btn-ghost p-2 h-12 w-full justify-start">
@@ -87,7 +86,7 @@
               </li>
             </ul>
           </div>
-          </section>
+        </section>
 
         <footer class="p-4 border-t mt-auto">
           <div class="flex items-center gap-3">
@@ -125,7 +124,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
           </button>
           
-          <select class="select h-8 leading-none" id="theme-select">
+          <!-- <select class="select h-8 leading-none" id="theme-select">
             <option value="">Default Theme</option>
             <option value="claude">Claude</option>
             <option value="supabase">Supabase</option>
@@ -148,7 +147,7 @@
                 }
               });
             })();
-          </script>
+          </script> -->
 
           <button type="button" onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))" class="btn-icon-outline size-8">
             <span class="hidden dark:block"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span>
