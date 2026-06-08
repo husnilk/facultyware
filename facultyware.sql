@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 05, 2026 at 06:00 PM
+-- Generation Time: Jun 08, 2026 at 02:05 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -49,7 +49,10 @@ CREATE TABLE `assets` (
 INSERT INTO `assets` (`id`, `name`, `code`, `type`, `acquisition_type`, `acquisition_date`, `acquisition_cost`, `asset_grant_id`, `condition`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'Laptop Inventaris Lab SI', 'AST-LPT-001', 'equipment', 'procurement', '0000-00-00', NULL, NULL, 'good', 'available', '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
 (2, 'Proyektor Ruang Kelas', 'AST-PRJ-001', 'equipment', 'procurement', '0000-00-00', NULL, NULL, 'good', 'available', '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
-(3, 'Router MikroTik Lab Jaringan', 'AST-SRV-001', 'equipment', 'procurement', '0000-00-00', NULL, NULL, 'good', 'available', '2026-05-31 02:04:10', '2026-05-31 02:04:10');
+(3, 'Router MikroTik Lab Jaringan', 'AST-SRV-001', 'equipment', 'procurement', '0000-00-00', NULL, NULL, 'good', 'available', '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(4, 'Laptop ASUS Vivobook', 'AST-LPT-002', 'equipment', 'procurement', '2026-06-08', 12000000.00, NULL, 'good', 'available', '2026-06-08 13:58:56', '2026-06-08 13:58:56'),
+(5, 'Printer Canon PIXMA', 'AST-PRT-001', 'equipment', 'procurement', '2026-06-08', 2500000.00, NULL, 'good', 'available', '2026-06-08 13:58:56', '2026-06-08 13:58:56'),
+(6, 'Kabel HDMI 5m', 'AST-KBL-001', 'equipment', 'procurement', '2026-06-08', 150000.00, NULL, 'good', 'available', '2026-06-08 13:58:56', '2026-06-08 13:58:56');
 
 -- --------------------------------------------------------
 
@@ -638,9 +641,12 @@ CREATE TABLE `equipments` (
 --
 
 INSERT INTO `equipments` (`id`, `asset_id`, `brand`, `model`, `serial_number`, `specification`, `purchase_link`, `photo`, `depreciation_value`, `useful_life`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Lenovo', 'ThinkPad T14', 'SN-LNV-112233', NULL, NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
-(2, 2, 'Epson', 'EB-X51', 'SN-EPS-998877', NULL, NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
-(3, 3, 'MikroTik', 'RB750Gr3', 'SN-MTK-554433', NULL, NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10');
+(1, 1, 'Lenovo', 'ThinkPad T14', 'SN-LNV-112233', 'Intel Core i5, 16GB RAM, 512GB SSD, Windows 11 Pro', NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(2, 2, 'Epson', 'EB-X51', 'SN-EPS-998877', '3LCD Projector, 4000 Lumens, XGA Resolution, HDMI Input', NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(3, 3, 'MikroTik', 'RB750Gr3', 'SN-MTK-554433', '5 Port Gigabit Ethernet, Dual Core 880MHz CPU, 256MB RAM', NULL, NULL, NULL, NULL, '2026-05-31 02:04:10', '2026-05-31 02:04:10'),
+(4, 4, 'ASUS', 'Vivobook 14', 'SN-ASUS-999', 'Intel Core i5, 8GB RAM, 512GB SSD', NULL, NULL, NULL, NULL, '2026-06-08 13:58:56', '2026-06-08 13:58:56'),
+(5, 5, 'Canon', 'PIXMA G2010', 'SN-CAN-888', 'Ink Tank Printer', NULL, NULL, NULL, NULL, '2026-06-08 13:58:56', '2026-06-08 13:58:56'),
+(6, 6, 'Generic', 'HDMI-5M', 'SN-KBL-777', 'Kabel HDMI High Speed 5 Meter', NULL, NULL, NULL, NULL, '2026-06-08 13:58:56', '2026-06-08 13:58:56');
 
 -- --------------------------------------------------------
 
@@ -667,7 +673,11 @@ CREATE TABLE `equipment_loans` (
 
 INSERT INTO `equipment_loans` (`id`, `equipment_id`, `employee_id`, `start_date`, `end_date`, `status`, `approved_by`, `approved_by_id`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, '2026-05-31', '2026-05-31', 'cancelled', NULL, 1, NULL, NULL),
-(2, 3, 1, '2026-06-05', '2026-06-05', 'requested', NULL, 1, NULL, NULL);
+(2, 3, 1, '2026-06-05', '2026-06-05', 'requested', NULL, 1, NULL, NULL),
+(3, 2, 1, '2026-06-08', '2026-06-08', 'requested', NULL, 1, NULL, NULL),
+(4, 5, 1, '2026-06-10', '2026-06-10', 'requested', NULL, 1, NULL, NULL),
+(5, 6, 1, '2026-06-16', '2026-06-16', 'requested', NULL, 1, NULL, NULL),
+(6, 4, 1, '2026-06-18', '2026-06-18', 'requested', NULL, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2068,7 +2078,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('6um-YIwf5Jgfbw2CurkffRccsUqPpwEO', NULL, NULL, NULL, '{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-06T17:43:29.004Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"name\":\"Wanda Fitriardi\"}', 1780768094);
+('C1CTYioHLbFm11oDJLTL8DpDWa2_6_aa', NULL, NULL, NULL, '{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-09T13:44:11.451Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"name\":\"Wanda\"}', 1781013861);
 
 -- --------------------------------------------------------
 
@@ -3404,7 +3414,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `assets`
 --
 ALTER TABLE `assets`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `asset_audits`
@@ -3566,13 +3576,13 @@ ALTER TABLE `employment_statuses`
 -- AUTO_INCREMENT for table `equipments`
 --
 ALTER TABLE `equipments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `equipment_loans`
 --
 ALTER TABLE `equipment_loans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `equipment_maintenance_requests`
