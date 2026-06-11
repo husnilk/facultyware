@@ -6,7 +6,8 @@ exports.renderLogin = (req, res) => {
         // Jika sudah login, arahkan ke dashboard masing-masing
         return res.redirect(`/${req.session.user.role === 'admin' ? 'admin' : (req.session.user.role === 'atasan_lvl_1' ? 'atasan' : (req.session.user.role === 'atasan_lvl_2' ? 'atasan-lvl2' : 'pegawai'))}`);
     }
-    res.render('auth/login', { error: null });
+    // Tambahkan layout: false agar tidak dibungkus oleh main.ejs
+    res.render('auth/login', { title: 'Login - Facultyware', user: null, error: null, layout: false });
 };
 
 exports.processLogin = async (req, res) => {
@@ -14,13 +15,13 @@ exports.processLogin = async (req, res) => {
 
     try {
         const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-        if (rows.length === 0) return res.render('auth/login', { error: 'Email tidak terdaftar!' });
+        if (rows.length === 0) return res.render('auth/login', { title: 'Login - Facultyware', user: null, error: 'Email tidak terdaftar!', layout: false });
 
         const user = rows[0];
 
         // Cek kecocokan password menggunakan Bcrypt
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.render('auth/login', { error: 'Password salah!' });
+        if (!isMatch) return res.render('auth/login', { title: 'Login - Facultyware', user: null, error: 'Password salah!', layout: false });
 
         // Ambil Role User dari tabel model_has_roles & roles
         const [roleRows] = await db.execute(`

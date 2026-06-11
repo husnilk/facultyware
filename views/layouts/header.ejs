@@ -1,0 +1,9 @@
+<header class="flex items-center justify-between px-6 py-4 bg-white border-b shadow-sm">
+    <div class="flex items-center">
+        <h1 class="text-xl font-semibold text-gray-800"><%- title %></h1>
+    </div>
+    <div class="flex items-center gap-4">
+        <span class="text-sm text-gray-600">Halo, <span class="font-bold text-gray-800"><%= user.name %></span></span>
+        <a href="/logout" class="px-4 py-2 text-sm text-red-600 bg-red-50 rounded hover:bg-red-100 transition">Logout</a>
+    </div>
+</header>

@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
+var expressLayouts = require('express-ejs-layouts'); // Tambahan untuk layout
 
 // 1. Import Routes Baru
 var indexRouter = require('./routes/index');
@@ -20,6 +21,12 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+// Setup Layouts (Tambahan)
+app.use(expressLayouts);
+app.set('layout', 'layouts/main'); // Mengatur default layout ke views/layouts/main.ejs
+app.set('layout extractScripts', true); // Memisahkan script agar rapi di layout
+app.set('layout extractStyles', true);  // Memisahkan style agar rapi di layout
 
 app.use(logger('dev'));
 app.use(express.json());

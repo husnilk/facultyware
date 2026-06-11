@@ -1,0 +1,25 @@
+<aside class="flex flex-col w-64 h-screen px-4 py-8 overflow-y-auto bg-white border-r">
+    <h2 class="text-2xl font-bold text-blue-700 text-center mb-6">Facultyware</h2>
+    <div class="flex flex-col justify-between flex-1 mt-6">
+        <nav>
+            <% if (user && user.role === 'admin') { %>
+                <a class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-blue-50 rounded-md" href="/admin">
+                    <span class="mx-2 font-medium">Rekap Cuti</span>
+                </a>
+                <a class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 rounded-md" href="/admin/statistik">
+                    <span class="mx-2 font-medium">Statistik Cuti</span>
+                </a>
+            
+            <% } else if (user && user.role === 'pegawai') { %>
+                <a class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-blue-50 rounded-md" href="/pegawai">
+                    <span class="mx-2 font-medium">Dashboard Cuti</span>
+                </a>
+            
+            <% } else if (user && (user.role === 'atasan_lvl_1' || user.role === 'atasan_lvl_2')) { %>
+                <a class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-blue-50 rounded-md" href="/atasan">
+                    <span class="mx-2 font-medium">Daftar Approval</span>
+                </a>
+            <% } %>
+        </nav>
+    </div>
+</aside>
