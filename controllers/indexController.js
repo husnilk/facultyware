@@ -32,10 +32,10 @@ const login = async (req, res, next) => {
       `
       SELECT *
       FROM users
-      WHERE username = ? OR email = ? OR name = ?
+      WHERE email = ? OR name = ?
       LIMIT 1
       `,
-      [username, username, username]
+      [username, username]
     );
 
     if (rows.length === 0) {
