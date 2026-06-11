@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "nodemon ./bin/www",
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -21,5 +22,9 @@
     "mysql2": "^3.22.3",
     "pdfkit": "^0.18.0",
     "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
   }
 }
