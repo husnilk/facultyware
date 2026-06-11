@@ -1,5 +1,9 @@
 const db = require('../lib/db');
+const PDFDocument = require('pdfkit');
 
+// ==========================================
+// 1. FITUR CRUD & DASHBOARD
+// ==========================================
 // 1. Equipment Loans Dashboard
 const index = async (req, res, next) => {
   try {
@@ -120,4 +124,137 @@ const cancel = async (req, res, next) => {
   }
 };
 
-module.exports = { index, createPage, create, editPage, update, cancel };
+// ==========================================
+// 2. FITUR REST API TRACKING
+// ==========================================
+
+const track = async (req, res) => {
+    const idTransaksi = req.params.id;
+    const userId = req.session.userId; 
+
+    if (!idTransaksi || isNaN(idTransaksi)) {
+        return res.status(400).json({ success: false, message: "ID Transaksi tidak valid." });
+    }
+
+    try {
+        // Kueri disesuaikan dengan tabel equipment_loans
+        const query = `
+            SELECT id, start_date, end_date, status 
+            FROM equipment_loans 
+            WHERE id = ? AND employee_id = ?
+        `;
+        const [rows] = await db.query(query, [idTransaksi, userId]); // Diperbaiki dari pool.execute
+
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: `Data tidak ditemukan.` });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Data pelacakan status berhasil ditemukan.",
+            data: rows[0]
+        });
+    } catch (error) {
+        console.error("REST API Error:", error);
+        return res.status(500).json({ success: false, message: "Terjadi kegagalan server." });
+    }
+};
+
+// ==========================================
+// 3. FITUR EXPORT PDF (KOP SURAT KAMPUS)
+// ==========================================
+
+// Fungsi pembantu untuk menggambar Kop Surat
+const drawKopSurat = (doc) => {
+    doc.font('Times-Bold').fontSize(14).text('FAKULTAS TEKNOLOGI INFORMASI', { align: 'center' });
+    doc.fontSize(14).text('UNIVERSITAS ANDALAS', { align: 'center' });
+    
+    doc.font('Times-Roman').fontSize(10);
+    doc.text('Kampus Universitas Andalas, Limau Manis Padang - 27163', { align: 'center' });
+    doc.text('Web: www.ftiunand.com email: fti.unand@gmail.com', { align: 'center' });
+    
+    doc.moveDown(0.5);
+    const currentY = doc.y;
+    doc.moveTo(50, currentY).lineTo(545, currentY).lineWidth(2).stroke();
+    doc.moveTo(50, currentY + 3).lineTo(545, currentY + 3).lineWidth(1).stroke();
+    doc.moveDown(2);
+};
+
+const cetak = async (req, res) => {
+    const idTransaksi = req.params.id;
+    const userId = req.session.userId; 
+
+    try {
+        // Kueri disesuaikan dengan tabel equipment_loans & users
+        const query = `
+            SELECT el.*, u.name AS nama_mahasiswa, a.name AS nama_alat 
+            FROM equipment_loans el
+            JOIN users u ON el.employee_id = u.id
+            JOIN equipments eq ON el.equipment_id = eq.id
+            JOIN assets a ON eq.asset_id = a.id
+            WHERE el.id = ? AND el.employee_id = ?
+        `;
+        
+        const [rows] = await db.query(query, [idTransaksi, userId]); // Diperbaiki dari pool.execute
+
+        if (rows.length === 0) {
+            return res.status(404).send("Data tidak ditemukan atau akses ditolak.");
+        }
+
+        const data = rows[0];
+        const doc = new PDFDocument({ size: 'A4', margin: 50 });
+        doc.info['Title'] = 'Surat Peminjaman Peralatan';   
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=Bukti_Pinjam_${idTransaksi}.pdf`);
+        doc.pipe(res);
+
+        // Panggil fungsi Kop Surat
+        drawKopSurat(doc);
+
+        doc.font('Times-Roman').fontSize(11);
+        const tanggalCetak = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+        doc.text(`Padang, ${tanggalCetak}`, 50, doc.y, { align: 'right' });
+        
+        doc.moveUp(1); 
+        const nomorUrut = req.query.no_surat || idTransaksi;
+        const tahunSekarang = new Date().getFullYear();
+        
+        doc.text(`Nomor  : ${nomorUrut}/B/SPmj/FTI-UNAND/${tahunSekarang}`, 50, doc.y);
+        doc.text(`Hal    : Surat Peminjaman Peralatan`);
+
+        doc.moveDown(2);
+        doc.text('Yth. Petugas / Penanggung Jawab Peralatan');
+        doc.text('Di tempat.');
+
+        doc.moveDown(2);
+        doc.text(`Berdasarkan pengajuan peminjaman peralatan yang telah divalidasi, dengan ini menerangkan bahwa permohonan atas nama ${data.nama_mahasiswa} telah disetujui. Adapun rincian peminjaman barang adalah sebagai berikut:`, 50, doc.y, { align: 'justify' });
+
+        doc.moveDown(1);
+
+        const startDetailX = 80; // Agak menjorok ke dalam
+        doc.text(`Nama Alat    : ${data.nama_alat}`, startDetailX, doc.y);
+        doc.text(`Tanggal        : ${new Date(data.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, startDetailX, doc.y);
+
+        doc.moveDown(1.5);
+        doc.text('Peminjam berkewajiban untuk menjaga kondisi alat dengan baik selama masa penggunaan. Apabila batas waktu peminjaman telah berakhir, mohon untuk segera mengembalikan alat tersebut kepada Penanggung Jawab terkait. Atas perhatian dan kerja sama yang baik, kami ucapkan terima kasih.', 50, doc.y, { align: 'justify' });
+
+        // ── Area Tanda Tangan ──
+        doc.moveDown(3);
+        const signatureY = doc.y;
+        doc.text('Peminjam,', 80, signatureY);
+        doc.text('Penanggung Jawab,', 350, signatureY);
+
+        doc.moveDown(4);
+        doc.text('( ........................... )', 80);
+        doc.text('( ........................... )', 350);
+
+        doc.end();
+
+    } catch (error) {
+        console.error("PDF Generation Error:", error);
+        res.status(500).send("Terjadi kesalahan internal saat mencetak dokumen PDF.");
+    }
+};
+
+module.exports = { index, createPage, create, editPage, update, cancel, track, cetak };
