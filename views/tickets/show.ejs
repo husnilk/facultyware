@@ -32,17 +32,26 @@
             </div>
             
             <div class="p-6 md:p-8 space-y-6">
+                <div class="flex flex-col md:flex-row gap-6 items-center md:items-start border-b pb-6">
+                    <% if (qrCodeDataUri) { %>
+                    <div class="shrink-0 bg-white p-2 rounded-lg border shadow-sm">
+                        <img src="<%= qrCodeDataUri %>" alt="QR Code Tiket" class="w-32 h-32 md:w-40 md:h-40" />
+                    </div>
+                    <% } %>
+                    <div class="grid grid-cols-2 gap-4 flex-1 w-full">
+                        <div class="space-y-1 col-span-2">
+                            <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">No. Tiket</span>
+                            <p class="font-mono font-medium text-lg"><%= registration.ticket_number %></p>
+                        </div>
+                        <div class="space-y-1 col-span-2">
+                            <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">No. Registrasi</span>
+                            <p class="font-mono text-sm text-muted-foreground"><%= registration.registration_number %></p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">No. Tiket</span>
-                        <p class="font-mono font-medium text-lg"><%= registration.ticket_number %></p>
-                    </div>
-                    <div class="space-y-1">
-                        <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">No. Registrasi</span>
-                        <p class="font-mono text-sm text-muted-foreground"><%= registration.registration_number %></p>
-                    </div>
-                    
-                    <div class="space-y-1 col-span-2 pt-4 border-t">
+                    <div class="space-y-1 col-span-2">
                         <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Lokasi / Mode</span>
                         <p class="font-medium">
                             <%= registration.delivery_mode.toUpperCase() %>
@@ -60,8 +69,12 @@
                 </div>
             </div>
             
-            <div class="bg-muted p-4 text-center border-t">
-                <a href="/events" class="text-sm font-medium text-primary hover:underline">Kembali ke Katalog Event</a>
+            <div class="bg-muted p-4 text-center border-t flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="/tickets/<%= registration.ticket_number %>/download" class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-9 px-4 py-2 hover:bg-primary/90">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    Download PDF
+                </a>
+                <a href="/events" class="text-sm font-medium text-muted-foreground hover:text-primary hover:underline">Kembali ke Katalog Event</a>
             </div>
         </div>
     </div>

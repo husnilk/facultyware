@@ -16,6 +16,7 @@ var remindersRouter = require('./routes/reminders');
 var checkinsRouter = require('./routes/checkins');
 var attendancesRouter = require('./routes/attendances');
 var apiAkramRouter = require('./routes/apiAkram');
+var apiGhufranRouter = require('./routes/apiGhufran');
 var registrationsRouter = require('./routes/registrations');
 var ticketsRouter = require('./routes/tickets');
 
@@ -56,6 +57,7 @@ app.use('/reminders', remindersRouter);
 app.use('/checkins', checkinsRouter);
 app.use('/attendances', attendancesRouter);
 app.use('/api/akram', apiAkramRouter);
+app.use('/api/ghufran', apiGhufranRouter);
 app.use('/events', registrationsRouter);
 app.use('/tickets', ticketsRouter);
 

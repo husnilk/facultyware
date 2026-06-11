@@ -4,10 +4,37 @@ const crypto = require('crypto');
 // Halaman katalog event untuk user
 exports.index = async (req, res, next) => {
     try {
-        const [events] = await db.query(
-            'SELECT * FROM events WHERE status = "published" ORDER BY start_date DESC'
-        );
-        res.render('registrations/index', { events, title: 'Katalog Event', user: req.session.username });
+        const page = parseInt(req.query.page) || 1;
+        const limit = 6;
+        const offset = (page - 1) * limit;
+        const search = req.query.q || '';
+        
+        let query = 'SELECT * FROM events WHERE status = "published"';
+        const queryParams = [];
+        
+        if (search) {
+            query += ' AND (title LIKE ? OR description LIKE ?)';
+            queryParams.push(`%${search}%`, `%${search}%`);
+        }
+        
+        // Count total for pagination
+        const [countResult] = await db.query(`SELECT COUNT(*) as total FROM (${query}) as subquery`, queryParams);
+        const totalItems = countResult[0].total;
+        const totalPages = Math.ceil(totalItems / limit);
+        
+        query += ' ORDER BY start_date DESC LIMIT ? OFFSET ?';
+        queryParams.push(limit, offset);
+        
+        const [events] = await db.query(query, queryParams);
+        
+        res.render('registrations/index', { 
+            events, 
+            title: 'Katalog Event', 
+            user: req.session.username,
+            currentPage: page,
+            totalPages,
+            searchQuery: search
+        });
     } catch (err) {
         next(err);
     }
