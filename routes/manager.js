@@ -27,6 +27,12 @@ router.get('/report/export', ...canManage, ctrl.exportPDF);
 // Export CSV (status peminjaman)
 router.get('/report/export-csv', ...canManage, ctrl.exportCSV);
 
+// Approve a single loan
+router.post('/loan/:id/approve', ...canManage, ctrl.approveLoan);
+
+// Return a single loan (dikembalikan)
+router.post('/loan/:id/return', ...canManage, ctrl.returnLoan);
+
 // Reject a single loan
 router.post('/loan/:id/reject', ...canManage, ctrl.rejectLoan);
 
@@ -36,6 +42,9 @@ router.post('/loans/cancel', ...canManage, ctrl.cancelLoans);
 // ── API endpoints ──────────────────────────────
 // Total semua peminjaman
 router.get('/api/loans/total', isAuthenticated, ctrl.apiTotalLoans);
+
+// Total peminjaman dengan status 'requested'
+router.get('/api/loans/requested', isAuthenticated, ctrl.apiRequestedLoans);
 
 // Total peminjaman belum dikembalikan
 router.get('/api/loans/unreturned', isAuthenticated, ctrl.apiUnreturnedLoans);

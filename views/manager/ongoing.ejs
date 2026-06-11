@@ -69,6 +69,7 @@
                 <a href="/manager/ongoing">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                   <span>Peminjaman yang Sedang Berlangsung</span>
+                  <span id="badge-requested" style="display:none;margin-left:auto;background-color:#f59e0b;color:#ffffff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:999px;white-space:nowrap;"></span>
                 </a>
               </li>
               <li>
@@ -115,6 +116,16 @@
             <div>
               <h1 class="text-3xl font-bold">Peminjaman yang Sedang Berlangsung</h1>
               <p class="text-muted-foreground mt-1">Kelola dan setujui permintaan peminjaman peralatan.</p>
+            </div>
+            <!-- Card jumlah permintaan masuk -->
+            <div id="card-requested" style="display:none;" class="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-600 rounded-lg px-3 py-2 shadow-sm">
+              <div style="background-color:#f59e0b;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+              </div>
+              <div>
+                <p style="font-size:11px;font-weight:500;color:#d97706;margin:0;">Menunggu Persetujuan</p>
+                <p id="count-requested" style="font-size:20px;font-weight:700;color:#f59e0b;margin:0;line-height:1.1;">-</p>
+              </div>
             </div>
             <div class="flex gap-2">
               <a href="/manager/ongoing/export<%= Object.keys(filters).length ? '?' + new URLSearchParams(filters).toString() : '' %>"
@@ -170,10 +181,12 @@
           </form>
 
           <!-- Table -->
+          <!-- Form bulk cancel diletakkan di LUAR tabel agar tidak nested dengan form aksi per-baris -->
+          <form method="POST" action="/manager/loans/cancel" id="bulkCancelForm" onsubmit="return confirm('Batalkan peminjaman yang dipilih?')"></form>
+
           <div class="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden">
-            <form method="POST" action="/manager/loans/cancel" id="bulkCancelForm">
               <div class="p-4 flex items-center gap-2 border-b">
-                <button type="submit" class="inline-flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-md text-sm font-medium hover:opacity-90" onclick="return confirm('Batalkan peminjaman yang dipilih?')">
+                <button type="submit" form="bulkCancelForm" class="inline-flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-md text-sm font-medium hover:opacity-90">
                   Batalkan Terpilih
                 </button>
               </div>
@@ -210,7 +223,8 @@
                       %>
                       <tr class="border-b last:border-0 hover:bg-muted/50 transition-colors">
                         <td class="p-4">
-                          <input type="checkbox" name="ids[]" value="<%= item.id %>" class="rowCheckbox" />
+                          <!-- checkbox dikaitkan ke bulkCancelForm via atribut form -->
+                          <input type="checkbox" name="ids[]" value="<%= item.id %>" class="rowCheckbox" form="bulkCancelForm" />
                         </td>
                         <td class="p-4 font-medium"><%= item.asset_code %></td>
                         <td class="p-4"><%= item.equipment_name %></td>
@@ -223,12 +237,25 @@
                           </span>
                         </td>
                         <td class="p-4 text-right">
-                          <a href="/manager/detail/<%= item.id %>" class="text-sm font-medium text-primary hover:underline">Detail</a>
-                          <% if (item.status === 'requested') { %>
-                            <form method="POST" action="/manager/loan/<%= item.id %>/reject" style="display:inline" onsubmit="return confirm('Tolak permintaan peminjaman ini?')">
-                              <button type="submit" class="text-sm font-medium text-destructive ml-3">Tolak</button>
-                            </form>
-                          <% } %>
+                          <div class="inline-flex items-center gap-2 justify-end">
+                            <a href="/manager/detail/<%= item.id %>" class="text-sm font-medium text-primary hover:underline">Detail</a>
+                            <% if (item.status === 'requested') { %>
+                              <span class="text-muted-foreground select-none text-xs">|</span>
+                              <form method="POST" action="/manager/loan/<%= item.id %>/approve" onsubmit="return confirm('Terima permintaan peminjaman ini?')">
+                                <button type="submit" style="background-color:#16a34a;color:#ffffff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;" onmouseover="this.style.backgroundColor='#15803d'" onmouseout="this.style.backgroundColor='#16a34a'">Terima</button>
+                              </form>
+                              <span class="text-muted-foreground select-none text-xs">|</span>
+                              <form method="POST" action="/manager/loan/<%= item.id %>/reject" onsubmit="return confirm('Tolak permintaan peminjaman ini?')">
+                                <button type="submit" style="background-color:#dc2626;color:#ffffff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;" onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">Tolak</button>
+                              </form>
+                            <% } %>
+                            <% if (item.status === 'approved') { %>
+                              <span class="text-muted-foreground select-none text-xs">|</span>
+                              <form method="POST" action="/manager/loan/<%= item.id %>/return" onsubmit="return confirm('Tandai peminjaman ini sebagai dikembalikan?')">
+                                <button type="submit" style="background-color:#2563eb;color:#ffffff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;" onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">Dikembalikan</button>
+                              </form>
+                            <% } %>
+                          </div>
                         </td>
                       </tr>
                     <% }) %>
@@ -241,7 +268,6 @@
                 Total: <%= data.length %> data
               </div>
             <% } %>
-            </form>
           </div>
 
         </div>
@@ -260,6 +286,41 @@
           document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = e.target.checked);
         });
       });
+    </script>
+
+    <script>
+      // Fetch jumlah peminjaman dengan status 'requested' dari API
+      async function loadRequestedCount() {
+        try {
+          const res = await fetch('/manager/api/loans/requested');
+          if (!res.ok) return;
+          const data = await res.json();
+          const total = data.total ?? 0;
+
+          // Update badge di sidebar
+          const badge = document.getElementById('badge-requested');
+          if (badge) {
+            if (total > 0) {
+              badge.textContent = total;
+              badge.style.display = 'inline-block';
+            } else {
+              badge.style.display = 'none';
+            }
+          }
+
+          // Update card di header halaman
+          const card = document.getElementById('card-requested');
+          const count = document.getElementById('count-requested');
+          if (card && count) {
+            count.textContent = total;
+            card.style.display = 'flex';
+          }
+        } catch (e) {
+          // Gagal fetch — abaikan saja, tidak perlu menampilkan error ke user
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadRequestedCount);
     </script>
   </body>
 </html>

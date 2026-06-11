@@ -380,6 +380,20 @@ const apiTotalLoans = async (req, res, next) => {
 };
 
 // ─────────────────────────────────────────────
+// 5B. API – jumlah peminjaman dengan status 'requested'
+// ─────────────────────────────────────────────
+const apiRequestedLoans = async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status = 'requested'`
+    );
+    res.json({ total: rows[0].total });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────
 // 6. API – peminjaman dibatalkan (rejected)
 // ─────────────────────────────────────────────
 const apiUnreturnedLoans = async (req, res, next) => {
@@ -394,19 +408,54 @@ const apiUnreturnedLoans = async (req, res, next) => {
 };
 
 // ─────────────────────────────────────────────
-// 7. Reject a single loan (Penanggung Jawab)
+// 7. Approve a single loan (Penanggung Jawab)
+// ─────────────────────────────────────────────
+const approveLoan = async (req, res, next) => {
+  try {
+    const loanId = req.params.id;
+
+    await db.query(
+      `UPDATE equipment_loans SET status = 'approved', updated_at = NOW() WHERE id = ? AND status = 'requested'`,
+      [loanId]
+    );
+
+    res.redirect(req.get('referer') || '/manager/ongoing');
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────
+// 7B. Return a single loan (tandai dikembalikan)
+// ─────────────────────────────────────────────
+const returnLoan = async (req, res, next) => {
+  try {
+    const loanId = req.params.id;
+
+    await db.query(
+      `UPDATE equipment_loans SET status = 'returned', updated_at = NOW() WHERE id = ? AND status = 'approved'`,
+      [loanId]
+    );
+
+    res.redirect('/manager/ongoing');
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────
+// 8. Reject a single loan (Penanggung Jawab)
 // ─────────────────────────────────────────────
 const rejectLoan = async (req, res, next) => {
   try {
     const loanId = req.params.id;
-    const userId = req.session.userId || null;
 
     await db.query(
-      `UPDATE equipment_loans SET status = 'rejected', approved_by = ?, approved_by_id = ?, updated_at = NOW() WHERE id = ? AND status IN ('requested','approved')`,
-      [userId, userId, loanId]
+      `UPDATE equipment_loans SET status = 'rejected', updated_at = NOW() WHERE id = ? AND status IN ('requested','approved')`,
+      [loanId]
     );
 
-    res.redirect(req.get('referer') || '/manager');
+    res.redirect(req.get('referer') || '/manager/ongoing');
   } catch (err) {
     next(err);
   }
@@ -419,14 +468,13 @@ const cancelLoans = async (req, res, next) => {
   try {
     const ids = Array.isArray(req.body['ids[]']) ? req.body['ids[]'] : (req.body.ids || []);
     if (!ids || ids.length === 0) return res.redirect(req.get('referer') || '/manager');
-    const userId = req.session.userId || null;
 
     await db.query(
-      `UPDATE equipment_loans SET status = 'rejected', approved_by = ?, approved_by_id = ?, updated_at = NOW() WHERE id IN (?) AND status IN ('requested','approved')`,
-      [userId, userId, ids]
+      `UPDATE equipment_loans SET status = 'rejected', updated_at = NOW() WHERE id IN (?) AND status IN ('requested','approved')`,
+      [ids]
     );
 
-    res.redirect(req.get('referer') || '/manager');
+    res.redirect(req.get('referer') || '/manager/ongoing');
   } catch (err) {
     next(err);
   }
@@ -490,7 +538,10 @@ module.exports = {
   exportPDF,
   exportOngoingPDF,
   apiTotalLoans,
+  apiRequestedLoans,
   apiUnreturnedLoans,
+  approveLoan,
+  returnLoan,
   rejectLoan,
   cancelLoans,
   exportCSV,
