@@ -42,6 +42,18 @@
       }
     </style>
   </head>
+  <% 
+    const getBannerForType = (type) => {
+      switch(type) {
+        case 'seminar': return 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=1200&auto=format&fit=crop';
+        case 'workshop': return 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&auto=format&fit=crop';
+        case 'training': return 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200&auto=format&fit=crop';
+        case 'conference': return 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=1200&auto=format&fit=crop';
+        case 'webinar': return 'https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?w=1200&auto=format&fit=crop';
+        default: return 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop';
+      }
+    }
+  %>
   <body class="bg-background text-foreground antialiased p-6 md:p-10">
     <div class="max-w-5xl mx-auto space-y-6">
         
@@ -58,26 +70,95 @@
         </header>
 
         <!-- Immersive Banner Header -->
-        <div class="rounded-xl border border-border overflow-hidden" style="background: linear-gradient(135deg, var(--primary) 0%, var(--muted) 100%); min-height: 12rem; position: relative; padding: 2rem; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div class="rounded-xl border border-border overflow-hidden" 
+             style="background-image: linear-gradient(to right, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.5)), url('<%= event.banner_image ? event.banner_image : getBannerForType(event.event_type) %>'); background-size: cover; background-position: center; min-height: 14rem; position: relative; padding: 2rem; display: flex; flex-direction: column; justify-content: flex-end;">
             <div class="space-y-2">
                 <div class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold" style="background-color: rgba(255, 255, 255, 0.2); color: #fff; backdrop-filter: blur(4px);">
                     <%= event.event_type.toUpperCase() %>
                 </div>
-                <h2 class="text-2xl font-bold tracking-tight text-white" style="text-shadow: 0 1px 3px rgba(0,0,0,0.3);"><%= event.title %></h2>
+                <h2 class="text-2xl font-bold tracking-tight text-white" style="text-shadow: 0 1px 3px rgba(0,0,0,0.5);"><%= event.title %></h2>
             </div>
         </div>
 
         <main class="detail-grid flex flex-col gap-6">
             <!-- Left Side: Event Details -->
             <div class="detail-main flex flex-col gap-6">
+                <!-- Deskripsi & Objectives -->
                 <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md p-6">
                     <h3 class="text-lg font-bold tracking-tight mb-4 border-b border-border pb-2">Deskripsi Event</h3>
-                    <p class="text-sm text-muted-foreground whitespace-pre-line leading-relaxed"><%= event.description %></p>
+                    <p class="text-sm text-muted-foreground whitespace-pre-line leading-relaxed mb-6"><%= event.description %></p>
                     
                     <% if (event.objectives) { %>
                         <h3 class="text-lg font-bold tracking-tight mt-6 mb-4 border-b border-border pb-2">Tujuan & Objektif</h3>
                         <p class="text-sm text-muted-foreground whitespace-pre-line leading-relaxed"><%= event.objectives %></p>
                     <% } %>
+                </div>
+
+                <!-- Fasilitas & Benefit Peserta -->
+                <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md p-6">
+                    <h3 class="text-lg font-bold tracking-tight mb-4 border-b border-border pb-2">Fasilitas Peserta</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center rounded-full text-green-500" style="background-color: var(--muted); width: 1.5rem; height: 1.5rem; flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </span>
+                            <span class="text-sm text-muted-foreground">E-Sertifikat Resmi</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center rounded-full text-green-500" style="background-color: var(--muted); width: 1.5rem; height: 1.5rem; flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </span>
+                            <span class="text-sm text-muted-foreground">E-Ticket dengan QR Code</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center rounded-full text-green-500" style="background-color: var(--muted); width: 1.5rem; height: 1.5rem; flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </span>
+                            <span class="text-sm text-muted-foreground">Materi Eksklusif Pembicara</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center rounded-full text-green-500" style="background-color: var(--muted); width: 1.5rem; height: 1.5rem; flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </span>
+                            <span class="text-sm text-muted-foreground">Akses Komunitas & Networking</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agenda Event -->
+                <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md p-6">
+                    <h3 class="text-lg font-bold tracking-tight mb-4 border-b border-border pb-2">Agenda Kegiatan</h3>
+                    <div class="space-y-4">
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="flex items-center justify-center rounded-full font-bold text-xs" style="background-color: var(--primary); color: var(--primary-foreground); width: 1.5rem; height: 1.5rem; flex-shrink: 0;">1</span>
+                                <div class="w-0.5 flex-1" style="background-color: var(--border); min-height: 1.5rem;"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-foreground">Sesi Pembukaan & Registrasi Ulang</h4>
+                                <p class="text-xs text-muted-foreground"><%= event.start_time ? event.start_time.substring(0, 5) : '08:00' %> - Selesai Persiapan</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="flex items-center justify-center rounded-full font-bold text-xs" style="background-color: var(--primary); color: var(--primary-foreground); width: 1.5rem; height: 1.5rem; flex-shrink: 0;">2</span>
+                                <div class="w-0.5 flex-1" style="background-color: var(--border); min-height: 1.5rem;"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-foreground">Penyampaian Materi & Sesi Interaktif</h4>
+                                <p class="text-xs text-muted-foreground">Pembahasan mendalam topik <%= event.title %></p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="flex items-center justify-center rounded-full font-bold text-xs" style="background-color: var(--primary); color: var(--primary-foreground); width: 1.5rem; height: 1.5rem; flex-shrink: 0;">3</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-foreground">Sesi Tanya Jawab & Penutupan</h4>
+                                <p class="text-xs text-muted-foreground">Q&A, Foto Bersama, dan Pembagian Link Feedback s.d. <%= event.end_time ? event.end_time.substring(0, 5) : 'Selesai' %> WIB</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -62,7 +62,13 @@ exports.detail = async (req, res, next) => {
             }
         }
         
-        res.render('registrations/detail', { event, isRegistered, title: event.title, user: req.session.username });
+        res.render('registrations/detail', { 
+            event, 
+            isRegistered, 
+            title: event.title, 
+            user: req.session.username,
+            email: req.session.email
+        });
     } catch (err) {
         next(err);
     }
@@ -87,7 +93,12 @@ exports.form = async (req, res, next) => {
             return res.redirect(`/tickets/${regRows[0].ticket_number}`);
         }
         
-        res.render('registrations/form', { event, title: `Daftar - ${event.title}`, user: req.session.username });
+        res.render('registrations/form', { 
+            event, 
+            title: `Daftar - ${event.title}`, 
+            user: req.session.username,
+            email: req.session.email
+        });
     } catch (err) {
         next(err);
     }

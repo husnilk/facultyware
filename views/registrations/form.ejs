@@ -54,7 +54,36 @@
             </div>
             
             <form action="/events/<%= event.id %>/register" method="POST" class="space-y-6">
-                <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-3 flex-col">
+                <!-- Nama Lengkap (Read-only) -->
+                <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-2 flex-col">
+                    <label data-slot="field-label" class="text-sm font-semibold leading-snug" for="name">Nama Lengkap</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        class="h-9 w-full min-w-0 rounded-md border border-input px-3 py-1 text-sm bg-muted text-muted-foreground cursor-not-allowed"
+                        style="background-color: var(--muted); border-color: var(--border);"
+                        value="<%= user %>" 
+                        disabled 
+                        readonly 
+                    />
+                </div>
+
+                <!-- Email (Read-only) -->
+                <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-2 flex-col">
+                    <label data-slot="field-label" class="text-sm font-semibold leading-snug" for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="h-9 w-full min-w-0 rounded-md border border-input px-3 py-1 text-sm bg-muted text-muted-foreground cursor-not-allowed"
+                        style="background-color: var(--muted); border-color: var(--border);"
+                        value="<%= email || '-' %>" 
+                        disabled 
+                        readonly 
+                    />
+                </div>
+
+                <!-- Catatan Tambahan -->
+                <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-2 flex-col">
                     <label data-slot="field-label" class="text-sm font-semibold leading-snug" for="notes">Catatan Tambahan (Opsional)</label>
                     <textarea 
                         name="notes" 
@@ -63,6 +92,20 @@
                         class="min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring md:text-sm"
                         placeholder="Misal: Alergi makanan tertentu, dsb."
                     ></textarea>
+                </div>
+
+                <!-- Persetujuan Checkbox -->
+                <div class="flex items-start gap-3">
+                    <input 
+                        type="checkbox" 
+                        id="consent" 
+                        required 
+                        class="rounded border-input text-primary focus:ring-ring"
+                        style="width: 1.1rem; height: 1.1rem; margin-top: 0.1rem; cursor: pointer;"
+                    />
+                    <label for="consent" class="text-xs text-muted-foreground leading-normal cursor-pointer select-none">
+                        Saya menyetujui Ketentuan Pendaftaran dan bersedia hadir tepat waktu pada event <strong><%= event.title %></strong>.
+                    </label>
                 </div>
                 
                 <div class="pt-4 border-t border-border flex justify-end gap-3" style="margin-top: 1.5rem;">
