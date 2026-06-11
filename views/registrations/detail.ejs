@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title %> - Facultyware</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script>
+      (() => {
+        try {
+          if (localStorage.getItem("themeMode") === "dark" || (!localStorage.getItem("themeMode") && matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <header class="flex justify-between items-center pb-6 border-b">
+            <div class="flex items-center gap-4">
+                <a href="/events" class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background h-9 px-4 py-2 hover:bg-accent hover:text-accent-foreground">
+                    &larr; Kembali
+                </a>
+                <h1 class="text-2xl font-bold">Detail Event</h1>
+            </div>
+            <% if (user) { %>
+                <span class="text-sm text-muted-foreground">Halo, <%= user %></span>
+            <% } %>
+        </header>
+
+        <main>
+            <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+                <div class="p-6 md:p-8 space-y-6">
+                    <div class="space-y-4">
+                        <div class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary">
+                            <%= event.event_type.toUpperCase() %>
+                        </div>
+                        <h2 class="text-3xl font-bold tracking-tight"><%= event.title %></h2>
+                        <div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                            <span class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                <%= new Date(event.start_date).toLocaleDateString('id-ID') %>
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <%= event.start_time || '-' %> - <%= event.end_time || '-' %>
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <%= event.delivery_mode.toUpperCase() %>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6 space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">Deskripsi</h4>
+                            <p class="text-muted-foreground whitespace-pre-line"><%= event.description %></p>
+                        </div>
+                        
+                        <% if (event.objectives) { %>
+                        <div class="mt-4">
+                            <h4 class="font-semibold text-lg mb-2">Objektif</h4>
+                            <p class="text-muted-foreground whitespace-pre-line"><%= event.objectives %></p>
+                        </div>
+                        <% } %>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 bg-muted/50 p-4 rounded-lg">
+                            <div>
+                                <span class="text-sm font-medium text-muted-foreground">Lokasi / Venue</span>
+                                <p class="font-medium"><%= event.venue || '-' %></p>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-muted-foreground">Kuota Pendaftar</span>
+                                <p class="font-medium"><%= event.quota ? event.quota + ' Orang' : 'Tidak Terbatas' %></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6">
+                        <% if (isRegistered) { %>
+                            <div class="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 p-4 rounded-md border border-green-200 dark:border-green-800 text-center">
+                                <p class="font-medium">Anda sudah terdaftar di event ini.</p>
+                                <a href="/events/<%= event.id %>/register" class="text-sm underline mt-2 inline-block">Lihat Tiket Anda</a>
+                            </div>
+                        <% } else { %>
+                            <a href="/events/<%= event.id %>/register" class="flex w-full items-center justify-center rounded-md text-base font-medium bg-primary text-primary-foreground h-12 px-8 hover:bg-primary/90 transition-all shadow-md">
+                                Daftar Sekarang
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+  </body>
+</html>

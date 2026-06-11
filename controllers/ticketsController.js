@@ -1,0 +1,27 @@
+const db = require('../lib/db');
+
+exports.show = async (req, res, next) => {
+    try {
+        const ticketNumber = req.params.ticketNumber;
+        const userId = req.session.userId;
+        
+        // Ambil data registrasi beserta data event terkait
+        const [rows] = await db.query(
+            `SELECT r.*, e.title, e.start_date, e.start_time, e.venue, e.online_link, e.delivery_mode 
+             FROM event_registrations r 
+             JOIN events e ON r.event_id = e.id 
+             WHERE r.ticket_number = ? AND r.user_id = ?`,
+            [ticketNumber, userId]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(404).render('error', { message: 'Tiket tidak ditemukan atau Anda tidak memiliki akses', error: { status: 404 } });
+        }
+        
+        const registration = rows[0];
+        
+        res.render('tickets/show', { registration, title: 'Tiket Anda', user: req.session.username });
+    } catch (err) {
+        next(err);
+    }
+};
