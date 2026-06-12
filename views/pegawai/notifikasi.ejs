@@ -1,0 +1,165 @@
+<% include ../layouts/header %>
+
+<!-- Breadcrumb -->
+<nav class="flex text-slate-500 text-xs font-semibold uppercase tracking-wider mb-4" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="/pegawai" class="hover:text-blue-600 flex items-center gap-1.5">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+                <span class="text-slate-400">Notifikasi</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold text-slate-800">Notifikasi Anda</h1>
+            <p class="text-xs text-slate-400 mt-1">Dapatkan informasi status persetujuan atau penolakan pengajuan cuti secara real-time.</p>
+        </div>
+        <span id="unread-badge" class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full <%= unreadCount === 0 ? 'hidden' : '' %>">
+            <%= unreadCount %> Belum Dibaca
+        </span>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="divide-y divide-slate-100" id="notification-container">
+        <% if (notifications && notifications.length > 0) { %>
+            <% notifications.forEach(n => { %>
+                <div 
+                    id="notif-<%= n.id %>" 
+                    class="p-5 flex items-start gap-4 transition-all duration-300 <%= n.is_read ? 'bg-white' : 'bg-blue-50/20' %>"
+                >
+                    <!-- Icon Indicator -->
+                    <div class="h-10 w-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 <%= n.title.includes('Setuju') || n.message.includes('setujui') ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' %>">
+                        <% if (n.title.includes('Setuju') || n.message.includes('setujui')) { %>
+                            <i class="fa-solid fa-circle-check"></i>
+                        <% } else { %>
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        <% } %>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="flex-1 space-y-1">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <%= n.title %>
+                                <% if (!n.is_read) { %>
+                                    <span class="inline-block h-2 w-2 rounded-full bg-blue-600" id="dot-<%= n.id %>"></span>
+                                <% } %>
+                            </h3>
+                            <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+                                <%= new Date(n.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) %>
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed"><%= n.message %></p>
+                        
+                        <!-- Actions -->
+                        <% if (!n.is_read) { %>
+                            <div class="pt-2" id="action-container-<%= n.id %>">
+                                <button 
+                                    type="button" 
+                                    onclick="markAsRead(<%= n.id %>)" 
+                                    class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 hover:underline"
+                                >
+                                    <i class="fa-solid fa-check-double"></i> Tandai sudah dibaca
+                                </button>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <!-- Empty State -->
+            <div class="py-16 text-center text-slate-400">
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <i class="fa-regular fa-bell-slash text-5xl text-slate-300"></i>
+                    <h3 class="text-base font-bold text-slate-700">Kotak Masuk Kosong</h3>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">Anda tidak memiliki notifikasi saat ini. Status cuti Anda akan ditampilkan di sini.</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- JavaScript Async Mark as Read -->
+<script>
+    async function markAsRead(id) {
+        try {
+            const response = await fetch(`/pegawai/notifikasi/${id}/read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // 1. Ubah background warna notifikasi
+                const element = document.getElementById(`notif-${id}`);
+                if (element) {
+                    element.classList.remove('bg-blue-50/20');
+                    element.classList.add('bg-white');
+                }
+
+                // 2. Hapus dot biru
+                const dot = document.getElementById(`dot-${id}`);
+                if (dot) dot.remove();
+
+                // 3. Hapus tombol tandai dibaca
+                const container = document.getElementById(`action-container-${id}`);
+                if (container) container.remove();
+
+                // 4. Update Badge Counter Notifikasi di Navbar & Page Header
+                updateNotificationBadges();
+            } else {
+                alert('Gagal memperbarui notifikasi: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error marking read:', error);
+            alert('Terjadi kesalahan jaringan.');
+        }
+    }
+
+    function updateNotificationBadges() {
+        // Ambil badge di header halaman
+        const headerBadge = document.getElementById('unread-badge');
+        
+        // Ambil semua badge notifikasi di navbar / sidebar
+        const allBadges = document.querySelectorAll('.bg-rose-500.text-white');
+
+        allBadges.forEach(badge => {
+            let count = parseInt(badge.textContent.trim());
+            if (!isNaN(count) && count > 0) {
+                count -= 1;
+                if (count === 0) {
+                    badge.remove();
+                } else {
+                    badge.textContent = count;
+                }
+            }
+        });
+
+        if (headerBadge) {
+            let headerCount = parseInt(headerBadge.textContent.trim());
+            if (!isNaN(headerCount) && headerCount > 0) {
+                headerCount -= 1;
+                if (headerCount === 0) {
+                    headerBadge.classList.add('hidden');
+                } else {
+                    headerBadge.textContent = `${headerCount} Belum Dibaca`;
+                }
+            }
+        }
+    }
+</script>
+
+<% include ../layouts/footer %>
