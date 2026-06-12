@@ -27,6 +27,22 @@
         }
       })();
     </script>
+    <style>
+      @media (min-width: 768px) {
+        .event-grid {
+          display: grid !important;
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          gap: 1.5rem !important;
+        }
+      }
+      @media (min-width: 1024px) {
+        .event-grid {
+          display: grid !important;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 1.5rem !important;
+        }
+      }
+    </style>
   </head>
   <% 
     const getImageForType = (type) => {
@@ -80,7 +96,7 @@
             </div>
 
             <% if (events && events.length > 0) { %>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="event-grid flex flex-col gap-6">
                     <% events.forEach(event => { %>
                         <div data-slot="card" class="flex flex-col gap-4 rounded-xl border border-border bg-card text-card-foreground shadow-md overflow-hidden hover:shadow-xl transition-all duration-200">
                             <!-- Cover Image -->

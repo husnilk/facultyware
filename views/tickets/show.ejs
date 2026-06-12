@@ -67,6 +67,35 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Detail Peserta (Participant Details) -->
+                <div class="pt-6 border-t space-y-4">
+                    <h3 class="text-sm font-bold text-foreground uppercase tracking-wider">Detail Peserta</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="space-y-1 col-span-2 sm:col-span-1">
+                            <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nama Lengkap</span>
+                            <p class="font-medium text-foreground"><%= registration.full_name || '-' %></p>
+                        </div>
+                        <div class="space-y-1 col-span-2 sm:col-span-1">
+                            <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">No. Telepon / WA</span>
+                            <p class="font-medium text-foreground"><%= registration.phone || '-' %></p>
+                        </div>
+                        <div class="space-y-1 col-span-2">
+                            <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</span>
+                            <p class="font-medium text-foreground"><%= registration.email || '-' %></p>
+                        </div>
+                        <div class="space-y-1 col-span-2">
+                            <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Alamat Domisili</span>
+                            <p class="font-medium text-foreground whitespace-pre-line leading-relaxed"><%= registration.address || '-' %></p>
+                        </div>
+                        <% if (registration.notes) { %>
+                        <div class="space-y-1 col-span-2">
+                            <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Catatan Tambahan</span>
+                            <p class="font-medium text-foreground whitespace-pre-line leading-relaxed"><%= registration.notes %></p>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
             </div>
             
             <div class="bg-muted p-4 text-center border-t flex flex-col sm:flex-row justify-center items-center gap-4">

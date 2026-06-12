@@ -54,32 +54,58 @@
             </div>
             
             <form action="/events/<%= event.id %>/register" method="POST" class="space-y-6">
-                <!-- Nama Lengkap (Read-only) -->
+                <!-- Nama Lengkap -->
                 <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-2 flex-col">
                     <label data-slot="field-label" class="text-sm font-semibold leading-snug" for="name">Nama Lengkap</label>
                     <input 
                         type="text" 
+                        name="full_name"
                         id="name" 
-                        class="h-9 w-full min-w-0 rounded-md border border-input px-3 py-1 text-sm bg-muted text-muted-foreground cursor-not-allowed"
-                        style="background-color: var(--muted); border-color: var(--border);"
-                        value="<%= user %>" 
-                        disabled 
-                        readonly 
+                        class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+                        value="<%= typeof user !== 'undefined' && user ? user : '' %>" 
+                        placeholder="Nama Lengkap Anda"
+                        required 
                     />
                 </div>
 
-                <!-- Email (Read-only) -->
+                <!-- Email -->
                 <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-2 flex-col">
                     <label data-slot="field-label" class="text-sm font-semibold leading-snug" for="email">Email</label>
                     <input 
                         type="email" 
+                        name="email"
                         id="email" 
-                        class="h-9 w-full min-w-0 rounded-md border border-input px-3 py-1 text-sm bg-muted text-muted-foreground cursor-not-allowed"
-                        style="background-color: var(--muted); border-color: var(--border);"
-                        value="<%= email || '-' %>" 
-                        disabled 
-                        readonly 
+                        class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+                        value="<%= typeof email !== 'undefined' && email ? email : '' %>" 
+                        placeholder="email@example.com"
+                        required 
                     />
+                </div>
+
+                <!-- No. Telepon -->
+                <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-2 flex-col">
+                    <label data-slot="field-label" class="text-sm font-semibold leading-snug" for="phone">No. Telepon / WhatsApp</label>
+                    <input 
+                        type="text" 
+                        name="phone"
+                        id="phone" 
+                        class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+                        placeholder="Contoh: 081234567890"
+                        required 
+                    />
+                </div>
+
+                <!-- Alamat Tingkat / Domisili -->
+                <div role="group" data-slot="field" data-orientation="vertical" class="group/field flex w-full gap-2 flex-col">
+                    <label data-slot="field-label" class="text-sm font-semibold leading-snug" for="address">Alamat Domisili</label>
+                    <textarea 
+                        name="address" 
+                        data-slot="textarea" 
+                        id="address" 
+                        class="min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring md:text-sm"
+                        placeholder="Tuliskan alamat lengkap Anda..."
+                        required
+                    ></textarea>
                 </div>
 
                 <!-- Catatan Tambahan -->
@@ -89,7 +115,7 @@
                         name="notes" 
                         data-slot="textarea" 
                         id="notes" 
-                        class="min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring md:text-sm"
+                        class="min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring md:text-sm"
                         placeholder="Misal: Alergi makanan tertentu, dsb."
                     ></textarea>
                 </div>

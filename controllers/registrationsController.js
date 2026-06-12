@@ -109,7 +109,7 @@ exports.store = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.session.userId;
-        const notes = req.body.notes || '';
+        const { full_name, address, email, phone, notes } = req.body;
         
         const [events] = await db.query('SELECT * FROM events WHERE id = ? AND status = "published"', [id]);
         if (events.length === 0) {
@@ -131,9 +131,9 @@ exports.store = async (req, res, next) => {
         
         await db.query(
             `INSERT INTO event_registrations 
-            (event_id, user_id, registration_number, registered_at, attendance_status, notes, ticket_number, issued_at) 
-            VALUES (?, ?, ?, NOW(), 'registered', ?, ?, NOW())`,
-            [id, userId, regNumber, notes, ticketNumber]
+            (event_id, user_id, registration_number, registered_at, attendance_status, full_name, address, email, phone, notes, ticket_number, issued_at) 
+            VALUES (?, ?, ?, NOW(), 'registered', ?, ?, ?, ?, ?, ?, NOW())`,
+            [id, userId, regNumber, full_name || '', address || '', email || '', phone || '', notes || '', ticketNumber]
         );
         
         res.redirect(`/tickets/${ticketNumber}`);

@@ -52,7 +52,7 @@ exports.getEvents = async (req, res) => {
 exports.registerEvent = async (req, res) => {
     try {
         const eventId = req.params.id;
-        const { userId, notes } = req.body;
+        let { userId, full_name, address, email, phone, notes } = req.body;
         
         if (!userId) {
             return res.status(400).json({ status: 'error', message: 'userId is required' });
@@ -76,15 +76,22 @@ exports.registerEvent = async (req, res) => {
             });
         }
         
+        // Prefill from users table if not provided
+        const [users] = await db.query('SELECT name, email FROM users WHERE id = ?', [userId]);
+        if (users.length > 0) {
+            if (!full_name) full_name = users[0].name;
+            if (!email) email = users[0].email;
+        }
+        
         // Generate reg & ticket
         const regNumber = `REG-${Date.now()}-${userId}-${eventId}`;
         const ticketNumber = `TIX-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
         
         await db.query(
             `INSERT INTO event_registrations 
-            (event_id, user_id, registration_number, registered_at, attendance_status, notes, ticket_number, issued_at) 
-            VALUES (?, ?, ?, NOW(), 'registered', ?, ?, NOW())`,
-            [eventId, userId, regNumber, notes || '', ticketNumber]
+            (event_id, user_id, registration_number, registered_at, attendance_status, full_name, address, email, phone, notes, ticket_number, issued_at) 
+            VALUES (?, ?, ?, NOW(), 'registered', ?, ?, ?, ?, ?, ?, NOW())`,
+            [eventId, userId, regNumber, full_name || '', address || '', email || '', phone || '', notes || '', ticketNumber]
         );
         
         res.status(201).json({
