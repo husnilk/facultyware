@@ -20,6 +20,7 @@
     </header>
 
     <section class="scrollbar">
+      <% if (user && user.role === 'atasan_lvl_1') { %>
       <div role="group">
         <h3 id="group-label-sidebar-content-1">Menu Pengajuan Cuti</h3>
         <ul>
@@ -34,21 +35,9 @@
               <span>Daftar Pengajuan</span>
             </a>
           </li>
-          
-          <!-- Menu yang hanya boleh diakses oleh Atasan Level 2 -->
-          <% if (user && user.role === 'atasan_lvl_2') { %>
-          <li>
-            <a href="/atasan-lvl2/cuti/pending" hx-boost="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              <span>Pending Approval</span>
-            </a>
-          </li>
-          <% } %>
         </ul>
       </div>
+      <% } %>
     </section>
 
     <footer>

@@ -82,7 +82,7 @@ exports.indexCuti = async (req, res) => {
         const [leaveTypes] = await db.execute('SELECT id, name FROM leave_types ORDER BY name ASC');
 
         // Render ke file EJS dengan mengirim semua data yang diperlukan
-        res.render('atasan/cuti/index', {
+        res.render('atasan/index', {
             title: 'Daftar Pengajuan Cuti Pegawai',
             requests,
             leaveTypes,
@@ -149,7 +149,7 @@ exports.detailCuti = async (req, res) => {
         }
 
         // Render EJS Detail
-        res.render('atasan/cuti/detail', {
+        res.render('atasan/detail', {
             title: 'Detail Pengajuan Cuti',
             request: requestDetail,
             approvals: approvals,
