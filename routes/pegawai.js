@@ -4,37 +4,31 @@ const pegawaiController = require('../controllers/pegawaiController');
 const { isAuthenticated } = require('../middlewares/auth');
 const acl = require('../middlewares/acl');
 
-// Semua rute ini dilindungi middleware login dan role check pegawai
+// Kunci rute ini khusus untuk Pegawai
 router.use(isAuthenticated, acl.checkRole('pegawai'));
 
-// Halaman dashboard utama pegawai
+// Riwayat Dashboard
 router.get('/', pegawaiController.index);
 
-// Riwayat pengajuan cuti (dengan search, pagination, sorting)
-router.get('/cuti', pegawaiController.renderCutiRiwayat);
+// --- ENDPOINT REST API ---
+router.get('/api/riwayat', pegawaiController.getRiwayatAPI);
 
-// Export riwayat cuti (Fitur 8) - HARUS sebelum route /cuti/:id
-router.get('/cuti/export/pdf', pegawaiController.exportCutiPDF);
+// --- ENDPOINT EXPORT PDF ---
+// Rute ini memenuhi Syarat Poin B Tugas
+router.get('/export-pdf', pegawaiController.exportPdf);
 
-// Form buat pengajuan cuti
-router.get('/cuti/tambah', pegawaiController.renderCutiTambah);
-router.post('/cuti/tambah', pegawaiController.processCutiTambah);
+// Buat Pengajuan Cuti
+router.get('/create', pegawaiController.create);
+router.post('/create', pegawaiController.store);
 
-// Detail pengajuan cuti
-router.get('/cuti/:id', pegawaiController.renderCutiDetail);
+// Detail Pengajuan (Rute dengan parameter :id harus di bawah rute statis)
+router.get('/:id', pegawaiController.detail);
 
-// Ubah pengajuan cuti (hanya jika status masih pending)
-router.get('/cuti/:id/edit', pegawaiController.renderCutiEdit);
-router.post('/cuti/:id/edit', pegawaiController.processCutiEdit);
+// Ubah Pengajuan (Edit)
+router.get('/:id/edit', pegawaiController.edit);
+router.post('/:id/edit', pegawaiController.update);
 
-// Hapus pengajuan cuti (hanya jika status masih pending)
-router.post('/cuti/:id/delete', pegawaiController.processCutiDelete);
-
-// Halaman notifikasi pegawai
-router.get('/notifikasi', pegawaiController.renderNotifikasi);
-
-// API untuk menandai notifikasi telah dibaca
-router.post('/notifikasi/:id/read', pegawaiController.processMarkAsRead);
-
+// Hapus Pengajuan
+router.post('/:id/delete', pegawaiController.delete);
 
 module.exports = router;

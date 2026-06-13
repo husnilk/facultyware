@@ -1,407 +1,234 @@
 const cutiModel = require('../models/cutiModel');
+const PDFDocument = require('pdfkit'); // Import library pembuat PDF
 
-// Helper untuk menghitung jumlah hari kerja/cuti di antara 2 tanggal (inklusif)
-function calculateTotalDays(startDateStr, endDateStr) {
-    const start = new Date(startDateStr);
-    const end = new Date(endDateStr);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return diffDays;
-}
+// Helper untuk hitung jumlah hari cuti otomatis
+const hitungHari = (start, end) => {
+    return Math.ceil(Math.abs(new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
+};
 
-// 1. Dashboard Pegawai
 exports.index = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const year = 2026; // Sesuai data default di database
-
     try {
-        // Ambil sisa kuota cuti
-        const balances = await cutiModel.getLeaveBalances(employeeId, year);
-        
-        // Ambil 5 pengajuan cuti terakhir
-        const recentRequests = await cutiModel.getLeaveRequests(employeeId, '', '', 'DESC', 5, 0);
-
-        // Ambil jumlah notifikasi belum dibaca
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(employeeId);
-
-        res.render('pegawai/dashboard', {
+        const employeeId = req.session.user.id; 
+        const requests = await cutiModel.getEmployeeLeaveRequests(employeeId);
+        res.render('pegawai/index', {
+            title: 'Riwayat Cuti Pegawai',
             user: req.session.user,
-            balances,
-            recentRequests,
-            unreadCount,
-            title: 'Dashboard Pegawai - Facultyware'
+            requests: requests
         });
     } catch (error) {
-        console.error('Error dashboard:', error);
-        res.status(500).send('Terjadi kesalahan saat memuat dashboard');
+        console.error('Error:', error);
+        res.status(500).send('Terjadi kesalahan saat memuat halaman riwayat cuti.');
     }
 };
 
-// 2. Riwayat Pengajuan Cuti (Tabel, Search, Pagination, Sorting)
-exports.renderCutiRiwayat = async (req, res) => {
-    const employeeId = req.session.user.id;
-    
-    // Parameter Query
-    const search = req.query.search || '';
-    const status = req.query.status || '';
-    const sort = req.query.sort || 'DESC';
-    const page = parseInt(req.query.page) || 1;
-    const limit = 5; // Batasi 5 baris per halaman untuk mempermudah pengujian pagination
-    const offset = (page - 1) * limit;
-
+// Menampilkan form tambah pengajuan
+exports.create = async (req, res) => {
     try {
-        // Total data untuk menghitung pagination
-        const totalRows = await cutiModel.getLeaveRequestsCount(employeeId, search, status);
-        const totalPages = Math.ceil(totalRows / limit);
-
-        // Ambil data sesuai filter & pagination
-        const requests = await cutiModel.getLeaveRequests(employeeId, search, status, sort, limit, offset);
-
-        // Ambil jumlah notifikasi belum dibaca
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(employeeId);
-
-        res.render('pegawai/cuti_riwayat', {
-            requests,
-            search,
-            status,
-            sort,
-            currentPage: page,
-            totalPages,
-            unreadCount,
-            success: req.query.success || null,
-            error: req.query.error || null,
-            title: 'Riwayat Pengajuan Cuti - Facultyware'
+        const leaveTypes = await cutiModel.getLeaveTypes();
+        res.render('pegawai/create', {
+            title: 'Buat Pengajuan Cuti',
+            user: req.session.user,
+            leaveTypes: leaveTypes,
+            error: null
         });
     } catch (error) {
-        console.error('Error riwayat cuti:', error);
-        res.status(500).send('Terjadi kesalahan saat memuat riwayat cuti');
+        console.error('Error form:', error);
+        res.status(500).send('Terjadi kesalahan saat memuat form.');
     }
 };
 
-// 3. Form Pembuatan Pengajuan Cuti
-exports.renderCutiTambah = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const year = 2026;
-
+// Memproses data dari form
+exports.store = async (req, res) => {
     try {
-        // Ambil daftar jenis cuti dan kuota tersisa
-        const balances = await cutiModel.getLeaveBalances(employeeId, year);
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(employeeId);
-
-        res.render('pegawai/cuti_tambah', {
-            balances,
-            unreadCount,
-            error: null,
-            title: 'Buat Pengajuan Cuti - Facultyware'
-        });
-    } catch (error) {
-        console.error('Error render form tambah:', error);
-        res.status(500).send('Terjadi kesalahan saat membuka form');
-    }
-};
-
-// 4. Proses Simpan Pengajuan Cuti
-exports.processCutiTambah = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const year = 2026;
-    const { leave_type_id, start_date, end_date, reason } = req.body;
-
-    try {
-        const balances = await cutiModel.getLeaveBalances(employeeId, year);
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(employeeId);
-
-        // Validasi Form
-        if (!leave_type_id || !start_date || !end_date || !reason) {
-            return res.render('pegawai/cuti_tambah', {
-                balances,
-                unreadCount,
-                error: 'Semua field wajib diisi!',
-                title: 'Buat Pengajuan Cuti - Facultyware'
-            });
-        }
-
-        // Validasi Tanggal
+        const { leave_type_id, start_date, end_date, reason, address_leave, contact_leave } = req.body;
+        const employeeId = req.session.user.id;
+        
+        // Validasi logika tanggal dasar
         if (new Date(end_date) < new Date(start_date)) {
-            return res.render('pegawai/cuti_tambah', {
-                balances,
-                unreadCount,
-                error: 'Tanggal selesai tidak boleh mendahului tanggal mulai!',
-                title: 'Buat Pengajuan Cuti - Facultyware'
+            const leaveTypes = await cutiModel.getLeaveTypes();
+            return res.render('pegawai/create', {
+                title: 'Buat Pengajuan Cuti', user: req.session.user, leaveTypes,
+                error: 'Tanggal selesai tidak boleh lebih awal dari tanggal mulai!'
             });
         }
 
-        const totalDays = calculateTotalDays(start_date, end_date);
+        const totalDays = hitungHari(start_date, end_date);
 
-        // Validasi Saldo Kuota
-        const userBalance = await cutiModel.getLeaveBalance(employeeId, leave_type_id, year);
-        if (!userBalance) {
-            return res.render('pegawai/cuti_tambah', {
-                balances,
-                unreadCount,
-                error: 'Jenis cuti tidak valid atau tidak terdaftar!',
-                title: 'Buat Pengajuan Cuti - Facultyware'
-            });
-        }
-
-        if (totalDays > userBalance.remaining) {
-            return res.render('pegawai/cuti_tambah', {
-                balances,
-                unreadCount,
-                error: `Sisa kuota cuti Anda (${userBalance.remaining} hari) tidak mencukupi untuk pengajuan ${totalDays} hari!`,
-                title: 'Buat Pengajuan Cuti - Facultyware'
-            });
-        }
-
-        // Simpan ke database dengan default status = pending
-        // approver_id_id default ke ID 6 (Atasan 1) yang diseed
         await cutiModel.createLeaveRequest({
             employee_id: employeeId,
             leave_type_id: parseInt(leave_type_id),
-            start_date,
-            end_date,
-            total_days: totalDays,
-            reason,
-            approver_id_id: 6 
+            start_date, end_date, total_days: totalDays,
+            reason, address_leave, contact_leave,
+            approver_id_id: 6 // ID atasan langsung (di-hardcode untuk testing)
         });
 
-        res.redirect('/pegawai/cuti?success=' + encodeURIComponent('Pengajuan cuti berhasil dibuat!'));
-
+        res.redirect('/pegawai');
     } catch (error) {
-        console.error('Error proses tambah:', error);
-        res.status(500).send('Terjadi kesalahan saat memproses pengajuan cuti');
+        console.error('Error simpan:', error);
+        res.status(500).send('Gagal menyimpan pengajuan cuti.');
     }
 };
 
-// 5. Melihat Detail Pengajuan Cuti
-exports.renderCutiDetail = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const id = req.params.id;
-
+exports.detail = async (req, res) => {
     try {
-        const cuti = await cutiModel.getLeaveRequestById(id, employeeId);
+        const employeeId = req.session.user.id;
+        const cuti = await cutiModel.getEmployeeLeaveRequestById(req.params.id, employeeId);
+        
         if (!cuti) {
-            return res.redirect('/pegawai/cuti?error=' + encodeURIComponent('Pengajuan cuti tidak ditemukan!'));
+            return res.status(404).send('Data pengajuan tidak ditemukan atau Anda tidak memiliki akses.');
         }
-
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(employeeId);
-
-        res.render('pegawai/cuti_detail', {
-            cuti,
-            unreadCount,
-            success: req.query.success || null,
-            error: req.query.error || null,
-            title: `Detail Pengajuan #${cuti.id} - Facultyware`
+        
+        res.render('pegawai/detail', {
+            title: 'Detail Pengajuan Cuti',
+            user: req.session.user,
+            cuti: cuti
         });
     } catch (error) {
-        console.error('Error render detail:', error);
-        res.status(500).send('Terjadi kesalahan saat memuat detail pengajuan');
+        console.error('Error detail:', error);
+        res.status(500).send('Terjadi kesalahan saat memuat detail pengajuan.');
     }
 };
 
-// 6. Form Ubah Pengajuan Cuti (Hanya jika status "pending")
-exports.renderCutiEdit = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const id = req.params.id;
-    const year = 2026;
-
+// Proses Hapus Pengajuan
+exports.delete = async (req, res) => {
     try {
-        const cuti = await cutiModel.getLeaveRequestById(id, employeeId);
-        if (!cuti) {
-            return res.redirect('/pegawai/cuti?error=' + encodeURIComponent('Pengajuan cuti tidak ditemukan!'));
+        const employeeId = req.session.user.id;
+        const requestId = req.params.id;
+        
+        const success = await cutiModel.deleteLeaveRequest(requestId, employeeId);
+        
+        if (success) {
+            res.redirect('/pegawai');
+        } else {
+            res.status(400).send('Gagal menghapus. Pengajuan mungkin sudah diproses oleh Atasan atau data tidak ditemukan.');
         }
-
-        // Syarat: Hanya status pending yang boleh diedit
-        if (cuti.status !== 'pending') {
-            return res.redirect(`/pegawai/cuti/${id}?error=` + encodeURIComponent('Hanya pengajuan berstatus "Menunggu Persetujuan" yang dapat diubah!'));
-        }
-
-        const balances = await cutiModel.getLeaveBalances(employeeId, year);
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(employeeId);
-
-        res.render('pegawai/cuti_edit', {
-            cuti,
-            balances,
-            unreadCount,
-            error: null,
-            title: `Ubah Pengajuan #${cuti.id} - Facultyware`
-        });
     } catch (error) {
-        console.error('Error render form edit:', error);
-        res.status(500).send('Terjadi kesalahan saat membuka form edit');
+        console.error('Error delete:', error);
+        res.status(500).send('Terjadi kesalahan saat mencoba menghapus pengajuan.');
     }
 };
 
-// 7. Proses Simpan Perubahan Pengajuan Cuti
-exports.processCutiEdit = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const id = req.params.id;
-    const year = 2026;
-    const { leave_type_id, start_date, end_date, reason } = req.body;
-
+// Menampilkan form edit
+exports.edit = async (req, res) => {
     try {
-        const cuti = await cutiModel.getLeaveRequestById(id, employeeId);
-        if (!cuti) {
-            return res.redirect('/pegawai/cuti?error=' + encodeURIComponent('Pengajuan cuti tidak ditemukan!'));
+        const employeeId = req.session.user.id;
+        const cuti = await cutiModel.getEmployeeLeaveRequestById(req.params.id, employeeId);
+
+        if (!cuti || cuti.status !== 'pending') {
+            return res.status(403).send('Data tidak ditemukan atau sudah tidak dapat diubah (karena sudah diproses).');
         }
 
-        if (cuti.status !== 'pending') {
-            return res.redirect(`/pegawai/cuti/${id}?error=` + encodeURIComponent('Hanya pengajuan berstatus "Menunggu Persetujuan" yang dapat diubah!'));
-        }
+        const leaveTypes = await cutiModel.getLeaveTypes();
+        res.render('pegawai/edit', {
+            title: 'Ubah Pengajuan Cuti',
+            user: req.session.user,
+            cuti: cuti,
+            leaveTypes: leaveTypes,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error edit:', error);
+        res.status(500).send('Terjadi kesalahan saat memuat halaman edit.');
+    }
+};
 
-        const balances = await cutiModel.getLeaveBalances(employeeId, year);
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(employeeId);
+// Memproses data dari form edit
+exports.update = async (req, res) => {
+    try {
+        const { leave_type_id, start_date, end_date, reason, address_leave, contact_leave } = req.body;
+        const employeeId = req.session.user.id;
+        const requestId = req.params.id;
 
-        // Validasi Form
-        if (!leave_type_id || !start_date || !end_date || !reason) {
-            return res.render('pegawai/cuti_edit', {
-                cuti,
-                balances,
-                unreadCount,
-                error: 'Semua field wajib diisi!',
-                title: `Ubah Pengajuan #${cuti.id} - Facultyware`
-            });
-        }
-
-        // Validasi Tanggal
         if (new Date(end_date) < new Date(start_date)) {
-            return res.render('pegawai/cuti_edit', {
-                cuti,
-                balances,
-                unreadCount,
-                error: 'Tanggal selesai tidak boleh mendahului tanggal mulai!',
-                title: `Ubah Pengajuan #${cuti.id} - Facultyware`
+            const cuti = await cutiModel.getEmployeeLeaveRequestById(requestId, employeeId);
+            const leaveTypes = await cutiModel.getLeaveTypes();
+            return res.render('pegawai/edit', {
+                title: 'Ubah Pengajuan Cuti', user: req.session.user, cuti, leaveTypes,
+                error: 'Tanggal selesai tidak boleh lebih awal dari tanggal mulai!'
             });
         }
 
-        const totalDays = calculateTotalDays(start_date, end_date);
+        const totalDays = hitungHari(start_date, end_date);
 
-        // Validasi Saldo Kuota
-        const userBalance = await cutiModel.getLeaveBalance(employeeId, leave_type_id, year);
-        if (!userBalance) {
-            return res.render('pegawai/cuti_edit', {
-                cuti,
-                balances,
-                unreadCount,
-                error: 'Jenis cuti tidak valid!',
-                title: `Ubah Pengajuan #${cuti.id} - Facultyware`
-            });
-        }
-
-        if (totalDays > userBalance.remaining) {
-            return res.render('pegawai/cuti_edit', {
-                cuti,
-                balances,
-                unreadCount,
-                error: `Sisa kuota cuti Anda (${userBalance.remaining} hari) tidak mencukupi untuk pengajuan ${totalDays} hari!`,
-                title: `Ubah Pengajuan #${cuti.id} - Facultyware`
-            });
-        }
-
-        // Lakukan Update ke DB
-        const success = await cutiModel.updateLeaveRequest(id, employeeId, {
+        const success = await cutiModel.updateLeaveRequest(requestId, employeeId, {
             leave_type_id: parseInt(leave_type_id),
-            start_date,
-            end_date,
-            total_days: totalDays,
-            reason
+            start_date, end_date, total_days: totalDays,
+            reason, address_leave, contact_leave
         });
 
         if (success) {
-            res.redirect(`/pegawai/cuti/${id}?success=` + encodeURIComponent('Pengajuan cuti berhasil diperbarui!'));
+            res.redirect('/pegawai/' + requestId);
         } else {
-            res.redirect(`/pegawai/cuti/${id}?error=` + encodeURIComponent('Gagal memperbarui pengajuan cuti!'));
+            res.status(400).send('Gagal mengubah pengajuan.');
         }
-
     } catch (error) {
-        console.error('Error proses edit:', error);
-        res.status(500).send('Terjadi kesalahan saat memperbarui pengajuan cuti');
+        console.error('Error update:', error);
+        res.status(500).send('Gagal mengubah pengajuan cuti.');
     }
 };
 
-// 8. Proses Hapus Pengajuan Cuti (Hanya jika status "pending")
-exports.processCutiDelete = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const id = req.params.id;
-
+// --- FUNGSI REST API ---
+exports.getRiwayatAPI = async (req, res) => {
     try {
-        const cuti = await cutiModel.getLeaveRequestById(id, employeeId);
-        if (!cuti) {
-            return res.redirect('/pegawai/cuti?error=' + encodeURIComponent('Pengajuan cuti tidak ditemukan!'));
-        }
-
-        // Syarat: Hanya status pending yang boleh dihapus
-        if (cuti.status !== 'pending') {
-            return res.redirect(`/pegawai/cuti/${id}?error=` + encodeURIComponent('Hanya pengajuan berstatus "Menunggu Persetujuan" yang dapat dihapus!'));
-        }
-
-        const success = await cutiModel.deleteLeaveRequest(id, employeeId);
-        if (success) {
-            res.redirect('/pegawai/cuti?success=' + encodeURIComponent('Pengajuan cuti berhasil dihapus!'));
-        } else {
-            res.redirect(`/pegawai/cuti/${id}?error=` + encodeURIComponent('Gagal menghapus pengajuan cuti!'));
-        }
-
-    } catch (error) {
-        console.error('Error proses hapus:', error);
-        res.status(500).send('Terjadi kesalahan saat menghapus pengajuan cuti');
-    }
-};
-
-// 9. Halaman Notifikasi Pegawai
-exports.renderNotifikasi = async (req, res) => {
-    const userId = req.session.user.id;
-
-    try {
-        const notifications = await cutiModel.getNotifications(userId);
-        const unreadCount = await cutiModel.getUnreadNotificationsCount(userId);
-
-        res.render('pegawai/notifikasi', {
-            notifications,
-            unreadCount,
-            title: 'Notifikasi Anda - Facultyware'
+        const employeeId = req.session.user.id; 
+        const requests = await cutiModel.getEmployeeLeaveRequests(employeeId);
+        
+        res.status(200).json({
+            success: true,
+            message: 'Berhasil mengambil data riwayat cuti',
+            total_data: requests.length,
+            data: requests
         });
     } catch (error) {
-        console.error('Error render notifikasi:', error);
-        res.status(500).send('Terjadi kesalahan saat memuat notifikasi');
+        console.error('Error API:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Terjadi kesalahan pada server saat mengambil data'
+        });
     }
 };
 
-// 10. API Tandai Notifikasi Dibaca
-exports.processMarkAsRead = async (req, res) => {
-    const userId = req.session.user.id;
-    const id = req.params.id;
-
+// --- FUNGSI EXPORT PDF ---
+exports.exportPdf = async (req, res) => {
     try {
-        const success = await cutiModel.markNotificationAsRead(id, userId);
-        if (success) {
-            res.json({ success: true, message: 'Notifikasi berhasil ditandai sebagai dibaca' });
+        const employeeId = req.session.user.id; 
+        const requests = await cutiModel.getEmployeeLeaveRequests(employeeId);
+
+        // Inisialisasi dokumen PDF baru
+        const doc = new PDFDocument({ margin: 50 });
+        
+        // Atur header agar otomatis didownload oleh browser
+        const filename = `Riwayat_Cuti_${req.session.user.name.replace(/\s+/g, '_')}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        
+        doc.pipe(res);
+
+        // Desain Isi PDF
+        doc.fontSize(20).text('Laporan Riwayat Cuti Pegawai', { align: 'center' });
+        doc.moveDown(1);
+        doc.fontSize(12).text(`Nama Pegawai : ${req.session.user.name}`);
+        doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`);
+        doc.moveDown(2);
+
+        if (requests.length === 0) {
+            doc.text('Belum ada riwayat pengajuan cuti yang tercatat.', { align: 'center' });
         } else {
-            res.status(400).json({ success: false, message: 'Gagal memperbarui notifikasi' });
+            // Looping data riwayat cuti
+            requests.forEach((cuti, index) => {
+                doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. Pengajuan #${cuti.id} - ${cuti.leave_type_name}`);
+                doc.font('Helvetica').fontSize(10);
+                doc.text(`Status      : ${cuti.status.toUpperCase()}`);
+                doc.text(`Tanggal     : ${new Date(cuti.start_date).toLocaleDateString('id-ID')} s/d ${new Date(cuti.end_date).toLocaleDateString('id-ID')} (${cuti.total_days} hari)`);
+                doc.text(`Alasan      : ${cuti.reason}`);
+                doc.moveDown(1);
+            });
         }
-    } catch (error) {
-        console.error('Error mark as read:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-};
 
-// =========================================================
-// FITUR 8: Export Riwayat Cuti ke PDF
-// =========================================================
-
-const { generateLeavePDF } = require('../lib/exportPdf');
-
-// Export ke PDF
-exports.exportCutiPDF = async (req, res) => {
-    const employeeId = req.session.user.id;
-    const search = req.query.search || '';
-    const status = req.query.status || '';
-
-    try {
-        const requests = await cutiModel.getAllLeaveRequestsForExport(employeeId, search, status);
-        generateLeavePDF(res, requests, req.session.user);
+        // Akhiri proses dokumen
+        doc.end();
     } catch (error) {
         console.error('Error export PDF:', error);
-        res.status(500).send('Terjadi kesalahan saat mengekspor PDF');
+        res.status(500).send('Gagal membuat dokumen PDF.');
     }
 };
-

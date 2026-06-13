@@ -1,0 +1,65 @@
+<div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Dashboard Riwayat Cuti</h2>
+        <p class="text-sm text-gray-500 mt-1">Kelola dan pantau status pengajuan cuti Anda di sini.</p>
+    </div>
+    
+    <div class="flex gap-3">
+        <a href="/pegawai/export-pdf" target="_blank" class="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 font-medium py-2 px-4 border border-red-200 rounded-lg shadow-sm transition-colors flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-file-pdf"></i> Cetak PDF
+        </a>
+        
+        <a href="/pegawai/create" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-plus"></i> Buat Pengajuan
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-100">
+                <tr>
+                    <th scope="col" class="px-6 py-4">ID</th>
+                    <th scope="col" class="px-6 py-4">Jenis Cuti</th>
+                    <th scope="col" class="px-6 py-4">Tanggal Mulai - Selesai</th>
+                    <th scope="col" class="px-6 py-4">Durasi</th>
+                    <th scope="col" class="px-6 py-4">Status</th>
+                    <th scope="col" class="px-6 py-4 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (requests.length === 0) { %>
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            Belum ada riwayat pengajuan cuti. Silakan buat pengajuan baru.
+                        </td>
+                    </tr>
+                <% } else { %>
+                    <% requests.forEach(cuti => { %>
+                        <tr class="bg-white border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-gray-900">#<%= cuti.id %></td>
+                            <td class="px-6 py-4 font-semibold text-gray-800"><%= cuti.leave_type_name %></td>
+                            <td class="px-6 py-4">
+                                <%= new Date(cuti.start_date).toLocaleDateString('id-ID') %> s/d <br>
+                                <%= new Date(cuti.end_date).toLocaleDateString('id-ID') %>
+                            </td>
+                            <td class="px-6 py-4"><%= cuti.total_days %> Hari</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold 
+                                    <%= cuti.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' : 
+                                       (cuti.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' : 
+                                       'bg-red-50 text-red-700 border border-red-200') %>">
+                                    <%= cuti.status.charAt(0).toUpperCase() + cuti.status.slice(1) %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="/pegawai/<%= cuti.id %>" class="text-blue-600 hover:text-blue-800 font-medium hover:underline">Lihat Detail</a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
