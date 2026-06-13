@@ -10,6 +10,10 @@ router.use(isAuthenticated, acl.checkRole('atasan_lvl_2'));
 // Endpoint utama
 router.get('/', atasanLvl2Controller.index);
 
+// API routes
+router.get('/api/cuti/pending', atasanLvl2Controller.apiGetPendingCuti);
+router.get('/api/cuti/:id', atasanLvl2Controller.apiGetDetailCuti);
+
 // Route GET daftar pengajuan cuti pending
 router.get('/cuti/pending', atasanLvl2Controller.pendingCuti);
 

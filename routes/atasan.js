@@ -19,6 +19,10 @@ router.use(isAuthenticated, isAtasan);
 // Route Dashboard awal (redirect ke /cuti)
 router.get('/', atasanController.index);
 
+// API routes
+router.get('/api/cuti', atasanController.apiGetCuti);
+router.get('/api/cuti/:id', atasanController.apiGetDetailCuti);
+
 // Route GET daftar pengajuan cuti beserta filter dan pencarian
 router.get('/cuti', atasanController.indexCuti);
 

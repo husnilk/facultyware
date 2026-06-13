@@ -161,3 +161,155 @@ exports.detailCuti = async (req, res) => {
         res.status(500).send("Terjadi kesalahan saat mengambil detail pengajuan cuti.");
     }
 };
+
+exports.apiGetCuti = async (req, res) => {
+    try {
+        const search = req.query.search || '';
+        const status = req.query.status || '';
+        const leaveTypeId = req.query.leave_type_id || '';
+
+        let queryStr = `
+            SELECT 
+                lr.id,
+                lr.employee_id,
+                lr.leave_type_id,
+                lr.start_date,
+                lr.end_date,
+                lr.total_days,
+                lr.status,
+                lr.submitted_at,
+                lr.created_at,
+                e.name AS employee_name,
+                e.employee_number AS employee_number,
+                lt.name AS leave_type_name
+            FROM leave_requests lr
+            JOIN employees e ON lr.employee_id = e.id
+            JOIN leave_types lt ON lr.leave_type_id = lt.id
+            WHERE 1=1
+        `;
+        let queryParams = [];
+
+        if (search) {
+            queryStr += ` AND (e.name LIKE ? OR e.employee_number LIKE ?)`;
+            queryParams.push(`%${search}%`, `%${search}%`);
+        }
+
+        if (status) {
+            queryStr += ` AND lr.status = ?`;
+            queryParams.push(status);
+        }
+
+        if (leaveTypeId) {
+            queryStr += ` AND lr.leave_type_id = ?`;
+            queryParams.push(leaveTypeId);
+        }
+
+        queryStr += ` ORDER BY COALESCE(lr.submitted_at, lr.created_at) DESC`;
+
+        const [requests] = await db.execute(queryStr, queryParams);
+
+        res.json({
+            success: true,
+            message: "Data pengajuan cuti berhasil diambil.",
+            filters: {
+                search: search,
+                status: status,
+                leave_type_id: leaveTypeId
+            },
+            total: requests.length,
+            data: requests
+        });
+    } catch (error) {
+        console.error("Error at apiGetCuti:", error);
+        res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan server.",
+            error: error.message
+        });
+    }
+};
+
+exports.apiGetDetailCuti = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+
+        if (isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "ID pengajuan cuti tidak valid."
+            });
+        }
+
+        const queryStr = `
+            SELECT 
+                lr.id,
+                lr.employee_id,
+                lr.leave_type_id,
+                lr.start_date,
+                lr.end_date,
+                lr.total_days,
+                lr.reason,
+                lr.attachment,
+                lr.address_leave,
+                lr.contact_leave,
+                lr.status,
+                lr.submitted_at,
+                lr.created_at,
+                lr.approved_at,
+                e.name AS employee_name,
+                e.employee_number AS employee_number,
+                lt.name AS leave_type_name
+            FROM leave_requests lr
+            JOIN employees e ON lr.employee_id = e.id
+            JOIN leave_types lt ON lr.leave_type_id = lt.id
+            WHERE lr.id = ?
+        `;
+
+        const [requests] = await db.execute(queryStr, [id]);
+
+        if (requests.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Data pengajuan cuti tidak ditemukan."
+            });
+        }
+
+        const requestDetail = requests[0];
+
+        let approvals = [];
+        try {
+            const approvalQuery = `
+                SELECT 
+                    la.level,
+                    la.status,
+                    la.notes,
+                    la.action_date,
+                    la.created_at,
+                    u.name AS approver_name
+                FROM leave_approvals la
+                LEFT JOIN users u ON la.approver_id = u.id
+                WHERE la.leave_request_id = ?
+                ORDER BY la.created_at ASC
+            `;
+            const [approvalResults] = await db.execute(approvalQuery, [id]);
+            approvals = approvalResults;
+        } catch (err) {
+            console.warn("Error getting approvals:", err.message);
+        }
+
+        requestDetail.approvals = approvals;
+
+        res.json({
+            success: true,
+            message: "Detail pengajuan cuti berhasil diambil.",
+            data: requestDetail
+        });
+    } catch (error) {
+        console.error("Error at apiGetDetailCuti:", error);
+        res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan server.",
+            error: error.message
+        });
+    }
+};
