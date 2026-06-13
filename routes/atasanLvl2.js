@@ -14,6 +14,9 @@ router.get('/', atasanLvl2Controller.index);
 router.get('/api/cuti/pending', atasanLvl2Controller.apiGetPendingCuti);
 router.get('/api/cuti/:id', atasanLvl2Controller.apiGetDetailCuti);
 
+// Export PDF Riwayat Atasan Level 2
+router.get('/export/riwayat/pdf', atasanLvl2Controller.exportRiwayatPdf);
+
 // Route GET daftar pengajuan cuti pending
 router.get('/cuti/pending', atasanLvl2Controller.pendingCuti);
 

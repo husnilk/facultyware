@@ -1,4 +1,5 @@
 const db = require('../lib/db');
+const PDFDocument = require('pdfkit');
 
 exports.index = (req, res) => {
     res.redirect('/atasan-lvl2/cuti/pending');
@@ -356,5 +357,205 @@ exports.apiGetDetailCuti = async (req, res) => {
             message: "Terjadi kesalahan server.",
             error: error.message
         });
+    }
+};
+
+const formatDatePdf = (dateValue) => {
+    if (!dateValue) return '-';
+
+    return new Date(dateValue).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
+};
+
+const getPrintedDate = () => {
+    return new Date().toLocaleString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const getRiwayatApprovalPdfData = async () => {
+    const queryStr = `
+        SELECT 
+            lr.id,
+            lr.employee_id,
+            lr.leave_type_id,
+            lr.start_date,
+            lr.end_date,
+            lr.total_days,
+            lr.reason,
+            lr.status,
+            lr.submitted_at,
+            lr.approved_at,
+            lr.created_at,
+
+            e.name AS employee_name,
+            e.employee_number AS employee_number,
+
+            lt.name AS leave_type_name,
+
+            la.level AS approval_level,
+            la.status AS approval_status,
+            la.notes AS approval_notes,
+            la.action_date AS approval_action_date,
+
+            u.name AS approver_name
+        FROM leave_requests lr
+        JOIN employees e ON lr.employee_id = e.id
+        JOIN leave_types lt ON lr.leave_type_id = lt.id
+        LEFT JOIN leave_approvals la 
+            ON la.leave_request_id = lr.id 
+            AND la.level = 2
+        LEFT JOIN users u ON la.approver_id = u.id
+        WHERE lr.status IN ('approved', 'rejected')
+        ORDER BY COALESCE(la.action_date, lr.approved_at, lr.created_at) DESC
+    `;
+
+    const [rows] = await db.execute(queryStr);
+    return rows;
+};
+
+exports.exportRiwayatPdf = async (req, res) => {
+    try {
+        const data = await getRiwayatApprovalPdfData();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            'attachment; filename="riwayat-approval-atasan-level-2.pdf"'
+        );
+
+        const doc = new PDFDocument({
+            margin: 35,
+            size: 'A4',
+            layout: 'landscape',
+            bufferPages: true
+        });
+
+        doc.pipe(res);
+
+        // 1. HEADER
+        doc.fontSize(20).font('Helvetica-Bold').fillColor('#000000').text('FACULTYWARE', { align: 'center' });
+        doc.fontSize(12).font('Helvetica').text('Sistem Pengajuan Cuti Pegawai', { align: 'center' });
+        doc.moveDown(0.5);
+        
+        doc.moveTo(35, doc.y).lineTo(807, doc.y).lineWidth(1).strokeColor('#000000').stroke();
+        doc.moveDown(1);
+        
+        doc.fontSize(14).font('Helvetica-Bold').text('LAPORAN RIWAYAT APPROVAL CUTI ATASAN LEVEL 2', { align: 'center' });
+        doc.moveDown(1.5);
+
+        // 2. INFORMASI DOKUMEN & 3. RINGKASAN STATUS
+        const approvedCount = data.filter(item => item.status === 'approved').length;
+        const rejectedCount = data.filter(item => item.status === 'rejected').length;
+        const userName = (req.session && req.session.user && req.session.user.name) ? req.session.user.name : 'Atasan Level 2';
+
+        const startYInfo = doc.y;
+        
+        doc.fontSize(10).font('Helvetica');
+        doc.text(`Tanggal Cetak`, 35, startYInfo, { continued: true }).text(`: ${getPrintedDate()}`, 120, startYInfo);
+        doc.text(`Dicetak Oleh`, 35, startYInfo + 15, { continued: true }).text(`: ${userName}`, 120, startYInfo + 15);
+        doc.text(`Jenis Laporan`, 35, startYInfo + 30, { continued: true }).text(`: Riwayat Approval Cuti`, 120, startYInfo + 30);
+        doc.text(`Status Data`, 35, startYInfo + 45, { continued: true }).text(`: Approved dan Rejected`, 120, startYInfo + 45);
+        doc.text(`Total Data`, 35, startYInfo + 60, { continued: true }).text(`: ${data.length} Pengajuan`, 120, startYInfo + 60);
+
+        // Ringkasan
+        doc.font('Helvetica-Bold').text('Ringkasan:', 600, startYInfo);
+        doc.font('Helvetica').text(`Approved`, 600, startYInfo + 15, { continued: true }).text(`: ${approvedCount}`, 660, startYInfo + 15);
+        doc.text(`Rejected`, 600, startYInfo + 30, { continued: true }).text(`: ${rejectedCount}`, 660, startYInfo + 30);
+        doc.font('Helvetica-Bold').text(`Total`, 600, startYInfo + 45, { continued: true }).text(`: ${data.length}`, 660, startYInfo + 45);
+
+        doc.y = startYInfo + 90;
+
+        if (data.length === 0) {
+            doc.fontSize(11).font('Helvetica-Oblique').text('Belum ada riwayat pengajuan cuti yang berstatus approved atau rejected.', 35, doc.y, { align: 'center' });
+        } else {
+            // 4. TABEL DATA
+            const tableTop = doc.y;
+            
+            const renderTableHeader = (yPos) => {
+                doc.rect(35, yPos, 772, 20).fill('#f0f0f0');
+                doc.fillColor('#000000').font('Helvetica-Bold').fontSize(9);
+                doc.text('No', 40, yPos + 5, { width: 25, align: 'center' });
+                doc.text('ID', 70, yPos + 5, { width: 40, align: 'left' });
+                doc.text('Nama Pegawai', 115, yPos + 5, { width: 120, align: 'left' });
+                doc.text('Jenis Cuti', 240, yPos + 5, { width: 80, align: 'left' });
+                doc.text('Tanggal Cuti', 325, yPos + 5, { width: 110, align: 'left' });
+                doc.text('Hari', 440, yPos + 5, { width: 30, align: 'center' });
+                doc.text('Status', 475, yPos + 5, { width: 60, align: 'left' });
+                doc.text('Diproses', 540, yPos + 5, { width: 70, align: 'left' });
+                doc.text('Catatan', 615, yPos + 5, { width: 185, align: 'left' });
+                doc.moveTo(35, yPos + 20).lineTo(807, yPos + 20).lineWidth(0.5).strokeColor('#cccccc').stroke();
+                return yPos + 25;
+            };
+
+            let currentY = renderTableHeader(tableTop);
+
+            data.forEach((item, index) => {
+                // 6. PAGE BREAK
+                if (currentY > 520) {
+                    doc.addPage();
+                    currentY = renderTableHeader(35);
+                }
+
+                const statusText = item.status === 'approved' ? 'Approved' : 'Rejected';
+                const processedDate = item.approval_action_date || item.approved_at || item.created_at;
+                
+                const empName = item.employee_name || '-';
+                const leaveTypeName = item.leave_type_name || '-';
+                const tglCuti = `${formatDatePdf(item.start_date)} - ${formatDatePdf(item.end_date)}`;
+                const hari = `${item.total_days || 0}`;
+                const diproses = formatDatePdf(processedDate);
+                const catatan = item.approval_notes ? item.approval_notes.replace(/\r?\n|\r/g, ' ').trim() : '-';
+
+                doc.font('Helvetica').fontSize(9).fillColor('#000000');
+                
+                const rowY = currentY;
+                
+                const hName = doc.heightOfString(empName, { width: 120 });
+                const hJenis = doc.heightOfString(leaveTypeName, { width: 80 });
+                const hTgl = doc.heightOfString(tglCuti, { width: 110 });
+                const hCatatan = doc.heightOfString(catatan, { width: 185 });
+                const rowHeight = Math.max(hName, hJenis, hTgl, hCatatan, 15);
+
+                doc.text(`${index + 1}`, 40, rowY, { width: 25, align: 'center' });
+                doc.text(`${item.id}`, 70, rowY, { width: 40, align: 'left' });
+                doc.text(empName, 115, rowY, { width: 120, align: 'left' });
+                doc.text(leaveTypeName, 240, rowY, { width: 80, align: 'left' });
+                doc.text(tglCuti, 325, rowY, { width: 110, align: 'left' });
+                doc.text(hari, 440, rowY, { width: 30, align: 'center' });
+                doc.text(statusText, 475, rowY, { width: 60, align: 'left' });
+                doc.text(diproses, 540, rowY, { width: 70, align: 'left' });
+                doc.text(catatan, 615, rowY, { width: 185, align: 'left', lineBreak: true });
+
+                currentY = rowY + rowHeight + 5;
+                doc.moveTo(35, currentY).lineTo(807, currentY).lineWidth(0.5).strokeColor('#eeeeee').stroke();
+                currentY += 5;
+            });
+        }
+
+        // 7. FOOTER
+        const pages = doc.bufferedPageRange();
+        for (let i = 0; i < pages.count; i++) {
+            doc.switchToPage(i);
+            const bottomPos = doc.page.height - 35;
+            doc.moveTo(35, bottomPos - 10).lineTo(807, bottomPos - 10).lineWidth(0.5).strokeColor('#cccccc').stroke();
+            doc.fontSize(8).font('Helvetica').fillColor('#888888');
+            doc.text(`Facultyware - Laporan Riwayat Approval Cuti | Halaman ${i + 1} dari ${pages.count}`, 35, bottomPos, { align: 'right' });
+        }
+
+        doc.end();
+    } catch (error) {
+        console.error('Error at exportRiwayatPdf:', error);
+
+        if (!res.headersSent) {
+            return res.status(500).send('Terjadi kesalahan saat membuat file PDF.');
+        }
     }
 };
