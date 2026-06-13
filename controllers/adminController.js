@@ -75,3 +75,29 @@ exports.statistik = async (req, res) => {
         res.status(500).send('Terjadi kesalahan saat memuat statistik cuti.');
     }
 };
+
+// --- FUNGSI BARU UNTUK REST API ADMIN ---
+exports.getStatistikAPI = async (req, res) => {
+    try {
+        // Mengambil statistik dan semua data cuti
+        const stats = await cutiModel.getLeaveStatistics();
+        const allRequests = await cutiModel.getAllLeaveRequests('all');
+
+        // Mengembalikan format JSON
+        res.status(200).json({
+            success: true,
+            message: 'Berhasil mengambil data statistik dan seluruh riwayat cuti',
+            data: {
+                statistik: stats,
+                total_pengajuan: allRequests.length,
+                riwayat: allRequests
+            }
+        });
+    } catch (error) {
+        console.error('Error Admin API:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Terjadi kesalahan pada server saat mengambil data'
+        });
+    }
+};

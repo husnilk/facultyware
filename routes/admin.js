@@ -10,6 +10,10 @@ router.use(isAuthenticated, acl.checkRole('admin'));
 // Endpoint utama (Rekap Cuti)
 router.get('/', adminController.index);
 
+// --- ENDPOINT REST API ---
+// Mengembalikan format JSON 
+router.get('/api/statistik', adminController.getStatistikAPI);
+
 // Endpoint Statistik
 router.get('/statistik', adminController.statistik);
 
