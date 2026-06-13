@@ -188,14 +188,14 @@ exports.getRiwayatAPI = async (req, res) => {
     }
 };
 
-// --- FUNGSI EXPORT PDF ---
+// --- FUNGSI EXPORT PDF  ---
 exports.exportPdf = async (req, res) => {
     try {
         const employeeId = req.session.user.id; 
         const requests = await cutiModel.getEmployeeLeaveRequests(employeeId);
 
-        // Inisialisasi dokumen PDF baru
-        const doc = new PDFDocument({ margin: 50 });
+        // Inisialisasi dokumen PDF baru dengan ukuran A4
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
         
         // Atur header agar otomatis didownload oleh browser
         const filename = `Riwayat_Cuti_${req.session.user.name.replace(/\s+/g, '_')}.pdf`;
@@ -204,26 +204,93 @@ exports.exportPdf = async (req, res) => {
         
         doc.pipe(res);
 
-        // Desain Isi PDF
-        doc.fontSize(20).text('Laporan Riwayat Cuti Pegawai', { align: 'center' });
-        doc.moveDown(1);
-        doc.fontSize(12).text(`Nama Pegawai : ${req.session.user.name}`);
-        doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`);
-        doc.moveDown(2);
+        // --- KONFIGURASI WARNA ---
+        const primaryColor = '#000000'; // Biru khas Facultyware
+        const textColor = '#374151'; // Abu-abu gelap untuk teks
+        const lightGray = '#e5e7eb'; // Abu-abu terang untuk garis
 
+        // --- HEADER DOKUMEN ---
+        doc.fillColor(primaryColor)
+           .fontSize(22)
+           .font('Helvetica-Bold')
+           .text('Laporan Riwayat Cuti Pegawai', { align: 'center' });
+        
+        doc.moveDown(0.5);
+
+        // --- INFORMASI PEGAWAI ---
+        doc.fillColor(textColor)
+           .fontSize(11)
+           .font('Helvetica');
+        
+        doc.text(`Nama Pegawai : ${req.session.user.name}`);
+        doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+        
+        doc.moveDown(0.5);
+
+        // --- GARIS PEMBATAS ATAS ---
+        doc.moveTo(50, doc.y)
+           .lineTo(545, doc.y)
+           .lineWidth(1.5)
+           .strokeColor(lightGray)
+           .stroke();
+        
+        doc.moveDown(1.5);
+
+        // --- KONTEN RIWAYAT CUTI ---
         if (requests.length === 0) {
-            doc.text('Belum ada riwayat pengajuan cuti yang tercatat.', { align: 'center' });
+            doc.fillColor('#6b7280')
+               .font('Helvetica-Oblique')
+               .text('Belum ada riwayat pengajuan cuti yang tercatat.', { align: 'center' });
         } else {
-            // Looping data riwayat cuti
             requests.forEach((cuti, index) => {
-                doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. Pengajuan #${cuti.id} - ${cuti.leave_type_name}`);
-                doc.font('Helvetica').fontSize(10);
-                doc.text(`Status      : ${cuti.status.toUpperCase()}`);
-                doc.text(`Tanggal     : ${new Date(cuti.start_date).toLocaleDateString('id-ID')} s/d ${new Date(cuti.end_date).toLocaleDateString('id-ID')} (${cuti.total_days} hari)`);
+                // Judul per pengajuan
+                doc.fillColor(primaryColor)
+                   .fontSize(12)
+                   .font('Helvetica-Bold')
+                   .text(`${index + 1}. Pengajuan #${cuti.id} - ${cuti.leave_type_name}`);
+                
+                doc.moveDown(0.3);
+
+                // Konten per pengajuan
+                doc.fillColor(textColor).font('Helvetica').fontSize(10);
+                
+                // Menentukan warna status
+                let statusColor = '#ca8a04'; // Default Kuning (Pending)
+                if (cuti.status === 'approved') statusColor = '#16a34a'; // Hijau
+                if (cuti.status === 'rejected') statusColor = '#dc2626'; // Merah
+
+                // Baris Status
+                doc.text('Status      : ', { continued: true })
+                   .fillColor(statusColor)
+                   .font('Helvetica-Bold')
+                   .text(cuti.status.toUpperCase());
+
+                // Kembalikan ke warna teks standar
+                doc.fillColor(textColor).font('Helvetica');
+                
+                // Baris Tanggal & Alasan
+                doc.text(`Tanggal     : ${new Date(cuti.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} s/d ${new Date(cuti.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (${cuti.total_days} hari)`);
                 doc.text(`Alasan      : ${cuti.reason}`);
+                
+                doc.moveDown(1);
+
+                // --- GARIS PEMBATAS ANTAR ITEM ---
+                doc.moveTo(50, doc.y)
+                   .lineTo(545, doc.y)
+                   .lineWidth(0.5)
+                   .strokeColor(lightGray)
+                   .stroke();
+                
                 doc.moveDown(1);
             });
         }
+
+        // --- FOOTER (Halaman) ---
+        // Menambahkan nomor halaman di bagian paling bawah
+        const pageCount = doc.bufferedPageRange ? doc.bufferedPageRange().count : 1;
+        doc.fontSize(9)
+           .fillColor('#9ca3af')
+           .text(`Generate by Facultyware System - Halaman 1`, 50, 780, { align: 'center', lineBreak: false });
 
         // Akhiri proses dokumen
         doc.end();
