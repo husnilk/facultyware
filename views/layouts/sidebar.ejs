@@ -2,7 +2,11 @@
 <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
   <nav aria-label="Sidebar navigation">
     <header>
+      <% if (user && user.role === 'atasan_lvl_2') { %>
+      <a href="/atasan-lvl2/cuti/pending" class="btn-ghost p-2 h-12 w-full justify-start">
+      <% } else { %>
       <a href="/atasan/cuti" class="btn-ghost p-2 h-12 w-full justify-start">
+      <% } %>
         <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -14,7 +18,11 @@
         </div>
         <div class="grid flex-1 text-left text-sm leading-tight ml-2">
           <span class="truncate font-medium">Facultyware</span>
+          <% if (user && user.role === 'atasan_lvl_2') { %>
+          <span class="truncate text-xs">Atasan Lvl 2 Panel</span>
+          <% } else { %>
           <span class="truncate text-xs">Atasan Panel</span>
+          <% } %>
         </div>
       </a>
     </header>
@@ -33,6 +41,23 @@
                 <rect width="7" height="5" x="3" y="16" rx="1" />
               </svg>
               <span>Daftar Pengajuan</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <% } %>
+
+      <% if (user && user.role === 'atasan_lvl_2') { %>
+      <div role="group">
+        <h3 id="group-label-sidebar-content-2">Menu Pengajuan Cuti</h3>
+        <ul>
+          <li>
+            <a href="/atasan-lvl2/cuti/pending" hx-boost="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>Pending Approval</span>
             </a>
           </li>
         </ul>
