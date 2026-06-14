@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <!-- Basecoat & Tailwind CSS -->
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Inisialisasi Tema -->
+    <script>
+        (() => {
+            try {
+                const stored = localStorage.getItem("themeMode");
+                if (stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches) {
+                    document.documentElement.classList.add("dark");
+                }
+            } catch (_) { }
+        })();
+    </script>
+</head>
+
+<body class="bg-background text-foreground antialiased min-h-screen flex">
+
+    <!-- Render Partial Sidebar -->
+    <%- include('../layouts/sidebar') %>
+
+        <!-- Konten Utama -->
+        <main id="content" class="flex-1 min-w-0 transition-all duration-300">
+
+            <!-- Header -->
+            <header
+                class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10 px-4 h-14">
+                <!-- Tombol Toggle Sidebar (Mobile) -->
+                <button type="button" onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))"
+                    class="btn-sm-icon-ghost md:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="4" x2="20" y1="12" y2="12"></line>
+                        <line x1="4" x2="20" y1="6" y2="6"></line>
+                        <line x1="4" x2="20" y1="18" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="flex-1 flex items-center justify-between">
+                    <div class="font-semibold">Panel Atasan Level 2</div>
+
+                    <!-- Info User & Tema -->
+                    <div class="flex items-center gap-4">
+                        <!-- Toggle Tema -->
+                        <button id="theme-toggle" class="btn-sm-icon-ghost" aria-label="Toggle theme">
+                            <svg class="sun-icon hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <svg class="moon-icon hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                        </button>
+                        <!-- Teks Role -->
+                        <div
+                            class="text-sm font-medium px-3 py-1 bg-muted rounded-full text-muted-foreground hidden md:block">
+                            <%= user.name %> (<%= user.role %>)
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-6">
+                <!-- Judul Halaman -->
+                <header class="flex flex-col gap-2 mb-6">
+                    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+                        <%= title %>
+                    </h1>
+                    <p class="text-muted-foreground sm:text-lg">Daftar pengajuan cuti yang perlu ditinjau oleh Atasan Level 2.</p>
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <a href="/atasan-lvl2/export/riwayat/pdf" class="btn-sm-outline inline-flex items-center gap-2 border border-border px-3 py-1.5 rounded-md hover:bg-muted transition-colors text-sm font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" x2="12" y1="15" y2="3"></line>
+                            </svg>
+                            Download PDF Riwayat Approval
+                        </a>
+                    </div>
+                </header>
+
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="mb-6 p-4 rounded-lg border bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900 flex items-start gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        <div>
+                            <p class="text-sm font-medium">
+                                <% if (success === 'approved') { %>
+                                    Pengajuan cuti berhasil disetujui.
+                                <% } else if (success === 'rejected') { %>
+                                    Pengajuan cuti berhasil ditolak.
+                                <% } else { %>
+                                    Aksi berhasil dilakukan.
+                                <% } %>
+                            </p>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Card Filter dan Pencarian -->
+                <div class="card p-5 md:p-6 mb-8 shadow-sm border border-border">
+                    <div class="border-b pb-3">
+                        <h2 class="text-lg font-semibold flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            Filter & Pencarian
+                        </h2>
+                    </div>
+
+                    <form action="/atasan-lvl2/cuti/pending" method="GET" class="mt-5" hx-boost="true">
+                        <label for="search" class="block text-sm font-medium text-muted-foreground mb-2">
+                            Cari Pegawai
+                        </label>
+
+                        <div class="flex items-center gap-3">
+                            <!-- Search Input -->
+                            <div class="relative flex-1">
+                                <span
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-muted-foreground">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.3-4.3"></path>
+                                    </svg>
+                                </span>
+
+                                <input type="text" id="search" name="search"
+                                    value="<%= typeof search !== 'undefined' ? search : '' %>"
+                                    placeholder="Ketik nama pegawai..."
+                                    class="input h-11 w-full rounded-lg border border-border bg-background pr-4 text-sm"
+                                    style="padding-left: 3rem !important;">
+                            </div>
+
+                            <!-- Tombol Cari -->
+                            <button type="submit"
+                                class="btn btn-primary h-11 px-6 flex items-center justify-center gap-2 whitespace-nowrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                                Cari
+                            </button>
+
+                            <!-- Tombol Reset -->
+                            <a href="/atasan-lvl2/cuti/pending"
+                                class="btn-outline h-11 px-6 flex items-center justify-center gap-2 whitespace-nowrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                    <path d="M3 3v5h5"></path>
+                                </svg>
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Card Tabel Pengajuan -->
+                <div class="card overflow-hidden shadow-sm border border-border">
+                    <div class="overflow-x-auto">
+                        <table class="table table-hover min-w-full">
+                            <thead>
+                                <tr class="bg-muted/50 border-b">
+                                    <th
+                                        class="w-10 text-center py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        No</th>
+                                    <th
+                                        class="py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        Nama Pegawai</th>
+                                    <th
+                                        class="py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        NIP / Nomor Pegawai</th>
+                                    <th
+                                        class="py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        Jenis Cuti</th>
+                                    <th
+                                        class="py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        Tgl Mulai</th>
+                                    <th
+                                        class="py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        Tgl Selesai</th>
+                                    <th
+                                        class="text-center py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        Jumlah Hari</th>
+                                    <th
+                                        class="text-center py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                                        Status</th>
+                                    <th
+                                        class="text-center py-4 text-xs uppercase tracking-wider text-muted-foreground font-semibold w-24">
+                                        Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                <% if (requests && requests.length> 0) { %>
+                                    <% requests.forEach((req, index)=> { %>
+                                        <tr class="hover:bg-muted/30 transition-colors">
+                                            <td class="text-center text-sm font-medium text-muted-foreground">
+                                                <%= index + 1 %>
+                                            </td>
+                                            <td class="text-sm font-medium">
+                                                <%= req.employee_name %>
+                                            </td>
+                                            <td class="text-sm text-muted-foreground">
+                                                <%= req.employee_number %>
+                                            </td>
+                                            <td class="text-sm">
+                                                <div
+                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                    <%= req.leave_type_name %>
+                                                </div>
+                                            </td>
+                                            <td class="text-sm text-muted-foreground">
+                                                <%= new Date(req.start_date).toLocaleDateString('id-ID', {day: 'numeric'
+                                                    , month: 'short' , year: 'numeric' }) %>
+                                            </td>
+                                            <td class="text-sm text-muted-foreground">
+                                                <%= new Date(req.end_date).toLocaleDateString('id-ID', {day: 'numeric' ,
+                                                    month: 'short' , year: 'numeric' }) %>
+                                            </td>
+                                            <td class="text-center text-sm font-semibold">
+                                                <%= req.total_days %> Hari
+                                            </td>
+                                            <td class="text-center">
+                                                <% if (req.status==='pending' ) { %>
+                                                    <span
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">Pending</span>
+                                                    <% } %>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="/atasan-lvl2/cuti/<%= req.id %>"
+                                                    class="btn-sm-outline" title="Lihat Detail">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="mr-1">
+                                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                    Detail
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="9" class="text-center py-12 text-muted-foreground">
+                                                        <div
+                                                            class="flex flex-col items-center justify-center space-y-3">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="48"
+                                                                height="48" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="1"
+                                                                stroke-linecap="round" stroke-linejoin="round"
+                                                                class="text-muted-foreground/50">
+                                                                <rect width="18" height="18" x="3" y="4" rx="2"
+                                                                    ry="2" />
+                                                                <line x1="16" x2="16" y1="2" y2="6" />
+                                                                <line x1="8" x2="8" y1="2" y2="6" />
+                                                                <line x1="3" x2="21" y1="10" y2="10" />
+                                                                <path d="m9 16 2 2 4-4" />
+                                                            </svg>
+                                                            <p class="text-lg font-medium">Tidak ada pengajuan cuti yang
+                                                                menunggu persetujuan.</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Script Tema -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const toggle = document.getElementById('theme-toggle');
+                const html = document.documentElement;
+                const sunIcon = document.querySelector('.sun-icon');
+                const moonIcon = document.querySelector('.moon-icon');
+
+                const updateIcons = () => {
+                    if (html.classList.contains('dark')) {
+                        sunIcon.classList.remove('hidden');
+                        moonIcon.classList.add('hidden');
+                    } else {
+                        sunIcon.classList.add('hidden');
+                        moonIcon.classList.remove('hidden');
+                    }
+                };
+
+                updateIcons();
+
+                toggle?.addEventListener('click', () => {
+                    html.classList.toggle('dark');
+                    const isDark = html.classList.contains('dark');
+                    localStorage.setItem('themeMode', isDark ? 'dark' : 'light');
+                    updateIcons();
+                });
+            });
+        </script>
+</body>
+
+</html>
