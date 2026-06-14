@@ -7,21 +7,27 @@ const acl = require('../middlewares/acl');
 // Kunci rute ini khusus untuk Pegawai
 router.use(isAuthenticated, acl.checkRole('pegawai'));
 
-// Riwayat Dashboard
+// Dashboard (Statistik & Pending)
 router.get('/', pegawaiController.index);
+
+// Riwayat (Approved & Rejected)
+router.get('/riwayat', pegawaiController.riwayat);
+
+// --- RUTE HALAMAN NOTIFIKASI ---
+// (Wajib diletakkan di atas rute /:id agar tidak dianggap sebagai ID pengajuan)
+router.get('/notifications', pegawaiController.notifications);
 
 // --- ENDPOINT REST API ---
 router.get('/api/riwayat', pegawaiController.getRiwayatAPI);
 
 // --- ENDPOINT EXPORT PDF ---
-// Rute ini memenuhi Syarat Poin B Tugas
 router.get('/export-pdf', pegawaiController.exportPdf);
 
 // Buat Pengajuan Cuti
 router.get('/create', pegawaiController.create);
 router.post('/create', pegawaiController.store);
 
-// Detail Pengajuan (Rute dengan parameter :id harus di bawah rute statis)
+// Detail Pengajuan (RUTE DINAMIS :id HARUS DI BAWAH)
 router.get('/:id', pegawaiController.detail);
 
 // Ubah Pengajuan (Edit)

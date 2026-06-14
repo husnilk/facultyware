@@ -1,7 +1,6 @@
 const cutiModel = require('../models/cutiModel');
-const PDFDocument = require('pdfkit'); // Import library pembuat PDF
+const PDFDocument = require('pdfkit');
 
-// Helper untuk hitung jumlah hari cuti otomatis
 const hitungHari = (start, end) => {
     return Math.ceil(Math.abs(new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
 };
@@ -9,19 +8,54 @@ const hitungHari = (start, end) => {
 exports.index = async (req, res) => {
     try {
         const employeeId = req.session.user.id; 
-        const requests = await cutiModel.getEmployeeLeaveRequests(employeeId);
+        const stats = await cutiModel.getEmployeeLeaveStatistics(employeeId);
+        const pendingRequests = await cutiModel.getEmployeeLeaveRequests(employeeId, 'pending');
+        
         res.render('pegawai/index', {
-            title: 'Riwayat Cuti Pegawai',
+            title: 'Dashboard Cuti',
             user: req.session.user,
-            requests: requests
+            stats: stats,
+            requests: pendingRequests
         });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).send('Terjadi kesalahan saat memuat halaman riwayat cuti.');
+        res.status(500).send('Terjadi kesalahan saat memuat dashboard.');
     }
 };
 
-// Menampilkan form tambah pengajuan
+exports.riwayat = async (req, res) => {
+    try {
+        const employeeId = req.session.user.id; 
+        const historyRequests = await cutiModel.getEmployeeLeaveRequests(employeeId, 'history');
+        
+        res.render('pegawai/riwayat', {
+            title: 'Riwayat Cuti',
+            user: req.session.user,
+            requests: historyRequests
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Terjadi kesalahan saat memuat riwayat cuti.');
+    }
+};
+
+// --- FUNGSI BARU: HALAMAN NOTIFIKASI ---
+exports.notifications = async (req, res) => {
+    try {
+        const employeeId = req.session.user.id;
+        const notifications = await cutiModel.getEmployeeNotifications(employeeId);
+        
+        res.render('pegawai/notifications', {
+            title: 'Notifikasi',
+            user: req.session.user,
+            notifications: notifications
+        });
+    } catch (error) {
+        console.error('Error notifications:', error);
+        res.status(500).send('Terjadi kesalahan saat memuat notifikasi.');
+    }
+};
+
 exports.create = async (req, res) => {
     try {
         const leaveTypes = await cutiModel.getLeaveTypes();
@@ -37,13 +71,11 @@ exports.create = async (req, res) => {
     }
 };
 
-// Memproses data dari form
 exports.store = async (req, res) => {
     try {
         const { leave_type_id, start_date, end_date, reason, address_leave, contact_leave } = req.body;
         const employeeId = req.session.user.id;
         
-        // Validasi logika tanggal dasar
         if (new Date(end_date) < new Date(start_date)) {
             const leaveTypes = await cutiModel.getLeaveTypes();
             return res.render('pegawai/create', {
@@ -59,7 +91,7 @@ exports.store = async (req, res) => {
             leave_type_id: parseInt(leave_type_id),
             start_date, end_date, total_days: totalDays,
             reason, address_leave, contact_leave,
-            approver_id_id: 6 // ID atasan langsung (di-hardcode untuk testing)
+            approver_id_id: 6
         });
 
         res.redirect('/pegawai');
@@ -77,11 +109,19 @@ exports.detail = async (req, res) => {
         if (!cuti) {
             return res.status(404).send('Data pengajuan tidak ditemukan atau Anda tidak memiliki akses.');
         }
+
+        let approvals = [];
+        try {
+            approvals = await cutiModel.getLeaveApprovals(req.params.id);
+        } catch (err) {
+            console.warn("Gagal mengambil data approval:", err.message);
+        }
         
         res.render('pegawai/detail', {
             title: 'Detail Pengajuan Cuti',
             user: req.session.user,
-            cuti: cuti
+            cuti: cuti,
+            approvals: approvals 
         });
     } catch (error) {
         console.error('Error detail:', error);
@@ -89,7 +129,6 @@ exports.detail = async (req, res) => {
     }
 };
 
-// Proses Hapus Pengajuan
 exports.delete = async (req, res) => {
     try {
         const employeeId = req.session.user.id;
@@ -108,7 +147,6 @@ exports.delete = async (req, res) => {
     }
 };
 
-// Menampilkan form edit
 exports.edit = async (req, res) => {
     try {
         const employeeId = req.session.user.id;
@@ -132,7 +170,6 @@ exports.edit = async (req, res) => {
     }
 };
 
-// Memproses data dari form edit
 exports.update = async (req, res) => {
     try {
         const { leave_type_id, start_date, end_date, reason, address_leave, contact_leave } = req.body;
@@ -167,7 +204,6 @@ exports.update = async (req, res) => {
     }
 };
 
-// --- FUNGSI REST API ---
 exports.getRiwayatAPI = async (req, res) => {
     try {
         const employeeId = req.session.user.id; 
@@ -188,111 +224,61 @@ exports.getRiwayatAPI = async (req, res) => {
     }
 };
 
-// --- FUNGSI EXPORT PDF  ---
 exports.exportPdf = async (req, res) => {
     try {
         const employeeId = req.session.user.id; 
-        const requests = await cutiModel.getEmployeeLeaveRequests(employeeId);
+        const requests = await cutiModel.getEmployeeLeaveRequests(employeeId, 'all');
 
-        // Inisialisasi dokumen PDF baru dengan ukuran A4
         const doc = new PDFDocument({ margin: 50, size: 'A4' });
         
-        // Atur header agar otomatis didownload oleh browser
         const filename = `Riwayat_Cuti_${req.session.user.name.replace(/\s+/g, '_')}.pdf`;
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
         
         doc.pipe(res);
 
-        // --- KONFIGURASI WARNA ---
-        const primaryColor = '#000000'; // Biru khas Facultyware
-        const textColor = '#374151'; // Abu-abu gelap untuk teks
-        const lightGray = '#e5e7eb'; // Abu-abu terang untuk garis
+        const primaryColor = '#000000';
+        const textColor = '#374151';
+        const lightGray = '#e5e7eb';
 
-        // --- HEADER DOKUMEN ---
-        doc.fillColor(primaryColor)
-           .fontSize(22)
-           .font('Helvetica-Bold')
-           .text('Laporan Riwayat Cuti Pegawai', { align: 'center' });
-        
+        doc.fillColor(primaryColor).fontSize(22).font('Helvetica-Bold').text('Laporan Riwayat Cuti Pegawai', { align: 'center' });
         doc.moveDown(0.5);
 
-        // --- INFORMASI PEGAWAI ---
-        doc.fillColor(textColor)
-           .fontSize(11)
-           .font('Helvetica');
-        
+        doc.fillColor(textColor).fontSize(11).font('Helvetica');
         doc.text(`Nama Pegawai : ${req.session.user.name}`);
         doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`);
-        
         doc.moveDown(0.5);
 
-        // --- GARIS PEMBATAS ATAS ---
-        doc.moveTo(50, doc.y)
-           .lineTo(545, doc.y)
-           .lineWidth(1.5)
-           .strokeColor(lightGray)
-           .stroke();
-        
+        doc.moveTo(50, doc.y).lineTo(545, doc.y).lineWidth(1.5).strokeColor(lightGray).stroke();
         doc.moveDown(1.5);
 
-        // --- KONTEN RIWAYAT CUTI ---
         if (requests.length === 0) {
-            doc.fillColor('#6b7280')
-               .font('Helvetica-Oblique')
-               .text('Belum ada riwayat pengajuan cuti yang tercatat.', { align: 'center' });
+            doc.fillColor('#6b7280').font('Helvetica-Oblique').text('Belum ada riwayat pengajuan cuti yang tercatat.', { align: 'center' });
         } else {
             requests.forEach((cuti, index) => {
-                // Judul per pengajuan
-                doc.fillColor(primaryColor)
-                   .fontSize(12)
-                   .font('Helvetica-Bold')
-                   .text(`${index + 1}. Pengajuan #${cuti.id} - ${cuti.leave_type_name}`);
-                
+                doc.fillColor(primaryColor).fontSize(12).font('Helvetica-Bold').text(`${index + 1}. Pengajuan #${cuti.id} - ${cuti.leave_type_name}`);
                 doc.moveDown(0.3);
 
-                // Konten per pengajuan
                 doc.fillColor(textColor).font('Helvetica').fontSize(10);
                 
-                // Menentukan warna status
-                let statusColor = '#ca8a04'; // Default Kuning (Pending)
-                if (cuti.status === 'approved') statusColor = '#16a34a'; // Hijau
-                if (cuti.status === 'rejected') statusColor = '#dc2626'; // Merah
+                let statusColor = '#ca8a04'; 
+                if (cuti.status === 'approved') statusColor = '#16a34a'; 
+                if (cuti.status === 'rejected') statusColor = '#dc2626';
 
-                // Baris Status
-                doc.text('Status      : ', { continued: true })
-                   .fillColor(statusColor)
-                   .font('Helvetica-Bold')
-                   .text(cuti.status.toUpperCase());
-
-                // Kembalikan ke warna teks standar
+                doc.text('Status      : ', { continued: true }).fillColor(statusColor).font('Helvetica-Bold').text(cuti.status.toUpperCase());
                 doc.fillColor(textColor).font('Helvetica');
-                
-                // Baris Tanggal & Alasan
                 doc.text(`Tanggal     : ${new Date(cuti.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} s/d ${new Date(cuti.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (${cuti.total_days} hari)`);
                 doc.text(`Alasan      : ${cuti.reason}`);
-                
                 doc.moveDown(1);
 
-                // --- GARIS PEMBATAS ANTAR ITEM ---
-                doc.moveTo(50, doc.y)
-                   .lineTo(545, doc.y)
-                   .lineWidth(0.5)
-                   .strokeColor(lightGray)
-                   .stroke();
-                
+                doc.moveTo(50, doc.y).lineTo(545, doc.y).lineWidth(0.5).strokeColor(lightGray).stroke();
                 doc.moveDown(1);
             });
         }
 
-        // --- FOOTER (Halaman) ---
-        // Menambahkan nomor halaman di bagian paling bawah
         const pageCount = doc.bufferedPageRange ? doc.bufferedPageRange().count : 1;
-        doc.fontSize(9)
-           .fillColor('#9ca3af')
-           .text(`Generate by Facultyware System - Halaman 1`, 50, 780, { align: 'center', lineBreak: false });
+        doc.fontSize(9).fillColor('#9ca3af').text(`Generate by Facultyware System`, 50, 780, { align: 'center', lineBreak: false });
 
-        // Akhiri proses dokumen
         doc.end();
     } catch (error) {
         console.error('Error export PDF:', error);

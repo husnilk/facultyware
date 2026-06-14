@@ -1,4 +1,4 @@
-const db = require('../lib/db');
+const cutiModel = require('../models/cutiModel');
 const PDFDocument = require('pdfkit');
 
 exports.index = (req, res) => {
@@ -8,27 +8,7 @@ exports.index = (req, res) => {
 exports.pendingCuti = async (req, res) => {
     try {
         const search = req.query.search || '';
-        
-        let queryStr = `
-            SELECT lr.id, lr.start_date, lr.end_date, lr.total_days, lr.status, lr.submitted_at, lr.created_at,
-                   e.name AS employee_name, e.employee_number AS employee_number,
-                   lt.name AS leave_type_name
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.status = 'pending'
-        `;
-        
-        let queryParams = [];
-
-        if (search) {
-            queryStr += ` AND e.name LIKE ?`;
-            queryParams.push(`%${search}%`);
-        }
-
-        queryStr += ` ORDER BY COALESCE(lr.submitted_at, lr.created_at) DESC`;
-
-        const [requests] = await db.execute(queryStr, queryParams);
+        const requests = await cutiModel.getPendingLeaveRequestsLvl2(search);
 
         res.render('atasanLvl2/index', {
             title: 'Pengajuan Cuti Menunggu Persetujuan',
@@ -46,42 +26,14 @@ exports.pendingCuti = async (req, res) => {
 exports.detailCuti = async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
-        if (isNaN(id)) {
-            return res.status(400).send("ID pengajuan cuti tidak valid.");
-        }
+        if (isNaN(id)) return res.status(400).send("ID pengajuan cuti tidak valid.");
 
-        const queryStr = `
-            SELECT lr.id, lr.employee_id, lr.leave_type_id, lr.start_date, lr.end_date, 
-                   lr.total_days, lr.reason, lr.attachment, lr.address_leave, lr.contact_leave, 
-                   lr.status, lr.submitted_at, lr.created_at, lr.approved_at,
-                   e.name AS employee_name, e.employee_number AS employee_number,
-                   lt.name AS leave_type_name
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.id = ?
-        `;
+        const requestDetail = await cutiModel.getLeaveRequestDetailLvl2(id);
+        if (!requestDetail) return res.status(404).send("Data pengajuan cuti tidak ditemukan.");
 
-        const [requests] = await db.execute(queryStr, [id]);
-
-        if (requests.length === 0) {
-            return res.status(404).send("Data pengajuan cuti tidak ditemukan.");
-        }
-
-        const requestDetail = requests[0];
-
-        // Riwayat approval
         let approvals = [];
         try {
-            const approvalQuery = `
-                SELECT la.level, la.status, la.notes, la.action_date, la.created_at, u.name AS approver_name
-                FROM leave_approvals la
-                LEFT JOIN users u ON la.approver_id = u.id
-                WHERE la.leave_request_id = ?
-                ORDER BY la.created_at ASC
-            `;
-            const [approvalResults] = await db.execute(approvalQuery, [id]);
-            approvals = approvalResults;
+            approvals = await cutiModel.getLeaveApprovals(id);
         } catch (err) {
             console.warn("Tabel leave_approvals belum tersedia:", err.message);
         }
@@ -100,364 +52,120 @@ exports.detailCuti = async (req, res) => {
 };
 
 exports.approveCuti = async (req, res) => {
-    console.log('POST approveCuti terpanggil, id:', req.params.id);
-    let conn;
     try {
         const id = parseInt(req.params.id, 10);
         if (isNaN(id)) return res.redirect('/atasan-lvl2/cuti/pending');
         
-        const userId = req.session.user.id;
-        
-        // Cari employee approver
-        const [empRows] = await db.execute(`SELECT id FROM employees WHERE id = ?`, [userId]);
-        if (empRows.length === 0) {
-            return res.redirect(`/atasan-lvl2/cuti/${id}?error=approver_not_found`);
-        }
-        const approverEmployeeId = empRows[0].id;
-        
-        conn = await db.getConnection();
-        await conn.beginTransaction();
-        
-        const [requests] = await conn.execute(`SELECT * FROM leave_requests WHERE id = ? FOR UPDATE`, [id]);
-        if (requests.length === 0) {
-            await conn.rollback();
-            return res.status(404).send("Data tidak ditemukan.");
-        }
-        
-        const leaveRequest = requests[0];
-        if (leaveRequest.status !== 'pending') {
-            await conn.rollback();
-            return res.redirect(`/atasan-lvl2/cuti/${id}?error=already_processed`);
-        }
-        
-        await conn.execute(`
-            UPDATE leave_requests
-            SET status = 'approved',
-                approved_at = NOW(),
-                approver_id = ?,
-                approver_id_id = ?,
-                updated_at = NOW()
-            WHERE id = ?
-        `, [approverEmployeeId, approverEmployeeId, id]);
-        
-        await conn.execute(`
-            INSERT INTO leave_approvals
-            (leave_request_id, approver_id, level, status, notes, action_date, employee_id, created_at, updated_at)
-            VALUES (?, ?, 2, 'approved', ?, NOW(), ?, NOW(), NOW())
-        `, [id, userId, 'Pengajuan disetujui oleh Atasan Level 2.', leaveRequest.employee_id]);
-        
-        await conn.commit();
+        // ID User langsung digunakan sebagai Approver ID (Tanpa query tambahan)
+        const approverId = req.session.user.id;
+        const notes = 'Pengajuan disetujui oleh Atasan Level 2.';
+
+        await cutiModel.processLeaveApprovalLvl2(id, approverId, 'approved', notes);
         res.redirect('/atasan-lvl2/cuti/pending?success=approved');
         
     } catch (error) {
-        if (conn) await conn.rollback();
         console.error("Error at approveCuti:", error);
+        if (error.message === 'ALREADY_PROCESSED') {
+            return res.redirect(`/atasan-lvl2/cuti/${req.params.id}?error=already_processed`);
+        }
         res.status(500).send("Terjadi kesalahan sistem.");
-    } finally {
-        if (conn) conn.release();
     }
 };
 
 exports.rejectCuti = async (req, res) => {
-    console.log('POST rejectCuti terpanggil, id:', req.params.id);
-    let conn;
     try {
         const id = parseInt(req.params.id, 10);
         if (isNaN(id)) return res.redirect('/atasan-lvl2/cuti/pending');
         
         const notes = (req.body.notes || '').trim();
-        if (!notes) {
-            return res.redirect(`/atasan-lvl2/cuti/${id}?error=notes_required`);
-        }
+        if (!notes) return res.redirect(`/atasan-lvl2/cuti/${id}?error=notes_required`);
         
-        const userId = req.session.user.id;
-        
-        // Cari employee approver
-        const [empRows] = await db.execute(`SELECT id FROM employees WHERE id = ?`, [userId]);
-        if (empRows.length === 0) {
-            return res.redirect(`/atasan-lvl2/cuti/${id}?error=approver_not_found`);
-        }
-        const approverEmployeeId = empRows[0].id;
-        
-        conn = await db.getConnection();
-        await conn.beginTransaction();
-        
-        const [requests] = await conn.execute(`SELECT * FROM leave_requests WHERE id = ? FOR UPDATE`, [id]);
-        if (requests.length === 0) {
-            await conn.rollback();
-            return res.status(404).send("Data tidak ditemukan.");
-        }
-        
-        const leaveRequest = requests[0];
-        if (leaveRequest.status !== 'pending') {
-            await conn.rollback();
-            return res.redirect(`/atasan-lvl2/cuti/${id}?error=already_processed`);
-        }
-        
-        await conn.execute(`
-            UPDATE leave_requests
-            SET status = 'rejected',
-                approved_at = NOW(),
-                approver_id = ?,
-                approver_id_id = ?,
-                updated_at = NOW()
-            WHERE id = ?
-        `, [approverEmployeeId, approverEmployeeId, id]);
-        
-        await conn.execute(`
-            INSERT INTO leave_approvals
-            (leave_request_id, approver_id, level, status, notes, action_date, employee_id, created_at, updated_at)
-            VALUES (?, ?, 2, 'rejected', ?, NOW(), ?, NOW(), NOW())
-        `, [id, userId, notes, leaveRequest.employee_id]);
-        
-        await conn.commit();
+        // ID User langsung digunakan sebagai Approver ID (Tanpa query tambahan)
+        const approverId = req.session.user.id;
+
+        await cutiModel.processLeaveApprovalLvl2(id, approverId, 'rejected', notes);
         res.redirect('/atasan-lvl2/cuti/pending?success=rejected');
         
     } catch (error) {
-        if (conn) await conn.rollback();
         console.error("Error at rejectCuti:", error);
+        if (error.message === 'ALREADY_PROCESSED') {
+            return res.redirect(`/atasan-lvl2/cuti/${req.params.id}?error=already_processed`);
+        }
         res.status(500).send("Terjadi kesalahan sistem.");
-    } finally {
-        if (conn) conn.release();
     }
 };
 
 exports.apiGetPendingCuti = async (req, res) => {
     try {
         const search = req.query.search || '';
-
-        let queryStr = `
-            SELECT 
-                lr.id,
-                lr.employee_id,
-                lr.leave_type_id,
-                lr.start_date,
-                lr.end_date,
-                lr.total_days,
-                lr.status,
-                lr.submitted_at,
-                lr.created_at,
-                e.name AS employee_name,
-                e.employee_number AS employee_number,
-                lt.name AS leave_type_name
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.status = 'pending'
-        `;
-        let queryParams = [];
-
-        if (search) {
-            queryStr += ` AND (e.name LIKE ? OR e.employee_number LIKE ?)`;
-            queryParams.push(`%${search}%`, `%${search}%`);
-        }
-
-        queryStr += ` ORDER BY COALESCE(lr.submitted_at, lr.created_at) DESC`;
-
-        const [requests] = await db.execute(queryStr, queryParams);
+        const requests = await cutiModel.getPendingLeaveRequestsLvl2(search);
 
         res.json({
             success: true,
             message: "Data pengajuan cuti pending berhasil diambil.",
-            filters: {
-                search: search
-            },
+            filters: { search: search },
             total: requests.length,
             data: requests
         });
     } catch (error) {
         console.error("Error at apiGetPendingCuti:", error);
-        res.status(500).json({
-            success: false,
-            message: "Terjadi kesalahan server.",
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: "Terjadi kesalahan server.", error: error.message });
     }
 };
 
 exports.apiGetDetailCuti = async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) return res.status(400).json({ success: false, message: "ID tidak valid." });
 
-        if (isNaN(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "ID pengajuan cuti tidak valid."
-            });
-        }
+        const requestDetail = await cutiModel.getLeaveRequestDetailLvl2(id);
+        if (!requestDetail) return res.status(404).json({ success: false, message: "Data tidak ditemukan." });
 
-        const queryStr = `
-            SELECT 
-                lr.id,
-                lr.employee_id,
-                lr.leave_type_id,
-                lr.start_date,
-                lr.end_date,
-                lr.total_days,
-                lr.reason,
-                lr.attachment,
-                lr.address_leave,
-                lr.contact_leave,
-                lr.status,
-                lr.submitted_at,
-                lr.created_at,
-                lr.approved_at,
-                e.name AS employee_name,
-                e.employee_number AS employee_number,
-                lt.name AS leave_type_name
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.id = ?
-        `;
-
-        const [requests] = await db.execute(queryStr, [id]);
-
-        if (requests.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "Data pengajuan cuti tidak ditemukan."
-            });
-        }
-
-        const requestDetail = requests[0];
-
-        let approvals = [];
         try {
-            const approvalQuery = `
-                SELECT 
-                    la.level,
-                    la.status,
-                    la.notes,
-                    la.action_date,
-                    la.created_at,
-                    u.name AS approver_name
-                FROM leave_approvals la
-                LEFT JOIN users u ON la.approver_id = u.id
-                WHERE la.leave_request_id = ?
-                ORDER BY la.created_at ASC
-            `;
-            const [approvalResults] = await db.execute(approvalQuery, [id]);
-            approvals = approvalResults;
+            requestDetail.approvals = await cutiModel.getLeaveApprovals(id);
         } catch (err) {
             console.warn("Error getting approvals:", err.message);
         }
 
-        requestDetail.approvals = approvals;
-
-        res.json({
-            success: true,
-            message: "Detail pengajuan cuti berhasil diambil.",
-            data: requestDetail
-        });
+        res.json({ success: true, message: "Detail pengajuan cuti berhasil diambil.", data: requestDetail });
     } catch (error) {
         console.error("Error at apiGetDetailCuti:", error);
-        res.status(500).json({
-            success: false,
-            message: "Terjadi kesalahan server.",
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: "Terjadi kesalahan server.", error: error.message });
     }
 };
 
 const formatDatePdf = (dateValue) => {
     if (!dateValue) return '-';
-
-    return new Date(dateValue).toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
+    return new Date(dateValue).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 };
 
 const getPrintedDate = () => {
-    return new Date().toLocaleString('id-ID', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
-
-const getRiwayatApprovalPdfData = async () => {
-    const queryStr = `
-        SELECT 
-            lr.id,
-            lr.employee_id,
-            lr.leave_type_id,
-            lr.start_date,
-            lr.end_date,
-            lr.total_days,
-            lr.reason,
-            lr.status,
-            lr.submitted_at,
-            lr.approved_at,
-            lr.created_at,
-
-            e.name AS employee_name,
-            e.employee_number AS employee_number,
-
-            lt.name AS leave_type_name,
-
-            la.level AS approval_level,
-            la.status AS approval_status,
-            la.notes AS approval_notes,
-            la.action_date AS approval_action_date,
-
-            u.name AS approver_name
-        FROM leave_requests lr
-        JOIN employees e ON lr.employee_id = e.id
-        JOIN leave_types lt ON lr.leave_type_id = lt.id
-        LEFT JOIN leave_approvals la 
-            ON la.leave_request_id = lr.id 
-            AND la.level = 2
-        LEFT JOIN users u ON la.approver_id = u.id
-        WHERE lr.status IN ('approved', 'rejected')
-        ORDER BY COALESCE(la.action_date, lr.approved_at, lr.created_at) DESC
-    `;
-
-    const [rows] = await db.execute(queryStr);
-    return rows;
+    return new Date().toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
 exports.exportRiwayatPdf = async (req, res) => {
     try {
-        const data = await getRiwayatApprovalPdfData();
+        const data = await cutiModel.getRiwayatApprovalPdfDataLvl2();
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader(
-            'Content-Disposition',
-            'attachment; filename="riwayat-approval-atasan-level-2.pdf"'
-        );
+        res.setHeader('Content-Disposition', 'attachment; filename="riwayat-approval-atasan-level-2.pdf"');
 
-        const doc = new PDFDocument({
-            margin: 35,
-            size: 'A4',
-            layout: 'landscape',
-            bufferPages: true
-        });
-
+        const doc = new PDFDocument({ margin: 35, size: 'A4', layout: 'landscape', bufferPages: true });
         doc.pipe(res);
 
-        // 1. HEADER
         doc.fontSize(20).font('Helvetica-Bold').fillColor('#000000').text('FACULTYWARE', { align: 'center' });
         doc.fontSize(12).font('Helvetica').text('Sistem Pengajuan Cuti Pegawai', { align: 'center' });
         doc.moveDown(0.5);
-        
         doc.moveTo(35, doc.y).lineTo(807, doc.y).lineWidth(1).strokeColor('#000000').stroke();
         doc.moveDown(1);
-        
         doc.fontSize(14).font('Helvetica-Bold').text('LAPORAN RIWAYAT APPROVAL CUTI ATASAN LEVEL 2', { align: 'center' });
         doc.moveDown(1.5);
 
-        // 2. INFORMASI DOKUMEN & 3. RINGKASAN STATUS
         const approvedCount = data.filter(item => item.status === 'approved').length;
         const rejectedCount = data.filter(item => item.status === 'rejected').length;
         const userName = (req.session && req.session.user && req.session.user.name) ? req.session.user.name : 'Atasan Level 2';
 
         const startYInfo = doc.y;
-        
         doc.fontSize(10).font('Helvetica');
         doc.text(`Tanggal Cetak`, 35, startYInfo, { continued: true }).text(`: ${getPrintedDate()}`, 120, startYInfo);
         doc.text(`Dicetak Oleh`, 35, startYInfo + 15, { continued: true }).text(`: ${userName}`, 120, startYInfo + 15);
@@ -465,7 +173,6 @@ exports.exportRiwayatPdf = async (req, res) => {
         doc.text(`Status Data`, 35, startYInfo + 45, { continued: true }).text(`: Approved dan Rejected`, 120, startYInfo + 45);
         doc.text(`Total Data`, 35, startYInfo + 60, { continued: true }).text(`: ${data.length} Pengajuan`, 120, startYInfo + 60);
 
-        // Ringkasan
         doc.font('Helvetica-Bold').text('Ringkasan:', 600, startYInfo);
         doc.font('Helvetica').text(`Approved`, 600, startYInfo + 15, { continued: true }).text(`: ${approvedCount}`, 660, startYInfo + 15);
         doc.text(`Rejected`, 600, startYInfo + 30, { continued: true }).text(`: ${rejectedCount}`, 660, startYInfo + 30);
@@ -476,9 +183,7 @@ exports.exportRiwayatPdf = async (req, res) => {
         if (data.length === 0) {
             doc.fontSize(11).font('Helvetica-Oblique').text('Belum ada riwayat pengajuan cuti yang berstatus approved atau rejected.', 35, doc.y, { align: 'center' });
         } else {
-            // 4. TABEL DATA
             const tableTop = doc.y;
-            
             const renderTableHeader = (yPos) => {
                 doc.rect(35, yPos, 772, 20).fill('#f0f0f0');
                 doc.fillColor('#000000').font('Helvetica-Bold').fontSize(9);
@@ -498,7 +203,6 @@ exports.exportRiwayatPdf = async (req, res) => {
             let currentY = renderTableHeader(tableTop);
 
             data.forEach((item, index) => {
-                // 6. PAGE BREAK
                 if (currentY > 520) {
                     doc.addPage();
                     currentY = renderTableHeader(35);
@@ -506,7 +210,6 @@ exports.exportRiwayatPdf = async (req, res) => {
 
                 const statusText = item.status === 'approved' ? 'Approved' : 'Rejected';
                 const processedDate = item.approval_action_date || item.approved_at || item.created_at;
-                
                 const empName = item.employee_name || '-';
                 const leaveTypeName = item.leave_type_name || '-';
                 const tglCuti = `${formatDatePdf(item.start_date)} - ${formatDatePdf(item.end_date)}`;
@@ -515,9 +218,7 @@ exports.exportRiwayatPdf = async (req, res) => {
                 const catatan = item.approval_notes ? item.approval_notes.replace(/\r?\n|\r/g, ' ').trim() : '-';
 
                 doc.font('Helvetica').fontSize(9).fillColor('#000000');
-                
                 const rowY = currentY;
-                
                 const hName = doc.heightOfString(empName, { width: 120 });
                 const hJenis = doc.heightOfString(leaveTypeName, { width: 80 });
                 const hTgl = doc.heightOfString(tglCuti, { width: 110 });
@@ -540,7 +241,6 @@ exports.exportRiwayatPdf = async (req, res) => {
             });
         }
 
-        // 7. FOOTER
         const pages = doc.bufferedPageRange();
         for (let i = 0; i < pages.count; i++) {
             doc.switchToPage(i);
@@ -553,9 +253,6 @@ exports.exportRiwayatPdf = async (req, res) => {
         doc.end();
     } catch (error) {
         console.error('Error at exportRiwayatPdf:', error);
-
-        if (!res.headersSent) {
-            return res.status(500).send('Terjadi kesalahan saat membuat file PDF.');
-        }
+        if (!res.headersSent) return res.status(500).send('Terjadi kesalahan saat membuat file PDF.');
     }
 };
