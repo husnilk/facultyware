@@ -1,4 +1,4 @@
-const db = require('../lib/db');
+const cutiModel = require('../models/cutiModel');
 
 exports.index = (req, res) => {
     res.redirect('/atasan/cuti');
@@ -7,7 +7,6 @@ exports.index = (req, res) => {
 exports.indexCuti = async (req, res) => {
     try {
         const search = req.query.search || '';
-        // Ubah: Default pencarian status untuk riwayat tidak boleh menampilkan pending
         let status = req.query.status || '';
         const leaveTypeId = req.query.leave_type_id || '';
         
@@ -15,72 +14,18 @@ exports.indexCuti = async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
 
-        // --- 1. AMBIL DATA KHUSUS PENDING (MENUNGGU PERSETUJUAN) ---
-        let pendingQueryStr = `
-            SELECT lr.*, e.name AS employee_name, lt.name AS leave_type_name 
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.status = 'pending'
-            ORDER BY lr.created_at ASC
-        `;
-        const [pendingRequests] = await db.execute(pendingQueryStr);
+        // Ambil data melalui Model (Bebas SQL)
+        const pendingRequests = await cutiModel.getPendingLeaveRequestsLvl1();
+        const historyData = await cutiModel.getHistoryLeaveRequestsLvl1(search, status, leaveTypeId, limit, offset);
+        const leaveTypes = await cutiModel.getLeaveTypes();
 
-        // --- 2. AMBIL DATA RIWAYAT (HISTORY - BUKAN PENDING) ---
-        let historyQueryStr = `
-            SELECT lr.*, e.name AS employee_name, lt.name AS leave_type_name 
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.status != 'pending' 
-        `;
-        let countHistoryQueryStr = `
-            SELECT COUNT(*) AS total
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.status != 'pending'
-        `;
-        
-        let queryParams = [];
-        let countParams = [];
-
-        if (search) {
-            historyQueryStr += ` AND e.name LIKE ?`;
-            countHistoryQueryStr += ` AND e.name LIKE ?`;
-            queryParams.push(`%${search}%`);
-            countParams.push(`%${search}%`);
-        }
-
-        if (status && status !== 'pending') {
-            historyQueryStr += ` AND lr.status = ?`;
-            countHistoryQueryStr += ` AND lr.status = ?`;
-            queryParams.push(status);
-            countParams.push(status);
-        }
-
-        if (leaveTypeId) {
-            historyQueryStr += ` AND lr.leave_type_id = ?`;
-            countHistoryQueryStr += ` AND lr.leave_type_id = ?`;
-            queryParams.push(leaveTypeId);
-            countParams.push(leaveTypeId);
-        }
-
-        historyQueryStr += ` ORDER BY lr.created_at DESC LIMIT ? OFFSET ?`;
-        queryParams.push(limit, offset);
-
-        const [historyRequests] = await db.execute(historyQueryStr, queryParams);
-        const [countResult] = await db.execute(countHistoryQueryStr, countParams);
-        
-        const totalData = countResult[0].total;
-        const totalPages = Math.ceil(totalData / limit);
-
-        const [leaveTypes] = await db.execute('SELECT id, name FROM leave_types ORDER BY name ASC');
+        const historyRequests = historyData.requests;
+        const totalPages = Math.ceil(historyData.total / limit);
 
         res.render('atasan/index', {
             title: 'Daftar Pengajuan Cuti Pegawai',
-            pendingRequests,  // Kirim data pending secara terpisah
-            historyRequests, // Kirim data riwayat secara terpisah
+            pendingRequests,
+            historyRequests,
             leaveTypes,
             search,
             status,
@@ -104,35 +49,16 @@ exports.detailCuti = async (req, res) => {
             return res.status(400).send("ID pengajuan cuti tidak valid.");
         }
 
-        const queryStr = `
-            SELECT lr.*, 
-                   e.name AS employee_name, e.employee_number AS employee_nip,
-                   lt.name AS leave_type_name
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.id = ?
-        `;
+        // Ambil data detail melalui Model
+        const requestDetail = await cutiModel.getLeaveRequestDetailLvl1(id);
 
-        const [requests] = await db.execute(queryStr, [id]);
-
-        if (requests.length === 0) {
+        if (!requestDetail) {
             return res.status(404).send("Data pengajuan cuti tidak ditemukan.");
         }
 
-        const requestDetail = requests[0];
-
         let approvals = [];
         try {
-            const approvalQuery = `
-                SELECT la.*, la.notes AS comments, u.name AS approver_name
-                FROM leave_approvals la
-                LEFT JOIN users u ON la.approver_id = u.id
-                WHERE la.leave_request_id = ?
-                ORDER BY la.created_at ASC
-            `;
-            const [approvalResults] = await db.execute(approvalQuery, [id]);
-            approvals = approvalResults;
+            approvals = await cutiModel.getLeaveApprovals(id);
         } catch (err) {
             console.warn("Tabel leave_approvals belum tersedia atau gagal diakses:", err.message);
         }
@@ -150,52 +76,15 @@ exports.detailCuti = async (req, res) => {
     }
 };
 
-// ... API Endpoint biarkan sama seperti sebelumnya
+// --- API Endpoints ---
 exports.apiGetCuti = async (req, res) => {
     try {
         const search = req.query.search || '';
         const status = req.query.status || '';
         const leaveTypeId = req.query.leave_type_id || '';
 
-        let queryStr = `
-            SELECT 
-                lr.id,
-                lr.employee_id,
-                lr.leave_type_id,
-                lr.start_date,
-                lr.end_date,
-                lr.total_days,
-                lr.status,
-                lr.submitted_at,
-                lr.created_at,
-                e.name AS employee_name,
-                e.employee_number AS employee_number,
-                lt.name AS leave_type_name
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE 1=1
-        `;
-        let queryParams = [];
-
-        if (search) {
-            queryStr += ` AND (e.name LIKE ? OR e.employee_number LIKE ?)`;
-            queryParams.push(`%${search}%`, `%${search}%`);
-        }
-
-        if (status) {
-            queryStr += ` AND lr.status = ?`;
-            queryParams.push(status);
-        }
-
-        if (leaveTypeId) {
-            queryStr += ` AND lr.leave_type_id = ?`;
-            queryParams.push(leaveTypeId);
-        }
-
-        queryStr += ` ORDER BY COALESCE(lr.submitted_at, lr.created_at) DESC`;
-
-        const [requests] = await db.execute(queryStr, queryParams);
+        // Ambil data API melalui Model
+        const requests = await cutiModel.getApiLeaveRequests(search, status, leaveTypeId);
 
         res.json({
             success: true,
@@ -215,35 +104,14 @@ exports.apiGetDetailCuti = async (req, res) => {
         const id = parseInt(req.params.id, 10);
         if (isNaN(id)) return res.status(400).json({ success: false, message: "ID pengajuan cuti tidak valid." });
 
-        const queryStr = `
-            SELECT 
-                lr.id, lr.employee_id, lr.leave_type_id, lr.start_date, lr.end_date, lr.total_days,
-                lr.reason, lr.attachment, lr.address_leave, lr.contact_leave, lr.status, lr.submitted_at,
-                lr.created_at, lr.approved_at, e.name AS employee_name, e.employee_number AS employee_number,
-                lt.name AS leave_type_name
-            FROM leave_requests lr
-            JOIN employees e ON lr.employee_id = e.id
-            JOIN leave_types lt ON lr.leave_type_id = lt.id
-            WHERE lr.id = ?
-        `;
+        // Gunakan fungsi detail model yang sama untuk API
+        const requestDetail = await cutiModel.getLeaveRequestDetailLvl1(id);
 
-        const [requests] = await db.execute(queryStr, [id]);
-
-        if (requests.length === 0) return res.status(404).json({ success: false, message: "Data pengajuan cuti tidak ditemukan." });
-
-        const requestDetail = requests[0];
+        if (!requestDetail) return res.status(404).json({ success: false, message: "Data pengajuan cuti tidak ditemukan." });
 
         let approvals = [];
         try {
-            const approvalQuery = `
-                SELECT la.level, la.status, la.notes, la.action_date, la.created_at, u.name AS approver_name
-                FROM leave_approvals la
-                LEFT JOIN users u ON la.approver_id = u.id
-                WHERE la.leave_request_id = ?
-                ORDER BY la.created_at ASC
-            `;
-            const [approvalResults] = await db.execute(approvalQuery, [id]);
-            approvals = approvalResults;
+            approvals = await cutiModel.getLeaveApprovals(id);
         } catch (err) {
             console.warn("Error getting approvals:", err.message);
         }

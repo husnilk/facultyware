@@ -145,7 +145,6 @@ exports.updateLeaveRequest = async (id, employeeId, data) => {
     return result.affectedRows > 0;
 };
 
-// --- MODIFIKASI: Menambahkan parameter opsi status_group ---
 exports.getPendingLeaveRequestsLvl2 = async (search, statusGroup = 'pending') => {
     let queryStr = `
         SELECT lr.id, lr.employee_id, lr.leave_type_id, lr.start_date, lr.end_date, lr.total_days, 
@@ -248,5 +247,118 @@ exports.getRiwayatApprovalPdfDataLvl2 = async () => {
         ORDER BY COALESCE(la.action_date, lr.approved_at, lr.created_at) DESC
     `;
     const [rows] = await db.execute(queryStr);
+    return rows;
+};
+
+// ============================================================================
+// FUNGSI BARU UNTUK REFACTORING ATASAN CONTROLLER LEVEL 1
+// ============================================================================
+
+exports.getPendingLeaveRequestsLvl1 = async () => {
+    const queryStr = `
+        SELECT lr.*, e.name AS employee_name, lt.name AS leave_type_name 
+        FROM leave_requests lr
+        JOIN employees e ON lr.employee_id = e.id
+        JOIN leave_types lt ON lr.leave_type_id = lt.id
+        WHERE lr.status = 'pending'
+        ORDER BY lr.created_at ASC
+    `;
+    const [rows] = await db.execute(queryStr);
+    return rows;
+};
+
+exports.getHistoryLeaveRequestsLvl1 = async (search, status, leaveTypeId, limit, offset) => {
+    let queryStr = `
+        SELECT lr.*, e.name AS employee_name, lt.name AS leave_type_name 
+        FROM leave_requests lr
+        JOIN employees e ON lr.employee_id = e.id
+        JOIN leave_types lt ON lr.leave_type_id = lt.id
+        WHERE lr.status != 'pending'
+    `;
+    let countQueryStr = `
+        SELECT COUNT(*) AS total
+        FROM leave_requests lr
+        JOIN employees e ON lr.employee_id = e.id
+        JOIN leave_types lt ON lr.leave_type_id = lt.id
+        WHERE lr.status != 'pending'
+    `;
+    
+    let queryParams = [];
+    let countParams = [];
+
+    if (search) {
+        queryStr += ` AND e.name LIKE ?`;
+        countQueryStr += ` AND e.name LIKE ?`;
+        queryParams.push(`%${search}%`);
+        countParams.push(`%${search}%`);
+    }
+    if (status && status !== 'pending') {
+        queryStr += ` AND lr.status = ?`;
+        countQueryStr += ` AND lr.status = ?`;
+        queryParams.push(status);
+        countParams.push(status);
+    }
+    if (leaveTypeId) {
+        queryStr += ` AND lr.leave_type_id = ?`;
+        countQueryStr += ` AND lr.leave_type_id = ?`;
+        queryParams.push(leaveTypeId);
+        countParams.push(leaveTypeId);
+    }
+
+    queryStr += ` ORDER BY lr.created_at DESC LIMIT ? OFFSET ?`;
+    queryParams.push(limit, offset);
+
+    const [requests] = await db.execute(queryStr, queryParams);
+    const [countResult] = await db.execute(countQueryStr, countParams);
+    
+    return {
+        requests,
+        total: countResult[0].total
+    };
+};
+
+exports.getLeaveRequestDetailLvl1 = async (id) => {
+    const queryStr = `
+        SELECT lr.*, 
+               e.name AS employee_name, e.employee_number AS employee_nip,
+               lt.name AS leave_type_name
+        FROM leave_requests lr
+        JOIN employees e ON lr.employee_id = e.id
+        JOIN leave_types lt ON lr.leave_type_id = lt.id
+        WHERE lr.id = ?
+    `;
+    const [rows] = await db.execute(queryStr, [id]);
+    return rows.length > 0 ? rows[0] : null;
+};
+
+exports.getApiLeaveRequests = async (search, status, leaveTypeId) => {
+    let queryStr = `
+        SELECT 
+            lr.id, lr.employee_id, lr.leave_type_id, lr.start_date, lr.end_date, lr.total_days,
+            lr.status, lr.submitted_at, lr.created_at, e.name AS employee_name,
+            e.employee_number AS employee_number, lt.name AS leave_type_name
+        FROM leave_requests lr
+        JOIN employees e ON lr.employee_id = e.id
+        JOIN leave_types lt ON lr.leave_type_id = lt.id
+        WHERE 1=1
+    `;
+    let queryParams = [];
+
+    if (search) {
+        queryStr += ` AND (e.name LIKE ? OR e.employee_number LIKE ?)`;
+        queryParams.push(`%${search}%`, `%${search}%`);
+    }
+    if (status) {
+        queryStr += ` AND lr.status = ?`;
+        queryParams.push(status);
+    }
+    if (leaveTypeId) {
+        queryStr += ` AND lr.leave_type_id = ?`;
+        queryParams.push(leaveTypeId);
+    }
+
+    queryStr += ` ORDER BY COALESCE(lr.submitted_at, lr.created_at) DESC`;
+
+    const [rows] = await db.execute(queryStr, queryParams);
     return rows;
 };
