@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          if (localStorage.getItem("themeMode") === "dark" ||
+              (!localStorage.getItem("themeMode") && matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FacultyWare — Login</title>
+    <meta name="description" content="Sistem Informasi Data Induk FTI Universitas Andalas" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <script src="/assets/js/basecoat.js" defer></script>
+    <script src="/assets/js/toast.js" defer></script>
+  </head>
+
+  <body style="margin:0; background:#0f0f10; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Inter',-apple-system,sans-serif; padding:1.5rem;">
+
+    <%# Ambient glow background %>
+    <div style="position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0;">
+      <div style="position:absolute; top:-20%; left:30%; width:600px; height:600px; background:radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:absolute; bottom:-10%; right:20%; width:400px; height:400px; background:radial-gradient(circle, rgba(168,85,247,0.07) 0%, transparent 70%); border-radius:50%;"></div>
+    </div>
+
+    <div style="position:relative; z-index:1; width:100%; max-width:380px;">
+
+      <%# Logo & Brand %>
+      <div style="text-align:center; margin-bottom:2rem;">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); margin-bottom:1rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.75">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <h1 style="font-size:1.375rem; font-weight:700; color:#ffffff; letter-spacing:-0.02em; margin:0 0 0.25rem;">FacultyWare</h1>
+        <p style="font-size:0.75rem; color:#71717a; margin:0; text-transform:uppercase; letter-spacing:0.08em;">Fakultas Teknologi Informasi · Unand</p>
+      </div>
+
+      <%# Login Card %>
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:2rem; backdrop-filter:blur(12px);">
+
+        <h2 style="font-size:0.9375rem; font-weight:600; color:#fafafa; margin:0 0 0.375rem;">Masuk ke Akun</h2>
+        <p style="font-size:0.775rem; color:#71717a; margin:0 0 1.5rem;">Gunakan email institusi Anda</p>
+
+        <% if (error && error.length > 0) { %>
+          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:8px; padding:0.625rem 0.875rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span style="font-size:0.775rem; color:#fca5a5;"><%= error[0] %></span>
+          </div>
+        <% } %>
+
+        <form action="/login" method="POST" style="display:flex; flex-direction:column; gap:1rem;">
+
+          <div>
+            <label style="display:block; font-size:0.75rem; font-weight:500; color:#a1a1aa; margin-bottom:0.4rem;" for="login-email">Email</label>
+            <input
+              type="email" name="email" id="login-email" required
+              placeholder="nama@fti.unand.ac.id"
+              style="width:100%; box-sizing:border-box; height:38px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:#fafafa; font-size:0.8125rem; padding:0 0.875rem; outline:none; transition:border-color 0.15s;"
+              onfocus="this.style.borderColor='rgba(99,102,241,0.6)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.12)'"
+            >
+          </div>
+
+          <div>
+            <label style="display:block; font-size:0.75rem; font-weight:500; color:#a1a1aa; margin-bottom:0.4rem;" for="login-password">Password</label>
+            <input
+              type="password" name="password" id="login-password" required
+              placeholder="••••••••"
+              style="width:100%; box-sizing:border-box; height:38px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:#fafafa; font-size:0.8125rem; padding:0 0.875rem; outline:none; transition:border-color 0.15s;"
+              onfocus="this.style.borderColor='rgba(99,102,241,0.6)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.12)'"
+            >
+          </div>
+
+          <button type="submit"
+            style="margin-top:0.25rem; height:38px; width:100%; border-radius:8px; border:none; background:#6366f1; color:#ffffff; font-size:0.8125rem; font-weight:600; cursor:pointer; transition:background 0.15s; letter-spacing:0.01em;"
+            onmouseover="this.style.background='#4f46e5'"
+            onmouseout="this.style.background='#6366f1'">
+            Masuk
+          </button>
+        </form>
+      </div>
+
+      <p style="text-align:center; font-size:0.7rem; color:#3f3f46; margin-top:1.5rem;">
+        © <%= new Date().getFullYear() %> FacultyWare · FTI Universitas Andalas
+      </p>
+    </div>
+
+    <div id="toaster" class="toaster"></div>
+  </body>
+</html>

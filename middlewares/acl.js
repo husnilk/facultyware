@@ -1,50 +1,69 @@
 const db = require("../lib/db");
 
 /**
- * ACL Middleware to check if a user has the required permission(s).
- * 
- * @param {string|string[]} requiredPermissions - A single permission or an array of permissions.
- * If an array is provided, the user must have at least one of the permissions.
- * 
- * Database Schema Requirements:
- * 
- * 1. roles: id, name
- * 2. permissions: id, name
- * 3. role_has_permissions: role_id, permission_id
- * 4. user_has_roles: user_id, role_id
+ * hasRole — cek apakah user punya role tertentu (berdasarkan nama role di session).
+ * Lebih simpel dari checkPermission; cocok untuk guard per modul.
+ *
+ * @param {string|string[]} roles  Nama role (contoh: 'Admin Kepegawaian')
  */
-
-const checkPermission = (requiredPermissions) => {
-  return async (req, res, next) => {
-    if (!req.session.userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+const hasRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.session.user) {
+      return res.redirect('/login');
     }
 
-    const permissionsArray = Array.isArray(requiredPermissions) 
-      ? requiredPermissions 
+    const allowed = Array.isArray(roles) ? roles : [roles];
+
+    if (allowed.includes(req.session.user.role_name)) {
+      return next();
+    }
+
+    return res.status(403).render('errors/403', { title: 'Akses Ditolak', layout: 'layouts/main' });
+  };
+};
+
+/**
+ * ACL Middleware — cek permission user.
+ *
+ * Menggunakan tabel model_has_roles (Spatie Laravel Permission).
+ * model_type = 'App\\Models\\User' (sesuai konvensi Laravel)
+ *
+ * @param {string|string[]} requiredPermissions
+ */
+const checkPermission = (requiredPermissions) => {
+  return async (req, res, next) => {
+    // Cek apakah user sudah login
+    if (!req.session.user) {
+      return res.redirect("/login");
+    }
+
+    const permissionsArray = Array.isArray(requiredPermissions)
+      ? requiredPermissions
       : [requiredPermissions];
 
     try {
-      // Query to check if the user has a role that contains any of the required permissions
       const query = `
-        SELECT DISTINCT p.name 
+        SELECT DISTINCT p.name
         FROM permissions p
         JOIN role_has_permissions rhp ON p.id = rhp.permission_id
-        JOIN user_has_roles uhr ON rhp.role_id = uhr.role_id
-        WHERE uhr.user_id = ? AND p.name IN (?)
+        JOIN model_has_roles mhr ON rhp.role_id = mhr.role_id
+        WHERE mhr.model_id = ?
+          AND mhr.model_type = 'App\\\\Models\\\\User'
+          AND p.name IN (?)
       `;
 
-      const [rows] = await db.query(query, [req.session.userId, permissionsArray]);
+      const [rows] = await db.query(query, [
+        req.session.user.id,
+        permissionsArray
+      ]);
 
       if (rows.length > 0) {
         return next();
       }
 
-      // If no matching permission found, return Forbidden
-      res.status(403).render("error", {
-        message: "Forbidden: You do not have permission to access this resource.",
-        error: { status: 403, stack: "" }
-      });
+      // Tidak punya permission → render errors/403
+      res.status(403).render("errors/403", { layout: false });
+
     } catch (err) {
       next(err);
     }
@@ -52,5 +71,6 @@ const checkPermission = (requiredPermissions) => {
 };
 
 module.exports = {
-  checkPermission
+  checkPermission,
+  hasRole
 };
