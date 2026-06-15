@@ -16,128 +16,178 @@
   .status-cancelled { background-color: #f3f4f6; color: #374151; }
 </style>
 
-<div class="max-w-screen-xl mx-auto w-full">
-    <header class="flex flex-col gap-2 mb-6">
+<div class="max-w-screen-xl mx-auto w-full space-y-8">
+    
+    <header class="flex flex-col gap-2">
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl text-gray-900"><%= title %></h1>
         <p class="text-gray-500 text-sm sm:text-base">Mengelola dan memantau riwayat pengajuan cuti pegawai.</p>
     </header>
 
-    <div class="bg-white p-4 mb-6 shadow-sm border border-gray-200 rounded-xl">
-        <form method="GET" action="/atasan/cuti" class="flex flex-col md:flex-row items-end gap-4 w-full">
-            
-            <div class="w-full md:flex-1">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Pegawai</label>
-                <div class="relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" name="search" class="w-full h-10 pl-9 pr-3 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Ketik nama pegawai..." value="<%= search %>">
-                </div>
-            </div>
-            
-            <div class="w-full md:w-48">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Status</label>
-                <select name="status" class="w-full h-10 px-3 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
-                    <option value="">Semua Status</option>
-                    <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
-                    <option value="approved" <%= status === 'approved' ? 'selected' : '' %>>Approved</option>
-                    <option value="rejected" <%= status === 'rejected' ? 'selected' : '' %>>Rejected</option>
-                    <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                </select>
-            </div>
-            
-            <div class="w-full md:w-56">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jenis Cuti</label>
-                <select name="leave_type_id" class="w-full h-10 px-3 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
-                    <option value="">Semua Jenis</option>
-                    <% leaveTypes.forEach(lt => { %>
-                        <option value="<%= lt.id %>" <%= leaveTypeId == lt.id ? 'selected' : '' %>><%= lt.name %></option>
-                    <% }); %>
-                </select>
-            </div>
-            
-            <div class="w-full md:w-auto flex gap-2">
-                <button type="submit" class="flex-1 md:flex-none h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors shadow-sm">Filter</button>
-                <a href="/atasan/cuti" class="flex-1 md:flex-none h-10 px-5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 text-sm font-medium rounded-md transition-colors shadow-sm flex items-center justify-center">Reset</a>
-            </div>
-            
-        </form>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left text-gray-600">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">No</th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">Nama Pegawai</th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">Jenis Cuti</th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">Tgl Mulai</th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">Tgl Selesai</th>
-                        <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Jumlah Hari</th>
-                        <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Status</th>
-                        <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <% if (requests.length === 0) { %>
+    <div>
+        <h2 class="text-lg font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">Menunggu Persetujuan</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-yellow-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="text-xs text-yellow-800 uppercase bg-yellow-50 border-b border-yellow-100">
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
-                                <div class="flex flex-col items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="opacity-20 mb-2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
-                                    Belum ada pengajuan cuti.
-                                </div>
-                            </td>
+                            <th class="px-6 py-4 font-semibold whitespace-nowrap">Nama Pegawai</th>
+                            <th class="px-6 py-4 font-semibold whitespace-nowrap">Jenis Cuti</th>
+                            <th class="px-6 py-4 font-semibold whitespace-nowrap">Tgl Mulai</th>
+                            <th class="px-6 py-4 font-semibold whitespace-nowrap">Tgl Selesai</th>
+                            <th class="px-6 py-4 font-semibold text-center whitespace-nowrap">Jumlah Hari</th>
+                            <th class="px-6 py-4 font-semibold text-center whitespace-nowrap">Status</th>
+                            <th class="px-6 py-4 font-semibold text-center whitespace-nowrap">Aksi</th>
                         </tr>
-                    <% } else { %>
-                        <% requests.forEach((reqItem, index) => { %>
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4"><%= (page - 1) * 10 + index + 1 %></td>
-                                <td class="px-6 py-4 font-semibold text-gray-900"><%= reqItem.employee_name %></td>
-                                <td class="px-6 py-4"><%= reqItem.leave_type_name %></td>
-                                <td class="px-6 py-4"><%= new Date(reqItem.start_date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) %></td>
-                                <td class="px-6 py-4"><%= new Date(reqItem.end_date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) %></td>
-                                <td class="px-6 py-4 text-center"><%= reqItem.total_days %> Hari</td>
-                                <td class="px-6 py-4 text-center">
-                                    <% if (reqItem.status === 'pending') { %>
-                                        <span class="status-badge status-pending">Pending</span>
-                                    <% } else if (reqItem.status === 'approved') { %>
-                                        <span class="status-badge status-approved">Approved</span>
-                                    <% } else if (reqItem.status === 'rejected') { %>
-                                        <span class="status-badge status-rejected">Rejected</span>
-                                    <% } else if (reqItem.status === 'cancelled') { %>
-                                        <span class="status-badge status-cancelled">Cancelled</span>
-                                    <% } else { %>
-                                        <span class="status-badge status-cancelled"><%= reqItem.status %></span>
-                                    <% } %>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <a href="/atasan/cuti/<%= reqItem.id %>" class="inline-block px-3 py-1.5 bg-white border border-gray-300 text-blue-600 font-medium text-xs rounded shadow-sm hover:bg-blue-50 transition-colors">Detail</a>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <% if (pendingRequests && pendingRequests.length === 0) { %>
+                            <tr>
+                                <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-30 mb-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                        Tidak ada pengajuan baru yang menunggu persetujuan.
+                                    </div>
                                 </td>
                             </tr>
-                        <% }); %>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
-
-        <% if (totalPages > 1) { %>
-        <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-between bg-gray-50">
-            <p class="text-sm text-gray-500">
-                Halaman <span class="font-medium text-gray-900"><%= page %></span> dari <span class="font-medium text-gray-900"><%= totalPages %></span>
-            </p>
-            <div class="flex gap-2">
-                <% if (page > 1) { %>
-                    <a href="/atasan/cuti?page=<%= page - 1 %>&search=<%= search %>&status=<%= status %>&leave_type_id=<%= leaveTypeId %>" class="px-3 py-1.5 border border-gray-300 rounded text-sm bg-white hover:bg-gray-100 text-gray-700">Sebelumnya</a>
-                <% } else { %>
-                    <button class="px-3 py-1.5 border border-gray-200 rounded text-sm bg-gray-100 text-gray-400 cursor-not-allowed" disabled>Sebelumnya</button>
-                <% } %>
-
-                <% if (page < totalPages) { %>
-                    <a href="/atasan/cuti?page=<%= page + 1 %>&search=<%= search %>&status=<%= status %>&leave_type_id=<%= leaveTypeId %>" class="px-3 py-1.5 border border-gray-300 rounded text-sm bg-white hover:bg-gray-100 text-gray-700">Selanjutnya</a>
-                <% } else { %>
-                    <button class="px-3 py-1.5 border border-gray-200 rounded text-sm bg-gray-100 text-gray-400 cursor-not-allowed" disabled>Selanjutnya</button>
-                <% } %>
+                        <% } else if (pendingRequests) { %>
+                            <% pendingRequests.forEach((reqItem) => { %>
+                                <tr class="hover:bg-yellow-50/50 transition-colors bg-white">
+                                    <td class="px-6 py-4 font-semibold text-gray-900"><%= reqItem.employee_name %></td>
+                                    <td class="px-6 py-4"><%= reqItem.leave_type_name %></td>
+                                    <td class="px-6 py-4"><%= new Date(reqItem.start_date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) %></td>
+                                    <td class="px-6 py-4"><%= new Date(reqItem.end_date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) %></td>
+                                    <td class="px-6 py-4 text-center"><%= reqItem.total_days %> Hari</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="status-badge status-pending">Pending</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <a href="/atasan/cuti/<%= reqItem.id %>" class="inline-block px-4 py-1.5 bg-yellow-100 border border-yellow-200 text-yellow-800 font-medium text-xs rounded shadow-sm hover:bg-yellow-200 transition-colors">Proses</a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } %>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <% } %>
     </div>
+
+    <div>
+        <h2 class="text-lg font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">Riwayat Pengajuan</h2>
+        
+        <div class="bg-white p-4 mb-4 shadow-sm border border-gray-200 rounded-xl">
+            <form method="GET" action="/atasan/cuti" class="flex flex-col md:flex-row items-end gap-4 w-full">
+                <div class="w-full md:flex-1">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Pegawai</label>
+                    <div class="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" name="search" class="w-full h-10 pl-9 pr-3 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Ketik nama pegawai..." value="<%= search %>">
+                    </div>
+                </div>
+                
+                <div class="w-full md:w-48">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Status</label>
+                    <select name="status" class="w-full h-10 px-3 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <option value="">Semua Riwayat</option>
+                        <option value="approved" <%= status === 'approved' ? 'selected' : '' %>>Approved</option>
+                        <option value="rejected" <%= status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                        <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    </select>
+                </div>
+                
+                <div class="w-full md:w-56">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jenis Cuti</label>
+                    <select name="leave_type_id" class="w-full h-10 px-3 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <option value="">Semua Jenis</option>
+                        <% leaveTypes.forEach(lt => { %>
+                            <option value="<%= lt.id %>" <%= leaveTypeId == lt.id ? 'selected' : '' %>><%= lt.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                
+                <div class="w-full md:w-auto flex gap-2">
+                    <button type="submit" class="flex-1 md:flex-none h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors shadow-sm">Filter</button>
+                    <a href="/atasan/cuti" class="flex-1 md:flex-none h-10 px-5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 text-sm font-medium rounded-md transition-colors shadow-sm flex items-center justify-center">Reset</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 font-medium whitespace-nowrap">No</th>
+                            <th class="px-6 py-4 font-medium whitespace-nowrap">Nama Pegawai</th>
+                            <th class="px-6 py-4 font-medium whitespace-nowrap">Jenis Cuti</th>
+                            <th class="px-6 py-4 font-medium whitespace-nowrap">Tgl Mulai</th>
+                            <th class="px-6 py-4 font-medium whitespace-nowrap">Tgl Selesai</th>
+                            <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Jumlah Hari</th>
+                            <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Status</th>
+                            <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <% if (historyRequests && historyRequests.length === 0) { %>
+                            <tr>
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="opacity-20 mb-2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+                                        Belum ada riwayat pengajuan cuti yang sesuai.
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } else if (historyRequests) { %>
+                            <% historyRequests.forEach((reqItem, index) => { %>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4"><%= (page - 1) * 10 + index + 1 %></td>
+                                    <td class="px-6 py-4 font-semibold text-gray-900"><%= reqItem.employee_name %></td>
+                                    <td class="px-6 py-4"><%= reqItem.leave_type_name %></td>
+                                    <td class="px-6 py-4"><%= new Date(reqItem.start_date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) %></td>
+                                    <td class="px-6 py-4"><%= new Date(reqItem.end_date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) %></td>
+                                    <td class="px-6 py-4 text-center"><%= reqItem.total_days %> Hari</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <% if (reqItem.status === 'approved') { %>
+                                            <span class="status-badge status-approved">Approved</span>
+                                        <% } else if (reqItem.status === 'rejected') { %>
+                                            <span class="status-badge status-rejected">Rejected</span>
+                                        <% } else if (reqItem.status === 'cancelled') { %>
+                                            <span class="status-badge status-cancelled">Cancelled</span>
+                                        <% } else { %>
+                                            <span class="status-badge status-cancelled"><%= reqItem.status %></span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <a href="/atasan/cuti/<%= reqItem.id %>" class="inline-block px-3 py-1.5 bg-white border border-gray-300 text-blue-600 font-medium text-xs rounded shadow-sm hover:bg-blue-50 transition-colors">Detail</a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+            <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-between bg-gray-50">
+                <p class="text-sm text-gray-500">
+                    Halaman <span class="font-medium text-gray-900"><%= page %></span> dari <span class="font-medium text-gray-900"><%= totalPages %></span>
+                </p>
+                <div class="flex gap-2">
+                    <% if (page > 1) { %>
+                        <a href="/atasan/cuti?page=<%= page - 1 %>&search=<%= search %>&status=<%= status %>&leave_type_id=<%= leaveTypeId %>" class="px-3 py-1.5 border border-gray-300 rounded text-sm bg-white hover:bg-gray-100 text-gray-700">Sebelumnya</a>
+                    <% } else { %>
+                        <button class="px-3 py-1.5 border border-gray-200 rounded text-sm bg-gray-100 text-gray-400 cursor-not-allowed" disabled>Sebelumnya</button>
+                    <% } %>
+
+                    <% if (page < totalPages) { %>
+                        <a href="/atasan/cuti?page=<%= page + 1 %>&search=<%= search %>&status=<%= status %>&leave_type_id=<%= leaveTypeId %>" class="px-3 py-1.5 border border-gray-300 rounded text-sm bg-white hover:bg-gray-100 text-gray-700">Selanjutnya</a>
+                    <% } else { %>
+                        <button class="px-3 py-1.5 border border-gray-200 rounded text-sm bg-gray-100 text-gray-400 cursor-not-allowed" disabled>Selanjutnya</button>
+                    <% } %>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
 </div>

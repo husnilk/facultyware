@@ -77,7 +77,6 @@ exports.getEmployeeLeaveRequests = async (employeeId, statusGroup = 'all') => {
     return rows;
 };
 
-// --- FUNGSI BARU: Mengambil Riwayat Approval untuk Notifikasi Pegawai ---
 exports.getEmployeeNotifications = async (employeeId) => {
     const query = `
         SELECT 
@@ -146,7 +145,8 @@ exports.updateLeaveRequest = async (id, employeeId, data) => {
     return result.affectedRows > 0;
 };
 
-exports.getPendingLeaveRequestsLvl2 = async (search) => {
+// --- MODIFIKASI: Menambahkan parameter opsi status_group ---
+exports.getPendingLeaveRequestsLvl2 = async (search, statusGroup = 'pending') => {
     let queryStr = `
         SELECT lr.id, lr.employee_id, lr.leave_type_id, lr.start_date, lr.end_date, lr.total_days, 
                lr.reason, lr.attachment, lr.address_leave, lr.contact_leave, lr.status, 
@@ -156,9 +156,16 @@ exports.getPendingLeaveRequestsLvl2 = async (search) => {
         FROM leave_requests lr
         JOIN employees e ON lr.employee_id = e.id
         JOIN leave_types lt ON lr.leave_type_id = lt.id
-        WHERE lr.status = 'pending'
+        WHERE 1=1
     `;
     let queryParams = [];
+
+    if (statusGroup === 'pending') {
+         queryStr += ` AND lr.status = 'pending'`;
+    } else if (statusGroup === 'history') {
+         queryStr += ` AND lr.status IN ('approved', 'rejected', 'cancelled')`;
+    }
+
     if (search) {
         queryStr += ` AND (e.name LIKE ? OR e.employee_number LIKE ?)`;
         queryParams.push(`%${search}%`, `%${search}%`);
