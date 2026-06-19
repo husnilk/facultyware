@@ -8,6 +8,8 @@ router.get('/create', kategoriController.createCategoryForm);
 
 router.post('/create', kategoriController.createCategorySubmit);
 
+router.get('/search', kategoriController.searchKategori);
+
 router.get('/edit/:id', kategoriController.editCategoryForm);
 
 router.post('/edit/:id', kategoriController.editCategorySubmit);

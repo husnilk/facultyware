@@ -63,16 +63,19 @@ exports.deleteItem = async (req, res, next) => {
 
 exports.searchItems = async (req, res, next) => {
     try {
-        const searchTerm = `%${req.query.q}%`;
-        const [rows] = await db.query(
-            'SELECT * FROM items WHERE name LIKE ? OR code LIKE ? ORDER BY id DESC', 
+        const keyword = req.query.q || '';
+        const searchTerm = `%${keyword}%`;
+        
+        const [items] = await db.query(
+            'SELECT * FROM items WHERE code LIKE ? OR name LIKE ? ORDER BY id DESC', 
             [searchTerm, searchTerm]
         );
 
-        res.render('item/partials/table-rows', { items: rows });
-    } catch (err) { next(err); }
+        res.render('item/partials/table-rows', { items });
+    } catch (err) {
+        next(err);
+    }
 };
-
 const XLSX = require('xlsx');
 
 exports.exportItems = async (req, res, next) => {

@@ -73,3 +73,19 @@ exports.deleteCategory = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.searchKategori = async (req, res, next) => {
+    try {
+        const keyword = req.query.q || '';
+        const searchTerm = `%${keyword}%`;
+        
+        const [categories] = await db.query(
+            'SELECT * FROM categories WHERE name LIKE ? ORDER BY id DESC', 
+            [searchTerm]
+        );
+
+        res.render('kategori/partials/table-rows', { categories });
+    } catch (err) {
+        next(err);
+    }
+};

@@ -8,13 +8,13 @@ router.get('/create', itemController.createItemForm);
 
 router.post('/create', itemController.createItemSubmit);
 
+router.get('/search', itemController.searchItems);
+
 router.get('/edit/:id', itemController.editItemForm);
 
 router.post('/edit/:id', itemController.editItemSubmit);
 
 router.post('/delete/:id', itemController.deleteItem);
-
-router.get('/search', itemController.searchItems);
 
 router.get('/export', itemController.exportItems);
 
