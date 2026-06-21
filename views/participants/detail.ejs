@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/assets/basecoat.min.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+
+  <style>
+    * {
+      letter-spacing: normal;
+    }
+
+    body {
+      margin: 0;
+      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #111;
+    }
+
+    .container {
+      width: 760px;
+      margin: 70px auto;
+      background-color: #fff;
+      padding: 28px 32px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+      letter-spacing: 0 !important;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      margin-bottom: 24px;
+    }
+
+    th, td {
+      padding: 10px 6px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      width: 220px;
+      font-weight: 700;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      height: 34px;
+      padding: 6px 10px;
+      border: 1px solid #999;
+      margin-bottom: 12px;
+    }
+
+    button {
+      padding: 8px 18px;
+      border: 1px solid #999;
+      background-color: #eee;
+      cursor: pointer;
+    }
+
+    a {
+      color: #4b2e83;
+      text-decoration: underline;
+    }
+
+    .top-link {
+      margin-bottom: 20px;
+    }
+
+    .actions {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="top-link">
+      <a href="/participants">← Kembali ke Daftar Peserta</a>
+    </div>
+
+    <h1>Detail Peserta</h1>
+    <p>Informasi lengkap peserta yang terdaftar pada event.</p>
+
+    <table>
+      <tr>
+        <th>Nama Peserta</th>
+        <td><%= participant.participant_name %></td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td><%= participant.participant_email %></td>
+      </tr>
+      <tr>
+        <th>Nomor Registrasi</th>
+        <td><%= participant.registration_number %></td>
+      </tr>
+      <tr>
+        <th>Nomor Tiket</th>
+        <td><%= participant.ticket_number %></td>
+      </tr>
+      <tr>
+        <th>Event</th>
+        <td><%= participant.event_title %></td>
+      </tr>
+      <tr>
+        <th>Tipe Event</th>
+        <td><%= participant.event_type %> - <%= participant.delivery_mode %></td>
+      </tr>
+      <tr>
+        <th>Tanggal Event</th>
+        <td><%= participant.start_date %> sampai <%= participant.end_date %></td>
+      </tr>
+      <tr>
+        <th>Lokasi</th>
+        <td><%= participant.venue || "-" %></td>
+      </tr>
+      <tr>
+        <th>Status Pendaftaran</th>
+        <td><%= participant.attendance_status %></td>
+      </tr>
+      <tr>
+        <th>Status Kehadiran</th>
+        <td><%= participant.checkin_status || "Belum check-in" %></td>
+      </tr>
+      <tr>
+        <th>Nomor Sertifikat</th>
+        <td><%= participant.certificate_number || "-" %></td>
+      </tr>
+    </table>
+
+    <h2>Verifikasi Status Peserta</h2>
+
+    <form method="POST" action="/participants/<%= participant.id %>/status">
+      <label>Status Pendaftaran</label>
+      <select name="attendance_status" required>
+        <option value="registered" <%= participant.attendance_status === "registered" ? "selected" : "" %>>Registered</option>
+        <option value="attended" <%= participant.attendance_status === "attended" ? "selected" : "" %>>Attended</option>
+        <option value="no_show" <%= participant.attendance_status === "no_show" ? "selected" : "" %>>No Show</option>
+        <option value="cancelled" <%= participant.attendance_status === "cancelled" ? "selected" : "" %>>Cancelled</option>
+      </select>
+
+      <button type="submit">Simpan Status</button>
+    </form>
+
+    <div class="actions">
+      <% if (participant.attendance_status === "attended" || participant.checkin_status === "present") { %>
+        <a href="/certificates/<%= participant.id %>">Generate / Cetak Sertifikat</a>
+      <% } else { %>
+        <p>Peserta belum memenuhi syarat untuk mendapatkan sertifikat.</p>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

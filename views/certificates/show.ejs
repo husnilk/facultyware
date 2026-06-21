@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/assets/basecoat.min.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #111;
+    }
+
+    .container {
+      width: 900px;
+      margin: 50px auto;
+    }
+
+    .top-action {
+      margin-bottom: 18px;
+    }
+
+    .certificate {
+      background-color: #fff;
+      border: 8px double #111;
+      padding: 60px;
+      text-align: center;
+      min-height: 500px;
+    }
+
+    .certificate h1 {
+      font-size: 40px;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
+    }
+
+    .certificate h2 {
+      font-size: 32px;
+      margin: 26px 0;
+      text-decoration: underline;
+    }
+
+    .certificate h3 {
+      font-size: 24px;
+      margin: 20px 0;
+    }
+
+    .certificate-number {
+      margin-top: 32px;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 8px 18px;
+      border: 1px solid #999;
+      background-color: #eee;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    a {
+      color: #4b2e83;
+      text-decoration: underline;
+    }
+
+    @media print {
+      .top-action {
+        display: none;
+      }
+
+      body {
+        background-color: white;
+      }
+
+      .container {
+        width: 100%;
+        margin: 0;
+      }
+
+      .certificate {
+        border: 8px double #111;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="top-action">
+      <a href="/certificates">← Kembali ke Sertifikat</a>
+      <button onclick="window.print()">Print / Simpan PDF</button>
+    </div>
+
+    <div class="certificate">
+      <h1>SERTIFIKAT</h1>
+
+      <p>Diberikan kepada:</p>
+
+      <h2><%= participant.participant_name %></h2>
+
+      <p>Atas partisipasinya dalam kegiatan:</p>
+
+      <h3><%= participant.event_title %></h3>
+
+      <p>
+        Yang dilaksanakan pada tanggal
+        <strong><%= participant.start_date %></strong>
+        sampai
+        <strong><%= participant.end_date %></strong>
+      </p>
+
+      <p>Lokasi: <%= participant.venue || "-" %></p>
+
+      <p class="certificate-number">
+        Nomor Sertifikat: <%= participant.certificate_number %>
+      </p>
+
+      <br><br>
+
+      <p>Facultyware Event Management</p>
+    </div>
+  </div>
+</body>
+</html>
