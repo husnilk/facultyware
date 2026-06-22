@@ -1,0 +1,213 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto">
+      
+      <!-- Top Title and Create Button -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Kelola Supplier</h1>
+          <p class="text-sm text-muted-foreground">Kelola daftar rekanan/pemasok barang inventaris.</p>
+        </div>
+        <a href="/supplier/create" class="btn shrink-0" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Tambah Supplier
+        </a>
+      </div>
+
+      <!-- Search & Sort Bar -->
+      <div class="card p-4 bg-card rounded-xl border shadow-sm mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <form action="/supplier" method="GET" class="flex gap-2" style="flex:1 1 260px;" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+            <div class="relative flex-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" name="search" value="<%= search %>" placeholder="Cari berdasarkan nama atau kode supplier..." class="input w-full" style="padding-left: 2.5rem !important;" />
+            </div>
+            <input type="hidden" name="sort" value="<%= typeof sort !== 'undefined' ? sort : '' %>" />
+            <button type="submit" class="btn-outline">Cari</button>
+            <% if (search) { %>
+              <a href="/supplier?sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-ghost" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Clear</a>
+            <% } %>
+          </form>
+          <%- include('../partials/sort-control', { action: '/supplier', current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: { search: search } }) %>
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-muted/50 border-b">
+                <th class="p-4 font-semibold text-muted-foreground w-[120px]">Kode</th>
+                <th class="p-4 font-semibold text-muted-foreground">Nama Supplier</th>
+                <th class="p-4 font-semibold text-muted-foreground">Telepon</th>
+                <th class="p-4 font-semibold text-muted-foreground">Email</th>
+                <th class="p-4 font-semibold text-muted-foreground">Alamat</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[150px] text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% if (suppliers.length === 0) { %>
+                <tr>
+                  <td colspan="6" class="p-8 text-center text-muted-foreground">
+                    Tidak ada data supplier ditemukan.
+                  </td>
+                </tr>
+              <% } else { %>
+                <% suppliers.forEach(item => { %>
+                  <tr class="hover:bg-muted/30 transition-colors">
+                    <td class="p-4 font-mono font-medium text-primary">
+                      <%= item.code %>
+                    </td>
+                    <td class="p-4 font-medium">
+                      <%= item.name %>
+                    </td>
+                    <td class="p-4 text-muted-foreground">
+                      <%= item.phone || '-' %>
+                    </td>
+                    <td class="p-4 text-muted-foreground">
+                      <%= item.email || '-' %>
+                    </td>
+                    <td class="p-4 text-muted-foreground truncate max-w-[200px]" title="<%= item.address %>">
+                      <%= item.address || '-' %>
+                    </td>
+                    <td class="p-4 text-right space-x-1">
+                      <a href="/supplier/<%= item.id %>/edit" class="btn-action-edit inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+                        Edit
+                      </a>
+                      <button type="button" onclick="window.confirmDelete('<%= item.id %>', '<%= item.name %>')" class="btn-action-delete inline-flex items-center">
+                        Hapus
+                      </button>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="p-4 border-t flex items-center justify-between gap-4">
+          <span class="text-xs text-muted-foreground">
+            Halaman <%= currentPage %> dari <%= totalPages %>
+          </span>
+          <div class="flex gap-1" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+            <% if (currentPage > 1) { %>
+              <a href="/supplier?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-xs-outline">Sebelumnya</a>
+            <% } else { %>
+              <button type="button" class="btn-xs-outline select-none" disabled>Sebelumnya</button>
+            <% } %>
+
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <% if (i === currentPage) { %>
+                <button type="button" class="btn-xs font-semibold select-none"><%= i %></button>
+              <% } else { %>
+                <a href="/supplier?page=<%= i %>&search=<%= search %>&sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-xs-outline">
+                  <%= i %>
+                </a>
+              <% } %>
+            <% } %>
+
+            <% if (currentPage < totalPages) { %>
+              <a href="/supplier?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-xs-outline">Berikutnya</a>
+            <% } else { %>
+              <button type="button" class="btn-xs-outline select-none" disabled>Berikutnya</button>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <dialog id="delete-modal" class="dialog">
+    <div class="w-full max-w-sm space-y-4">
+      <header>
+        <h2 class="font-semibold text-lg text-destructive">Konfirmasi Hapus</h2>
+        <p class="text-sm text-muted-foreground">Apakah Anda yakin ingin menghapus supplier <strong id="delete-supplier-name"></strong>? Tindakan ini tidak dapat dibatalkan.</p>
+      </header>
+      <footer class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="window.closeDeleteModal()" class="btn-outline">Batal</button>
+        <button type="button" onclick="window.executeDelete()" class="btn bg-destructive hover:bg-destructive/90 text-white">Hapus</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      let targetSupplierId = null;
+
+      window.confirmDelete = function(id, name) {
+        targetSupplierId = id;
+        const nameEl = document.getElementById('delete-supplier-name');
+        if (nameEl) nameEl.textContent = name;
+        
+        const modal = document.getElementById('delete-modal');
+        if (modal) {
+          modal.showModal();
+        }
+      };
+
+      window.closeDeleteModal = function() {
+        targetSupplierId = null;
+        const modal = document.getElementById('delete-modal');
+        if (modal) {
+          modal.close();
+        }
+      };
+
+      window.executeDelete = async function() {
+        if (!targetSupplierId) return;
+        const idToDelete = targetSupplierId;
+        window.closeDeleteModal();
+        try {
+          const response = await fetch(`/supplier/${idToDelete}/delete`, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json'
+            }
+          });
+          const result = await response.json();
+          if (result.success) {
+            if (window.showToast) {
+              window.showToast('Sukses', result.message, 'success');
+            } else {
+              alert(result.message);
+            }
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            if (window.showToast) {
+              window.showToast('Gagal', result.message || 'Gagal menghapus supplier.', 'error');
+            } else {
+              alert(result.message || 'Gagal menghapus supplier.');
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (window.showToast) {
+            window.showToast('Error', 'Terjadi kesalahan jaringan.', 'error');
+          } else {
+            alert('Terjadi kesalahan jaringan.');
+          }
+        }
+      };
+    })();
+  </script>
+</main>
+
+<%- include('../partials/footer') %>

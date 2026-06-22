@@ -1,0 +1,134 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+
+      <!-- Breadcrumb & Actions -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <a href="/pengadaan" class="hover:text-foreground">Pengadaan Barang</a>
+          <span>/</span>
+          <span class="text-foreground"><%= procurement.request_number %></span>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Detail Pengadaan Barang</h1>
+            <p class="text-sm text-muted-foreground">Paket pengadaan hasil konsolidasi permintaan beserta status approval.</p>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <a href="/pengadaan" class="btn-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Kembali
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Pengadaan -->
+      <div class="card">
+        <section class="po-info">
+          <div class="po-head">
+            <div>
+              <span class="po-eyebrow">Nomor Pengadaan</span>
+              <span class="po-number font-mono"><%= procurement.request_number %></span>
+            </div>
+            <%- include('../partials/status-badge', { status: procurement.status }) %>
+          </div>
+          <div class="info-grid">
+            <div class="info-tile" style="grid-column: 1 / -1;">
+              <div class="info-label">Judul Pengadaan</div>
+              <div class="info-value"><%= procurement.title %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Pembuat Pengadaan</div>
+              <div class="info-value"><%= procurement.creator_name || '-' %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Disetujui Tanggal</div>
+              <div class="info-value"><%= fmtDate(procurement.approved_at) %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Jumlah Permintaan</div>
+              <div class="info-value"><%= requests.length %> permintaan</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Permintaan yang Digabung -->
+      <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
+        <h3 class="text-base font-semibold">Permintaan yang Digabung</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b text-muted-foreground font-semibold">
+                <th class="pb-3 pr-4">No. Permintaan</th>
+                <th class="pb-3 pr-4">Pemohon</th>
+                <th class="pb-3 pr-4">Tanggal</th>
+                <th class="pb-3">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% requests.forEach(function (r) { %>
+                <tr class="hover:bg-muted/10">
+                  <td class="py-3 font-mono font-medium text-foreground"><%= r.request_number %></td>
+                  <td class="py-3 text-muted-foreground"><%= r.requester_name || '-' %></td>
+                  <td class="py-3 text-muted-foreground"><%= fmtDate(r.request_date) %></td>
+                  <td class="py-3"><%- include('../partials/status-badge', { status: r.status }) %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Rincian Barang per Permintaan -->
+      <div class="flex flex-col gap-4">
+        <h3 class="text-base font-semibold px-1">Rincian Barang per Permintaan</h3>
+        <% requests.forEach(function (r) { %>
+          <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-3" style="border-color: var(--color-border);">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-mono font-semibold text-primary"><%= r.request_number %></span>
+                <% if (r.title) { %><span class="text-sm text-muted-foreground">&middot; <%= r.title %></span><% } %>
+              </div>
+              <span class="text-xs text-muted-foreground"><%= r.requester_name || '-' %></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr class="border-b text-muted-foreground font-semibold">
+                    <th class="pb-2 pr-4">Nama Barang</th>
+                    <th class="pb-2 text-right w-[150px]">Jumlah (Quantity)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <% if (r.items && r.items.length > 0) { %>
+                    <% r.items.forEach(function (it) { %>
+                      <tr class="hover:bg-muted/10">
+                        <td class="py-2.5 font-medium align-middle text-foreground"><%= it.item_name %></td>
+                        <td class="py-2.5 text-right align-middle font-mono font-medium text-primary"><%= it.quantity %></td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr><td colspan="2" class="py-4 text-center text-muted-foreground">Tidak ada barang pada permintaan ini.</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

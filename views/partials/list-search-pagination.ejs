@@ -1,0 +1,73 @@
+<script>
+  // Pencarian + pagination sisi-klien untuk daftar persetujuan.
+  // Memfilter baris `tbody tr.cursor-pointer` berdasarkan isi teksnya, lalu
+  // memaginasi hasil yang cocok (10 baris/halaman). Membutuhkan elemen:
+  //   #search-input, #page-info, #pagination-buttons, #btn-prev/#btn-next, #page-numbers
+  // Dibungkus block-scope {} agar aman bila dieksekusi ulang oleh hx-boost/Turbo.
+  {
+    const initListSearchPagination = () => {
+      const allRows = Array.from(document.querySelectorAll('tbody tr.cursor-pointer'));
+      const itemsPerPage = 10;
+      let currentPage = 1;
+      let filtered = allRows;
+
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const pageNumbers = document.getElementById('page-numbers');
+      const pageInfo = document.getElementById('page-info');
+      const paginationButtons = document.getElementById('pagination-buttons');
+      const searchInput = document.getElementById('search-input');
+
+      if (!paginationButtons || !btnPrev || !btnNext || !pageNumbers) return;
+      paginationButtons.style.display = 'flex';
+
+      const totalPagesOf = (n) => Math.max(1, Math.ceil(n / itemsPerPage));
+
+      const render = () => {
+        const totalPages = totalPagesOf(filtered.length);
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        allRows.forEach((r) => { r.style.display = 'none'; });
+        filtered.forEach((row, index) => {
+          if (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) {
+            row.style.display = '';
+          }
+        });
+
+        if (pageInfo) {
+          pageInfo.innerHTML = filtered.length === 0 ? 'Tidak ada hasil' : `Halaman ${currentPage} dari ${totalPages}`;
+        }
+        btnPrev.disabled = currentPage === 1;
+        btnNext.disabled = currentPage === totalPages;
+
+        pageNumbers.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          if (i === currentPage) {
+            btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium bg-gray-100 text-gray-800 select-none';
+          } else {
+            btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 select-none transition-colors';
+            btn.onclick = () => { currentPage = i; render(); };
+          }
+          btn.textContent = i;
+          pageNumbers.appendChild(btn);
+        }
+      };
+
+      const applySearch = () => {
+        const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        filtered = q ? allRows.filter((r) => r.textContent.toLowerCase().includes(q)) : allRows;
+        currentPage = 1;
+        render();
+      };
+
+      btnPrev.onclick = () => { if (currentPage > 1) { currentPage--; render(); } };
+      btnNext.onclick = () => { if (currentPage < totalPagesOf(filtered.length)) { currentPage++; render(); } };
+      if (searchInput) searchInput.addEventListener('input', applySearch);
+
+      render();
+    };
+    initListSearchPagination();
+  }
+</script>

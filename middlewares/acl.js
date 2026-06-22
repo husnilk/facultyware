@@ -5,19 +5,22 @@ const db = require("../lib/db");
  * 
  * @param {string|string[]} requiredPermissions - A single permission or an array of permissions.
  * If an array is provided, the user must have at least one of the permissions.
- * 
- * Database Schema Requirements:
- * 
- * 1. roles: id, name
- * 2. permissions: id, name
- * 3. role_has_permissions: role_id, permission_id
- * 4. user_has_roles: user_id, role_id
  */
 
 const checkPermission = (requiredPermissions) => {
   return async (req, res, next) => {
+    if (process.env.NODE_ENV !== 'production' && process.env.DEV_NO_AUTH === '1') {
+      return next();
+    }
+
+    const isApi = req.path.startsWith('/api') || (req.headers.accept && req.headers.accept.includes('application/json'));
+
     if (!req.session.userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      if (isApi) {
+        return res.status(401).json({ message: "Unauthorized: Session expired or not logged in" });
+      } else {
+        return res.redirect("/login?expired=1");
+      }
     }
 
     const permissionsArray = Array.isArray(requiredPermissions) 
@@ -29,9 +32,11 @@ const checkPermission = (requiredPermissions) => {
       const query = `
         SELECT DISTINCT p.name 
         FROM permissions p
-        JOIN role_has_permissions rhp ON p.id = rhp.permission_id
-        JOIN user_has_roles uhr ON rhp.role_id = uhr.role_id
-        WHERE uhr.user_id = ? AND p.name IN (?)
+        JOIN role_has_permissions rhp ON rhp.permission_id = p.id
+        JOIN model_has_roles mhr ON mhr.role_id = rhp.role_id
+        WHERE mhr.model_type = 'App\\\\Models\\\\User'
+          AND mhr.model_id = ? 
+          AND p.name IN (?)
       `;
 
       const [rows] = await db.query(query, [req.session.userId, permissionsArray]);
@@ -41,10 +46,14 @@ const checkPermission = (requiredPermissions) => {
       }
 
       // If no matching permission found, return Forbidden
-      res.status(403).render("error", {
-        message: "Forbidden: You do not have permission to access this resource.",
-        error: { status: 403, stack: "" }
-      });
+      if (isApi) {
+        return res.status(403).json({ message: "Forbidden" });
+      } else {
+        return res.status(403).render("error", {
+          message: "Akunmu tidak memiliki izin untuk membuka halaman ini.",
+          error: { status: 403, stack: "" }
+        });
+      }
     } catch (err) {
       next(err);
     }

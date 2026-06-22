@@ -1,0 +1,139 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto">
+      
+      <!-- Top Title and Create Button -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Permintaan Pengadaan Barang</h1>
+          <p class="text-sm text-muted-foreground">Kelola permohonan pengadaan barang inventaris baru.</p>
+        </div>
+        <a href="/procurement/create" class="btn shrink-0" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Buat Permintaan
+        </a>
+      </div>
+
+      <!-- Search & Sort Bar -->
+      <div class="card p-4 bg-card rounded-xl border shadow-sm mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <form action="/procurement" method="GET" class="flex gap-2" style="flex:1 1 260px;" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+            <div class="relative flex-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" name="search" value="<%= search %>" placeholder="Cari berdasarkan judul permintaan..." class="input w-full" style="padding-left: 2.5rem !important;" />
+            </div>
+            <input type="hidden" name="sort" value="<%= typeof sort !== 'undefined' ? sort : '' %>" />
+            <button type="submit" class="btn-outline">Cari</button>
+            <% if (search) { %>
+              <a href="/procurement?sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-ghost" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Clear</a>
+            <% } %>
+          </form>
+          <%- include('../partials/sort-control', { action: '/procurement', current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: { search: search } }) %>
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-muted/50 border-b">
+                <th class="p-4 font-semibold text-muted-foreground w-[180px]">No. Permintaan</th>
+                <th class="p-4 font-semibold text-muted-foreground">Judul</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[120px]">Status</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[150px]">Tanggal Dibuat</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[100px] text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% if (procurements.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="p-8 text-center text-muted-foreground">
+                    Tidak ada data permintaan pengadaan ditemukan.
+                  </td>
+                </tr>
+              <% } else { %>
+                <% procurements.forEach(item => { %>
+                  <tr class="hover:bg-muted/30 transition-colors">
+                    <td class="p-4 font-mono font-medium text-primary">
+                      <%= item.request_number %>
+                    </td>
+                    <td class="p-4">
+                      <%= item.title %>
+                    </td>
+                    <td class="p-4">
+                      <span class="inline-flex items-center gap-1.5">
+                        <%- include('../partials/status-badge', { status: item.status }) %>
+                        <% if (item.status === 'approved' && item.po_status === 'rejected') { %>
+                          <span title="Belanja ditolak Wakil Dekan" class="text-red-600 cursor-help" aria-label="Belanja ditolak Wakil Dekan">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                              <line x1="12" y1="9" x2="12" y2="13"></line>
+                              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                          </span>
+                        <% } %>
+                      </span>
+                    </td>
+                    <td class="p-4 text-muted-foreground">
+                      <%= fmtDate(item.created_at) %>
+                    </td>
+                    <td class="p-4 text-right">
+                      <a href="/procurement/<%= item.id %>" class="btn-action-view" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+                        Detail
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="p-4 border-t flex items-center justify-between gap-4">
+          <span class="text-xs text-muted-foreground">
+            Halaman <%= currentPage %> dari <%= totalPages %>
+          </span>
+          <div class="flex gap-1" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+            <% if (currentPage > 1) { %>
+              <a href="/procurement?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-xs-outline">Sebelumnya</a>
+            <% } else { %>
+              <button type="button" class="btn-xs-outline select-none" disabled>Sebelumnya</button>
+            <% } %>
+
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <% if (i === currentPage) { %>
+                <button type="button" class="btn-xs font-semibold select-none"><%= i %></button>
+              <% } else { %>
+                <a href="/procurement?page=<%= i %>&search=<%= search %>&sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-xs-outline">
+                  <%= i %>
+                </a>
+              <% } %>
+            <% } %>
+
+            <% if (currentPage < totalPages) { %>
+              <a href="/procurement?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-xs-outline">Berikutnya</a>
+            <% } else { %>
+              <button type="button" class="btn-xs-outline select-none" disabled>Berikutnya</button>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

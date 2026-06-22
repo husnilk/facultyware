@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en" class="theme-unand">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (
+            stored
+              ? stored === "dark"
+              : matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+
+        const apply = (dark) => {
+          document.documentElement.classList.toggle("dark", dark);
+          try {
+            localStorage.setItem("themeMode", dark ? "dark" : "light");
+          } catch (_) {}
+        };
+
+        document.addEventListener("basecoat:theme", (event) => {
+          const mode = event.detail?.mode;
+          apply(
+            mode === "dark"
+              ? true
+              : mode === "light"
+                ? false
+                : !document.documentElement.classList.contains("dark"),
+          );
+        });
+      })();
+    </script>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Language" content="en" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title><%= title %> - Facultyware</title>
+    <meta
+      name="description"
+      content="A components library built with Tailwind CSS that works with any web stack."
+    />
+    <meta name="title" content="Facultyware" />
+    <meta
+      name="keywords"
+      content="components,component library,component system,UI,UI kit,shadcn,shadcn/ui,Tailwind CSS,Tailwind,CSS,HTML,Jinja,Nunjucks,JS,JavaScript,vanilla JS,vanilla JavaScript"
+    />
+
+    <link rel="icon" type="image/png" href="/img/logo-unand.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/img/logo-unand.png"
+    />
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/django.min.js"></script>
+    <script>
+      const highlight = () => {
+        if (!window.hljs) return;
+        document
+          .querySelectorAll(
+            "pre code:not([data-highlighted]), code.highlight:not([data-highlighted])",
+          )
+          .forEach((el) => hljs.highlightElement(el));
+      };
+
+      if (!window._hljsInit) {
+        window._hljsInit = true;
+        document.addEventListener("DOMContentLoaded", highlight);
+        document.addEventListener("htmx:afterSwap", highlight);
+      }
+    </script>
+    <script>
+      document.addEventListener("htmx:historyRestore", () => {
+        if (window.basecoat) window.basecoat.initAll();
+      });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      /* Cegah geser horizontal halaman (clip, agar tidak merusak sticky navbar). */
+      html, body { overflow-x: clip; max-width: 100%; }
+      /* Badge status seragam dipakai semua modul (lihat partials/status-badge.ejs). */
+      .status-badge { display: inline-flex; align-items: center; padding: .18rem .65rem; border-radius: 9999px; font-size: .72rem; font-weight: 600; line-height: 1.3; white-space: nowrap; }
+      /* Kartu pembungkus tabel: nolkan padding atas/bawah & gap bawaan .card supaya
+         header tabel rapat ke tepi kartu (hilangkan celah/"bolong" di atas header). */
+      .card.card--table { padding-block: 0; gap: 0; }
+
+      /* ====================================================================
+         Utility yang HILANG dari styles.css (ter-purge saat build Tailwind).
+         Disuplai di sini agar markup rata-kanan/grid responsif berfungsi di
+         SEMUA halaman tanpa harus mengubah tiap file. */
+      .justify-end { justify-content: flex-end; }
+      .items-end { align-items: flex-end; }
+      @media (min-width: 640px) {
+        .sm\:flex-row { flex-direction: row; }
+        .sm\:items-center { align-items: center; }
+        .sm\:justify-end { justify-content: flex-end; }
+        .sm\:w-auto { width: auto; }
+      }
+      @media (min-width: 768px) {
+        .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .md\:col-span-2 { grid-column: span 2 / span 2; }
+      }
+      @media (min-width: 1024px) {
+        .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      /* Warna tombol yang juga ter-purge (dipakai tombol setujui/tolak/hapus). */
+      .text-white { color: #fff; }
+      .bg-emerald-600 { background-color: #059669; }
+      .hover\:bg-emerald-700:hover { background-color: #047857; }
+      .bg-rose-600 { background-color: #e11d48; }
+      .hover\:bg-rose-700:hover { background-color: #be123c; }
+
+      /* Tombol hijau (aksi utama, mis. Verifikasi penerimaan). Kelas mandiri
+         agar tidak kalah specificity dari a.btn-xs di styles.css. */
+      .btn-success, a.btn-success {
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: .375rem; height: 2rem; padding: 0 .75rem; border-radius: var(--radius-md);
+        font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500;
+        line-height: 1; cursor: pointer; text-decoration: none; white-space: nowrap;
+        background-color: #059669; color: #fff; border: 1px solid #059669;
+        transition: all .15s ease;
+      }
+      .btn-success:hover, a.btn-success:hover { background-color: #047857; border-color: #047857; }
+
+      /* ====================================================================
+         Header info halaman detail (dipakai bersama: penerimaan, PO, pengadaan).
+         Eyebrow + nomor besar + badge status di kanan, lalu grid info-tile. */
+      .po-info { display: flex; flex-direction: column; gap: 1.25rem; }
+      .po-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--color-border); }
+      .po-eyebrow { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted-foreground); margin-bottom: .3rem; }
+      .po-number { font-size: 1.75rem; font-weight: 700; letter-spacing: -.01em; color: var(--color-foreground); line-height: 1.1; }
+      .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .85rem; }
+      .info-tile { padding: .85rem 1rem; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-background); }
+      .info-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted-foreground); margin-bottom: .35rem; }
+      .info-value { font-size: 1.1rem; font-weight: 600; color: var(--color-foreground); }
+
+      /* ====================================================================
+         Feed "Aktivitas Terbaru" di dashboard — timeline dengan ikon berwarna. */
+      .act-feed { display: flex; flex-direction: column; }
+      .act-item { position: relative; display: flex; gap: .85rem; padding: .7rem .55rem; border-radius: .65rem; transition: background-color .15s ease; }
+      .act-item:hover { background: var(--color-muted); }
+      /* garis penghubung timeline antar ikon */
+      .act-item:not(:last-child)::before {
+        content: ""; position: absolute; left: calc(.55rem + 1.125rem); top: 2.55rem; bottom: -.15rem;
+        width: 2px; background: var(--color-border);
+      }
+      .act-icon { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 9999px; flex: none; }
+      .act-icon svg { width: 1.1rem; height: 1.1rem; }
+      .act-body { display: flex; flex-direction: column; gap: .12rem; min-width: 0; padding-top: .15rem; }
+      .act-text { font-size: .9rem; font-weight: 500; color: var(--color-foreground); }
+      .act-time { font-size: .72rem; color: var(--color-muted-foreground); }
+      .act-approved { background: color-mix(in oklab, #16a34a 16%, transparent); color: #16a34a; }
+      .act-rejected { background: color-mix(in oklab, #dc2626 16%, transparent); color: #dc2626; }
+      .act-done     { background: color-mix(in oklab, #2563eb 16%, transparent); color: #2563eb; }
+      .act-info     { background: color-mix(in oklab, #d97706 16%, transparent); color: #d97706; }
+      /* Font terkunci (DESIGN-PROMPT.md): body IBM Plex Sans, judul Fraunces. */
+      body { font-family: var(--font-body); }
+      h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); letter-spacing: -0.01em; }
+      code, pre, .font-mono { font-family: var(--font-mono); }
+      /* Styling dialog (modal) */
+      dialog:not([open]) {
+        display: none !important;
+      }
+      dialog[open] {
+        display: flex !important;
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: rgba(15, 23, 42, 0.4) !important;
+        backdrop-filter: blur(4px) !important;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999 !important;
+        opacity: 1;
+        transition: opacity 0.2s ease;
+      }
+      dialog[open] > div {
+        background-color: var(--color-background, #ffffff) !important;
+        color: var(--color-foreground, #0f172a) !important;
+        border: 1px solid var(--color-border, #e2e8f0) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        padding: 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        animation: modalScaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      }
+      @keyframes modalScaleUp {
+        from {
+          transform: scale(0.95);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+    <script>
+      window.showToast = function(title, message, type = 'info') {
+        const toaster = document.getElementById('toaster');
+        if (!toaster) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.setAttribute('aria-hidden', 'false');
+
+        let iconSvg = '';
+        if (type === 'success') {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500 mr-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+        } else if (type === 'error') {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500 mr-1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+        } else {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500 mr-1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+        }
+
+        toast.innerHTML = `
+          <div class="toast-content flex items-center">
+            ${iconSvg}
+            <section class="flex-1">
+              <h2 class="font-semibold text-sm leading-tight text-foreground">${title}</h2>
+              <p class="text-xs text-muted-foreground mt-0.5 leading-normal">${message}</p>
+            </section>
+            <footer class="ml-2">
+              <button type="button" class="btn-xs-icon-ghost" onclick="const t = this.closest('.toast'); t.setAttribute('aria-hidden', 'true'); setTimeout(() => t.remove(), 300)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </footer>
+          </div>
+        `;
+
+        toaster.appendChild(toast);
+
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+          if (toast && toast.parentElement) {
+            toast.setAttribute('aria-hidden', 'true');
+            setTimeout(() => {
+              if (toast && toast.parentElement) {
+                toast.remove();
+              }
+            }, 300);
+          }
+        }, 4000);
+      };
+    </script>
+  </head>
+  <body class="bg-background *:data-[slot=card]:has-[[data-slot=chart]]:shadow-none">

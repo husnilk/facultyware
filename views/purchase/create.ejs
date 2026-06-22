@@ -1,0 +1,185 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto">
+      
+      <!-- Breadcrumb & Title -->
+      <div class="mb-6 flex flex-col gap-2">
+        <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <a href="/purchase" class="hover:text-foreground">Purchase Order</a>
+          <span>/</span>
+          <span class="text-foreground">Buat Baru</span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Buat Purchase Order Baru</h1>
+        <p class="text-sm text-muted-foreground">Pilih permintaan yang disetujui, tentukan pemasok, dan atur harga barang.</p>
+      </div>
+
+      <% if (locals.error) { %>
+        <div class="bg-destructive/15 text-destructive text-sm p-4 rounded-xl border border-destructive/20 mb-6 flex items-start gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <div>
+            <h5 class="font-semibold leading-tight">Error pengisian form</h5>
+            <p class="mt-1 opacity-90"><%= error %></p>
+          </div>
+        </div>
+      <% } %>
+
+      <form method="post" action="/purchase/create" class="space-y-6">
+        
+        <!-- Main Form Card -->
+        <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
+          <h3 class="text-base font-semibold">Informasi Purchase Order</h3>
+          
+          <div class="grid gap-2">
+            <label for="procurement_id" class="text-sm font-medium">Permintaan (Approved) <span class="text-destructive">*</span></label>
+            <select name="inventory_procurement_id" id="procurement_id" class="select w-full" required>
+              <option value="">-- Pilih Permintaan --</option>
+              <% procurements.forEach(function (p) { %>
+                <option value="<%= p.id %>"><%= p.request_number %> - <%= p.title %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid gap-2">
+              <label for="supplier_id" class="text-sm font-medium">Supplier <span class="text-destructive">*</span></label>
+              <select id="supplier_id" name="supplier_id" class="select w-full" required>
+                <option value="">-- Pilih Supplier --</option>
+                <% suppliers.forEach(function (s) { %>
+                  <option value="<%= s.id %>"><%= s.name %> (<%= s.code %>)</option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="grid gap-2">
+              <label for="purchase_date" class="text-sm font-medium">Tanggal PO <span class="text-destructive">*</span></label>
+              <input type="date" id="purchase_date" name="purchase_date" class="input w-full" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Items Container -->
+        <div id="procurement_items">
+          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-8 text-muted-foreground text-sm">
+            Silakan pilih nomor permintaan di atas untuk memuat daftar barang.
+          </div>
+        </div>
+
+        <!-- Summary & Actions Card -->
+        <div class="card p-6 bg-card rounded-xl border shadow-sm flex flex-col items-end gap-4">
+          <div class="flex items-center gap-2 flex-wrap justify-end" style="max-width:100%;">
+            <span class="text-sm text-muted-foreground font-medium">Total Estimasi Nilai PO:</span>
+            <span id="total" class="text-xl font-bold text-primary" style="word-break:break-all; overflow-wrap:anywhere;">Rp 0</span>
+          </div>
+          <div class="flex items-center justify-end gap-2">
+            <a href="/purchase" class="btn-outline">Batal</a>
+            <button type="submit" class="btn">Simpan PO</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.getElementById('procurement_id').addEventListener('change', async function () {
+    const id = this.value;
+    const target = document.getElementById('procurement_items');
+    target.innerHTML = '';
+    if (!id) {
+      target.innerHTML = `
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-8 text-muted-foreground text-sm">
+          Silakan pilih nomor permintaan di atas untuk memuat daftar barang.
+        </div>`;
+      return;
+    }
+    try {
+      const res = await fetch(`/purchase/api/procurement/${id}/items`);
+      if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      if (!data.items || !data.items.length) {
+        target.innerHTML = `
+          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-8 text-muted-foreground text-sm">
+            Tidak ada item dalam permintaan ini.
+          </div>`;
+        return;
+      }
+      
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card p-6 bg-card rounded-xl border shadow-sm space-y-4';
+      
+      wrapper.innerHTML = '<div class="space-y-1"><h3 class="text-base font-semibold">Rincian Barang &amp; Harga</h3><p class="text-sm text-muted-foreground">Masukkan harga satuan tiap barang untuk menghitung total PO.</p></div>';
+      
+      const tableWrap = document.createElement('div');
+      tableWrap.className = 'overflow-x-auto';
+      
+      const table = document.createElement('table');
+      table.className = 'w-full text-left text-sm border-collapse';
+      // table-layout:fixed + colgroup → lebar kolom tetap; angka besar membungkus
+      // ke bawah (word-break) dan TIDAK lagi menggeser kolom di sebelahnya.
+      table.style.tableLayout = 'fixed';
+      table.innerHTML = `
+        <colgroup>
+          <col style="width:35%" />
+          <col style="width:80px" />
+          <col style="width:220px" />
+          <col style="width:160px" />
+        </colgroup>
+        <thead>
+          <tr class="border-b text-muted-foreground font-semibold text-xs uppercase tracking-wide">
+            <th class="pb-3 pt-1">Nama Barang</th>
+            <th class="pb-3 pt-1 text-center px-4">Qty</th>
+            <th class="pb-3 pt-1 text-right px-4">Harga Satuan</th>
+            <th class="pb-3 pt-1 text-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          ${data.items.map((i, idx) => `
+            <tr class="hover:bg-muted/10 transition-colors">
+              <td class="py-4 pr-4 font-medium align-middle" style="word-break:break-word;">${i.name}</td>
+              <td class="py-4 px-4 text-center align-middle font-mono font-semibold">${i.quantity}</td>
+              <td class="py-3 px-4 align-middle">
+                <div style="position:relative; width:100%;">
+                  <span style="position:absolute; left:.65rem; top:50%; transform:translateY(-50%); color:var(--color-muted-foreground); font-size:.8rem; pointer-events:none; font-weight:500;">Rp</span>
+                  <input type="number" name="prices[]" data-qty="${i.quantity}" min="0" max="999999999999" placeholder="0" class="input font-mono" style="width:100%; text-align:right; padding-left:2.2rem; padding-right:.6rem;" oninput="updateSubtotal()" required />
+                </div>
+              </td>
+              <td id="subtotal-${idx}" class="py-4 text-right align-middle font-mono font-semibold text-primary" style="word-break:break-all; overflow-wrap:anywhere;">Rp 0</td>
+            </tr>`).join('')}
+        </tbody>
+      `;
+      tableWrap.appendChild(table);
+      wrapper.appendChild(tableWrap);
+      target.appendChild(wrapper);
+    } catch (e) {
+      target.innerHTML = `
+        <div class="card p-6 bg-card rounded-xl border border-destructive/20 text-destructive text-center py-8 text-sm">
+          Gagal memuat item barang. Silakan pilih ulang nomor permintaan.
+        </div>`;
+    }
+  });
+
+  function updateSubtotal() {
+    const inputs = document.getElementsByName('prices[]');
+    let total = 0;
+    Array.from(inputs).forEach((inp, i) => {
+      const qty = Number(inp.dataset.qty) || 0;
+      const price = parseFloat(inp.value) || 0;
+      const sub = qty * price;
+      const cell = document.getElementById('subtotal-' + i);
+      if (cell) cell.textContent = 'Rp ' + sub.toLocaleString('id-ID');
+      total += sub;
+    });
+    document.getElementById('total').textContent = 'Rp ' + total.toLocaleString('id-ID');
+  }
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,141 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+      
+      <!-- Breadcrumb & Actions -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <a href="/purchase" class="hover:text-foreground">Purchase Order</a>
+          <span>/</span>
+          <span class="text-foreground"><%= po.purchase_number %></span>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Detail Purchase Order</h1>
+            <p class="text-sm text-muted-foreground">Rincian lengkap dan status transaksi pesanan pembelian.</p>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <% if (po.status === 'pending' && can('manage_approval')) { %>
+              <form method="POST" action="/purchase/<%= po.id %>/approve" class="inline">
+                <button type="submit" class="btn bg-emerald-600 hover:bg-emerald-700 text-white">Setujui PO</button>
+              </form>
+              <button type="button" class="btn bg-rose-600 hover:bg-rose-700 text-white"
+                onclick="document.getElementById('dialog-reject-po').showModal()">Tolak PO</button>
+            <% } %>
+            <a href="/purchase/<%= po.id %>/export" class="btn-outline inline-flex items-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Unduh PDF
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info PO -->
+      <div class="card">
+        <section class="po-info">
+          <div class="po-head">
+            <div>
+              <span class="po-eyebrow">Nomor Purchase Order</span>
+              <span class="po-number font-mono"><%= po.purchase_number %></span>
+            </div>
+            <%- include('../partials/status-badge', { status: po.status }) %>
+          </div>
+          <div class="info-grid">
+            <div class="info-tile">
+              <div class="info-label">Pengadaan</div>
+              <div class="info-value"><%= po.procurement_title %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Pemasok / Supplier</div>
+              <div class="info-value"><%= po.supplier %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Tanggal Transaksi</div>
+              <div class="info-value"><%= fmtDate(po.purchase_date) %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Jumlah Item</div>
+              <div class="info-value"><%= items.length %> item</div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Total Pesanan</div>
+              <div class="info-value">Rp <%= Number(total || 0).toLocaleString('id-ID') %></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Item Table Card -->
+      <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
+        <h3 class="text-base font-semibold">Rincian Barang</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b text-muted-foreground font-semibold">
+                <th class="pb-3 pr-4">Nama Barang</th>
+                <th class="pb-3 pr-4 text-right w-[100px]">Qty</th>
+                <th class="pb-3 pr-4 text-right w-[200px]">Harga Satuan (Rp)</th>
+                <th class="pb-3 text-right w-[200px]">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% items.forEach(function (it) { %>
+                <tr class="hover:bg-muted/10">
+                  <td class="py-3 font-medium align-middle text-foreground"><%= it.name %></td>
+                  <td class="py-3 pr-4 text-right align-middle font-mono font-medium text-muted-foreground"><%= it.quantity %></td>
+                  <td class="py-3 pr-4 text-right align-middle font-mono text-muted-foreground">Rp <%= Number(it.price || 0).toLocaleString('id-ID') %></td>
+                  <td class="py-3 text-right align-middle font-mono font-semibold text-primary">Rp <%= Number(it.subtotal || 0).toLocaleString('id-ID') %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+            <tfoot>
+              <tr class="border-t-2 font-bold text-base">
+                <td class="py-4 text-foreground" colspan="3">Total Pesanan</td>
+                <td class="py-4 text-right font-mono text-primary">Rp <%= Number(total || 0).toLocaleString('id-ID') %></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <% if (po.status === 'rejected' && po.approval_notes) { %>
+      <div class="card p-6 bg-card rounded-xl border border-red-500/40 bg-red-50/40 space-y-1">
+        <h3 class="text-base font-semibold text-red-700">Alasan Penolakan PO</h3>
+        <p class="text-sm text-red-900"><%= po.approval_notes %></p>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+</main>
+
+<!-- Modal: Alasan Penolakan PO -->
+<dialog id="dialog-reject-po" class="dialog">
+  <article>
+    <header>
+      <h2>Alasan Penolakan PO</h2>
+      <p>Tuliskan alasan penolakan Purchase Order ini.</p>
+    </header>
+    <form method="post" action="/purchase/<%= po.id %>/reject" class="grid gap-4">
+      <div class="grid gap-2">
+        <label for="po-notes">Catatan Penolakan</label>
+        <textarea id="po-notes" name="notes" class="input" rows="4" required placeholder="Mis. harga melebihi anggaran..."></textarea>
+      </div>
+      <footer class="flex items-center justify-end gap-2">
+        <button type="button" class="btn-outline" onclick="document.getElementById('dialog-reject-po').close()">Batal</button>
+        <button type="submit" class="btn bg-rose-600 hover:bg-rose-700 text-white">Kirim Penolakan</button>
+      </footer>
+    </form>
+  </article>
+</dialog>
+
+<%- include('../partials/footer') %>

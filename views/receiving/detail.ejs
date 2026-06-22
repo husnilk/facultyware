@@ -1,0 +1,491 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+    <style>
+      /* Gaya khusus halaman detail penerimaan (warna memakai token tema). */
+      .justify-end { justify-content: flex-end; }
+
+      /* Pil status: latar solid berwarna + ikon */
+      .status-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .28rem .8rem; border-radius: 9999px; font-size: .78rem; font-weight: 600; line-height: 1.2; color: oklch(99% 0.01 150); white-space: nowrap; }
+      .status-pill svg { width: .95rem; height: .95rem; flex: none; }
+      .status-draft { background: oklch(70% 0.15 70); }
+      .status-done { background: oklch(55% 0.14 150); }
+
+      /* Header informasi PO */
+      .po-info { display: flex; flex-direction: column; gap: 1.25rem; }
+      .po-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--color-border); }
+      .po-eyebrow { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted-foreground); margin-bottom: .3rem; }
+      .po-number { font-size: 1.75rem; font-weight: 700; letter-spacing: -.01em; color: var(--color-foreground); line-height: 1.1; }
+      .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .85rem; }
+      .info-tile { padding: .85rem 1rem; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-background); }
+      .info-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted-foreground); margin-bottom: .35rem; }
+      .info-value { font-size: 1.1rem; font-weight: 600; color: var(--color-foreground); }
+
+      /* Tabel angka */
+      .num { text-align: right; font-variant-numeric: tabular-nums; }
+      .totals-row td { font-weight: 700; border-top: 2px solid var(--color-border); }
+
+      /* Pil kondisi hasil verifikasi */
+      .cond-pill { display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .55rem; border-radius: 9999px; font-size: .72rem; font-weight: 600; line-height: 1.3; }
+      .cond-baik { background: color-mix(in oklab, oklch(55% 0.14 150) 16%, transparent); color: oklch(45% 0.13 150); }
+      .cond-cacat { background: color-mix(in oklab, oklch(60% 0.2 25) 16%, transparent); color: oklch(50% 0.19 25); }
+      .cond-empty { color: var(--color-muted-foreground); font-size: .8rem; }
+      .item-note { display: block; margin-top: .2rem; font-size: .72rem; color: var(--color-muted-foreground); }
+
+      /* Galeri bukti penerimaan */
+      .proof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .85rem; }
+      .proof-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-background); transition: border-color .15s ease; }
+      .proof-card:hover { border-color: var(--color-primary); }
+      .proof-thumb { display: flex; align-items: center; justify-content: center; height: 120px; background: var(--color-muted); overflow: hidden; }
+      .proof-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .proof-thumb svg { color: var(--color-muted-foreground); }
+      .proof-meta { padding: .5rem .65rem; font-size: .75rem; }
+      .proof-name { display: block; font-weight: 500; color: var(--color-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .proof-date { color: var(--color-muted-foreground); font-size: .68rem; }
+
+      /* Accordion: tombol panah di kanan kartu untuk melipat/membuka isi */
+      .accordion-toggle { grid-column: 2; grid-row: 1 / span 2; align-self: start; justify-self: end; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 0; border-radius: .5rem; background: transparent; color: var(--color-muted-foreground); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+      .accordion-toggle:hover { background: var(--color-muted); color: var(--color-foreground); }
+      .accordion-toggle svg { width: 1.15rem; height: 1.15rem; transition: transform .22s var(--ease-out, ease); }
+      .card.is-collapsed .accordion-toggle svg { transform: rotate(-90deg); }
+      /* Animasi lipat/buka: tinggi via grid-template-rows (0fr <-> 1fr) + fade */
+      .accordion-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .28s var(--ease-out, ease); }
+      .accordion-body > * { min-height: 0; transition: opacity .2s ease; }
+      .card.is-collapsed .accordion-body { grid-template-rows: 0fr; }
+      .card.is-collapsed .accordion-body > * { opacity: 0; }
+      @media (prefers-reduced-motion: reduce) {
+        .accordion-body, .accordion-body > *, .accordion-toggle svg { transition: none; }
+      }
+    </style>
+
+    <div class="p-4 md:p-6 xl:p-12">
+        <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+          <header class="flex flex-wrap items-start justify-between gap-4">
+            <div class="flex flex-col gap-2">
+              <a href="/receiving" class="text-sm text-muted-foreground hover:underline">&larr; Kembali ke daftar</a>
+              <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
+                Detail Penerimaan
+              </h1>
+            </div>
+            <a class="btn-outline shrink-0" href="/receiving/<%= po ? po.id : '0' %>/export">
+              Export PDF
+            </a>
+          </header>
+
+          <!-- Info PO -->
+          <div class="card">
+            <section class="po-info">
+              <div class="po-head">
+                <div>
+                  <span class="po-eyebrow">Nomor Purchase Order</span>
+                  <span class="po-number font-mono"><%= po ? po.purchase_number : "-" %></span>
+                </div>
+                <% if (po) { %><%- include('../partials/status-badge', { status: po.status, label: po.status_label }) %><% } %>
+              </div>
+              <div class="info-grid">
+                <div class="info-tile">
+                  <div class="info-label">Pemasok</div>
+                  <div class="info-value"><%= po && po.supplier ? po.supplier : "-" %></div>
+                </div>
+                <div class="info-tile">
+                  <div class="info-label">Tanggal Pembelian</div>
+                  <div class="info-value"><%= po ? fmtDate(po.purchase_date) : "-" %></div>
+                </div>
+                <div class="info-tile">
+                  <div class="info-label">Jenis Barang</div>
+                  <div class="info-value"><%= summary ? summary.itemCount : 0 %> item</div>
+                </div>
+                <div class="info-tile">
+                  <div class="info-label">Total Nilai PO</div>
+                  <div class="info-value"><%= summary ? summary.totalValue_label : "Rp 0" %></div>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t" style="border-color: var(--color-border);">
+                <% if (po && po.status !== 'completed') { %>
+                  <button type="button" class="btn-outline" onclick="document.getElementById('dialog-retur').showModal()">Catat Retur</button>
+                  <button type="button" class="btn-outline" onclick="document.getElementById('dialog-replacement').showModal()">Catat Barang Ganti</button>
+                  <button type="button" class="btn" onclick="document.getElementById('dialog-confirm').showModal()">Konfirmasi Final</button>
+                <% } else { %>
+                  <span class="text-sm text-muted-foreground">Penerimaan sudah final (Selesai) — retur &amp; barang ganti terkunci.</span>
+                <% } %>
+              </div>
+            </section>
+          </div>
+
+          <!-- Tabel qty dipesan vs diterima -->
+          <div class="card">
+            <header>
+              <h2>Rincian Barang</h2>
+              <p>Perbandingan jumlah dipesan dengan jumlah diterima beserta nilainya.</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan rincian">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </header>
+            <section class="accordion-body">
+              <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-muted-foreground text-left">
+                    <th class="px-3 py-2 font-medium">Nama Barang</th>
+                    <th class="px-3 py-2 font-medium num">Qty Dipesan</th>
+                    <th class="px-3 py-2 font-medium num">Diterima Baik</th>
+                    <th class="px-3 py-2 font-medium num">Cacat</th>
+                    <th class="px-3 py-2 font-medium num">Selisih</th>
+                    <th class="px-3 py-2 font-medium num">Harga Satuan</th>
+                    <th class="px-3 py-2 font-medium num">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                    <% items.forEach(function (item) { %>
+                      <tr class="border-t">
+                        <td class="px-3 py-2">
+                          <%= item.name %>
+                          <span class="text-muted-foreground">(<%= item.unit %>)</span>
+                        </td>
+                        <td class="px-3 py-2 num"><%= item.ordered_qty %></td>
+                        <% if (item.is_verified) { %>
+                          <td class="px-3 py-2 num"><%= item.verified_good || 0 %></td>
+                          <td class="px-3 py-2 num">
+                            <% if (item.verified_defective > 0) { %>
+                              <span class="cond-pill cond-cacat"><%= item.verified_defective %></span>
+                            <% } else { %>
+                              0
+                            <% } %>
+                          </td>
+                          <td class="px-3 py-2 num"><%= item.diff %></td>
+                        <% } else { %>
+                          <td class="px-3 py-2 num cond-empty" colspan="3">Belum diverifikasi</td>
+                        <% } %>
+                        <td class="px-3 py-2 num"><%= item.price_label %></td>
+                        <td class="px-3 py-2 num"><%= item.line_total_label %></td>
+                      </tr>
+                      <% if (item.received_note) { %>
+                        <tr>
+                          <td class="px-3 pb-2 pt-0 text-muted-foreground" colspan="7" style="font-size:.72rem">
+                            Catatan <%= item.name %>: <%= item.received_note %>
+                          </td>
+                        </tr>
+                      <% } %>
+                    <% }) %>
+                  <% } else { %>
+                    <tr class="border-t">
+                      <td class="px-3 py-8 text-center text-muted-foreground" colspan="7">
+                        Belum ada hasil verifikasi yang tercatat.
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+                <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                  <tfoot>
+                    <tr class="totals-row">
+                      <td class="px-3 py-2">Total</td>
+                      <td class="px-3 py-2 num"><%= summary.totalOrdered %></td>
+                      <td class="px-3 py-2 num"><%= summary.totalGood %></td>
+                      <td class="px-3 py-2 num"><%= summary.totalDefective %></td>
+                      <td class="px-3 py-2 num"></td>
+                      <td class="px-3 py-2 num"></td>
+                      <td class="px-3 py-2 num"><%= summary.totalValue_label %></td>
+                    </tr>
+                  </tfoot>
+                <% } %>
+              </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- Bukti Penerimaan -->
+          <% if (typeof attachments !== 'undefined' && attachments.length > 0) { %>
+          <div class="card">
+            <header>
+              <h2>Bukti Penerimaan</h2>
+              <p>Foto / surat jalan yang diunggah saat verifikasi.</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan bukti">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </header>
+            <section class="accordion-body">
+              <div class="proof-grid">
+                <% attachments.forEach(function (a) { %>
+                  <a class="proof-card" href="<%= a.url %>" target="_blank" rel="noopener" title="<%= a.original_name %>">
+                    <span class="proof-thumb">
+                      <% if (a.is_pdf) { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>
+                      <% } else { %>
+                        <img src="<%= a.url %>" alt="<%= a.original_name %>" loading="lazy" />
+                      <% } %>
+                    </span>
+                    <span class="proof-meta">
+                      <span class="proof-name"><%= a.original_name || a.file_path %></span>
+                      <span class="proof-date"><%= a.created_label %></span>
+                    </span>
+                  </a>
+                <% }) %>
+              </div>
+            </section>
+          </div>
+          <% } %>
+
+          <!-- Riwayat Retur -->
+          <% if (typeof returns !== 'undefined' && returns.length > 0) { %>
+          <div class="card">
+            <header>
+              <h2>Riwayat Retur</h2>
+              <p>Barang yang dikembalikan ke vendor.</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan riwayat retur">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </header>
+            <section class="accordion-body">
+              <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-muted-foreground text-left">
+                    <th class="px-3 py-2 font-medium">Tanggal</th>
+                    <th class="px-3 py-2 font-medium">Nama Barang</th>
+                    <th class="px-3 py-2 font-medium num">Jumlah</th>
+                    <th class="px-3 py-2 font-medium">Alasan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% returns.forEach(function (r) { %>
+                    <tr class="border-t">
+                      <td class="px-3 py-2"><%= r.transaction_date %></td>
+                      <td class="px-3 py-2">
+                        <%= r.name %>
+                        <span class="text-muted-foreground">(<%= r.unit %>)</span>
+                      </td>
+                      <td class="px-3 py-2 num"><%= r.quantity %></td>
+                      <td class="px-3 py-2"><%= r.notes %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+              </div>
+            </section>
+          </div>
+          <% } %>
+
+          <!-- Riwayat Barang Ganti -->
+          <% if (typeof replacements !== 'undefined' && replacements.length > 0) { %>
+          <div class="card">
+            <header>
+              <h2>Riwayat Barang Ganti</h2>
+              <p>Barang pengganti dari vendor yang sudah diterima (menambah stok).</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan riwayat barang ganti">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </header>
+            <section class="accordion-body">
+              <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-muted-foreground text-left">
+                    <th class="px-3 py-2 font-medium">Tanggal</th>
+                    <th class="px-3 py-2 font-medium">Nama Barang</th>
+                    <th class="px-3 py-2 font-medium num">Jumlah</th>
+                    <th class="px-3 py-2 font-medium">Catatan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% replacements.forEach(function (r) { %>
+                    <tr class="border-t">
+                      <td class="px-3 py-2"><%= r.transaction_date %></td>
+                      <td class="px-3 py-2">
+                        <%= r.name %>
+                        <span class="text-muted-foreground">(<%= r.unit %>)</span>
+                      </td>
+                      <td class="px-3 py-2 num"><%= r.quantity %></td>
+                      <td class="px-3 py-2"><%= r.notes %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+              </div>
+            </section>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal: Konfirmasi Final -->
+    <dialog id="dialog-confirm" class="dialog" aria-labelledby="dialog-confirm-title">
+      <article>
+        <header>
+          <h2 id="dialog-confirm-title">Konfirmasi Penerimaan Final</h2>
+          <p>Penerimaan akan dicatat ke buku besar (transaksi barang masuk) dan status PO menjadi Selesai. Tindakan ini tidak dapat dibatalkan.</p>
+        </header>
+        <form method="post" action="/receiving/<%= po ? po.id : '0' %>/confirm">
+          <footer class="flex items-center justify-end gap-2">
+            <button type="button" class="btn-outline"
+              onclick="document.getElementById('dialog-confirm').close()">
+              Batal
+            </button>
+            <button type="submit" class="btn">Ya, Konfirmasi</button>
+          </footer>
+        </form>
+      </article>
+    </dialog>
+
+    <!-- Modal: Catat Retur -->
+    <dialog id="dialog-retur" class="dialog" aria-labelledby="dialog-retur-title">
+      <article>
+        <header>
+          <h2 id="dialog-retur-title">Catat Retur ke Vendor</h2>
+          <p>Catat barang yang dikembalikan ke vendor.</p>
+        </header>
+        <form method="post" action="/receiving/retur" class="form grid gap-4">
+          <input type="hidden" name="po_id" value="<%= po ? po.id : '' %>" />
+          <div class="grid gap-2">
+            <label for="retur-item">Barang yang Diretur</label>
+            <select id="retur-item" name="item_id" class="select" required>
+              <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                <% items.forEach(function (item) { %>
+                  <option value="<%= item.item_id %>" data-available="<%= item.available_return %>"><%= item.name %> (<%= item.unit %>) — tersedia <%= item.available_return %></option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          <div class="grid gap-2">
+            <label for="retur-qty">Jumlah Retur <span id="retur-avail" class="text-muted-foreground" style="font-weight:400;"></span></label>
+            <input type="number" min="1" id="retur-qty" name="quantity" class="input" required />
+            <p id="retur-warn" class="text-destructive" style="display:none; font-size:.78rem; margin-top:.15rem;"></p>
+          </div>
+          <div class="grid gap-2">
+            <label for="retur-reason">Alasan Retur</label>
+            <select id="retur-reason" name="reason" class="select" required>
+              <option value="cacat">Barang cacat / rusak</option>
+              <option value="salah_kirim">Salah kirim / tidak sesuai spesifikasi</option>
+              <option value="kelebihan">Kelebihan kirim</option>
+              <option value="kedaluwarsa">Kedaluwarsa</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="grid gap-2">
+            <label for="retur-notes">Catatan (opsional)</label>
+            <textarea id="retur-notes" name="notes" class="input"
+              placeholder="Rincian tambahan, mis. 5 unit ujung pena kering"></textarea>
+          </div>
+          <footer class="flex items-center justify-end gap-2">
+            <button type="button" class="btn-outline"
+              onclick="document.getElementById('dialog-retur').close()">
+              Batal
+            </button>
+            <button type="submit" class="btn">Simpan Retur</button>
+          </footer>
+        </form>
+      </article>
+    </dialog>
+
+    <!-- Modal: Catat Barang Ganti -->
+    <dialog id="dialog-replacement" class="dialog" aria-labelledby="dialog-replacement-title">
+      <article>
+        <header>
+          <h2 id="dialog-replacement-title">Catat Barang Ganti</h2>
+          <p>Catat barang pengganti dari vendor yang sudah tiba. Stok akan bertambah.</p>
+        </header>
+        <form method="post" action="/receiving/replacement" class="form grid gap-4">
+          <input type="hidden" name="po_id" value="<%= po ? po.id : '' %>" />
+          <div class="grid gap-2">
+            <label for="repl-item">Barang Pengganti</label>
+            <select id="repl-item" name="item_id" class="select" required>
+              <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                <% items.forEach(function (item) { %>
+                  <option value="<%= item.item_id %>"><%= item.name %> (<%= item.unit %>)</option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          <div class="grid gap-2">
+            <label for="repl-qty">Jumlah Diterima</label>
+            <input type="number" min="1" id="repl-qty" name="quantity" class="input" required />
+          </div>
+          <div class="grid gap-2">
+            <label for="repl-notes">Catatan (opsional)</label>
+            <textarea id="repl-notes" name="notes" class="input"
+              placeholder="mis. ganti 30 unit yang sebelumnya cacat"></textarea>
+          </div>
+          <footer class="flex items-center justify-end gap-2">
+            <button type="button" class="btn-outline"
+              onclick="document.getElementById('dialog-replacement').close()">
+              Batal
+            </button>
+            <button type="submit" class="btn">Simpan Barang Ganti</button>
+          </footer>
+        </form>
+      </article>
+    </dialog>
+
+    <script>
+      (() => {
+        document.querySelectorAll(".accordion-toggle").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const card = btn.closest(".card");
+            if (!card) return;
+            const collapsed = card.classList.toggle("is-collapsed");
+            btn.setAttribute("aria-expanded", String(!collapsed));
+          });
+        });
+      })();
+
+      // Validasi jumlah retur: tidak boleh melebihi jumlah yang dimiliki.
+      (() => {
+        const form = document.querySelector('#dialog-retur form');
+        const sel = document.getElementById('retur-item');
+        const qty = document.getElementById('retur-qty');
+        const avail = document.getElementById('retur-avail');
+        const warn = document.getElementById('retur-warn');
+        if (!form || !sel || !qty) return;
+
+        const maxFor = () => {
+          const opt = sel.options[sel.selectedIndex];
+          return opt ? parseInt(opt.dataset.available, 10) || 0 : 0;
+        };
+
+        const syncAvail = () => {
+          const max = maxFor();
+          qty.max = max;
+          if (avail) avail.textContent = '(maksimal ' + max + ')';
+          check();
+        };
+
+        const check = () => {
+          const max = maxFor();
+          const val = parseInt(qty.value, 10);
+          const over = Number.isInteger(val) && val > max;
+          if (warn) {
+            warn.style.display = over ? 'block' : 'none';
+            warn.textContent = over
+              ? 'Jumlah retur (' + val + ') melebihi yang dimiliki. Maksimal hanya ' + max + '.'
+              : '';
+          }
+          return !over;
+        };
+
+        sel.addEventListener('change', syncAvail);
+        qty.addEventListener('input', check);
+
+        form.addEventListener('submit', (e) => {
+          if (!check()) {
+            e.preventDefault();
+            const max = maxFor();
+            if (window.showToast) {
+              window.showToast(
+                'Jumlah retur terlalu banyak',
+                'Barang ini hanya tersedia ' + max + ' unit untuk diretur.',
+                'error'
+              );
+            }
+            qty.focus();
+          }
+        });
+
+        syncAvail();
+      })();
+    </script>
+
+<%- include('../partials/footer') %>

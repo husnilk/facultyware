@@ -1,0 +1,144 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<main id="content">
+  <%- include('partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+
+      <!-- Breadcrumb & Aksi -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <a href="/approval/inbox" class="hover:text-foreground">Persetujuan Permintaan</a>
+          <span>/</span>
+          <span class="text-foreground">#<%= procurement.request_number %></span>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Detail Permintaan</h1>
+            <p class="text-sm text-muted-foreground">Rincian permintaan pengadaan dan keputusan persetujuan.</p>
+          </div>
+          <% if (procurement.status === 'pending') { %>
+          <div class="flex gap-2 shrink-0">
+            <button type="button" class="btn bg-emerald-600 hover:bg-emerald-700 text-white"
+              onclick="document.getElementById('dialog-approve').showModal()">Setujui Permintaan</button>
+            <button type="button" class="btn bg-rose-600 hover:bg-rose-700 text-white"
+              onclick="document.getElementById('dialog-reject').showModal()">Tolak Permintaan</button>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Info Permintaan -->
+      <div class="card">
+        <section class="po-info">
+          <div class="po-head">
+            <div>
+              <span class="po-eyebrow">Nomor Permintaan</span>
+              <span class="po-number font-mono">#<%= procurement.request_number %></span>
+            </div>
+            <%- include('partials/status-badge', { status: procurement.status }) %>
+          </div>
+          <div class="info-grid">
+            <div class="info-tile">
+              <div class="info-label">Judul Permintaan</div>
+              <div class="info-value"><%= procurement.title %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Pemohon</div>
+              <div class="info-value"><%= procurement.pemohon_name || 'Staf / Admin' %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Tanggal Pengajuan</div>
+              <div class="info-value"><%= new Date(procurement.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Jumlah Item</div>
+              <div class="info-value"><%= (typeof items !== 'undefined' ? items.length : 0) %> item</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Barang Diajukan -->
+      <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
+        <h3 class="text-base font-semibold">Barang Diajukan</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b text-muted-foreground font-semibold">
+                <th class="pb-3 pr-4">Nama Barang</th>
+                <th class="pb-3 text-right w-[120px]">Qty</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                <% items.forEach(function (item) { %>
+                  <tr class="hover:bg-muted/10">
+                    <td class="py-3 pr-4 font-medium align-middle text-foreground"><%= item.item_name %></td>
+                    <td class="py-3 text-right align-middle font-mono font-medium text-muted-foreground"><%= item.quantity %></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="2" class="py-8 text-center text-muted-foreground">Tidak ada barang pada permintaan ini.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alasan Penolakan -->
+      <% if (procurement.status === 'rejected') { %>
+      <div class="card p-6 bg-card rounded-xl border border-red-500/40 bg-red-50/40 space-y-1">
+        <h3 class="text-base font-semibold text-red-700">Alasan Penolakan</h3>
+        <p class="text-sm text-red-900"><%= procurement.notes ? procurement.notes : 'Tidak ada catatan yang diberikan.' %></p>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+</main>
+
+<!-- Modal: Konfirmasi Persetujuan -->
+<dialog id="dialog-approve" class="dialog" aria-labelledby="dialog-approve-title">
+  <article>
+    <header>
+      <h2 id="dialog-approve-title">Konfirmasi Persetujuan</h2>
+      <p>Yakin menyetujui permintaan pengadaan ini?</p>
+    </header>
+    <form method="post" action="/approval/<%= procurement.id %>/approve">
+      <footer class="flex items-center justify-end gap-2">
+        <button type="button" class="btn-outline"
+          onclick="document.getElementById('dialog-approve').close()">Batal</button>
+        <button type="submit" class="btn">Ya, Setujui</button>
+      </footer>
+    </form>
+  </article>
+</dialog>
+
+<!-- Modal: Alasan Penolakan -->
+<dialog id="dialog-reject" class="dialog" aria-labelledby="dialog-reject-title">
+  <article>
+    <header>
+      <h2 id="dialog-reject-title">Alasan Penolakan</h2>
+      <p>Tuliskan alasan penolakan permintaan ini.</p>
+    </header>
+    <form method="post" action="/approval/<%= procurement.id %>/reject" class="grid gap-4">
+      <div class="grid gap-2">
+        <label for="rejectionNote">Catatan Penolakan</label>
+        <textarea id="rejectionNote" name="notes" class="input" rows="4" required
+          placeholder="Masukkan alasan penolakan secara mendetail..."></textarea>
+      </div>
+      <footer class="flex items-center justify-end gap-2">
+        <button type="button" class="btn-outline"
+          onclick="document.getElementById('dialog-reject').close()">Batal</button>
+        <button type="submit" class="btn">Kirim Penolakan</button>
+      </footer>
+    </form>
+  </article>
+</dialog>
+
+<%- include('partials/footer') %>

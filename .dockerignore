@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.vscode
+.qoder
+scratch
+scripts
+tests
+playwright.config.js
+playwright-report
+test-results
+blob-report
+*.md
+public/assets/uploads/receiving/*
+!public/assets/uploads/receiving/.gitkeep

@@ -1,0 +1,39 @@
+steps:
+  # Build image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/facultyware', '.']
+
+  # Push ke Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/facultyware']
+
+  # Deploy ke Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'facultyware'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/facultyware'
+      - '--region'
+      - 'asia-southeast2'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '512Mi'
+      - '--port'
+      - '8080'
+      - '--add-cloudsql-instances'
+      - '${PROJECT_ID}:asia-southeast2:facultyware-db'
+      - '--set-env-vars'
+      - 'DB_HOST=34.101.89.64,DB_USER=facultyware_app,DB_PASSWORD=FacultyWare2026Prod,DB_NAME=facultyware,SESSION_SECRET=facultyware2026secret,NODE_ENV=production,DEV_NO_AUTH=0'
+
+images:
+  - 'gcr.io/$PROJECT_ID/facultyware'
+
+# Wajib saat trigger memakai service account khusus: tentukan tujuan log
+# secara eksplisit, jika tidak build gagal validasi sebelum step dijalankan.
+options:
+  logging: CLOUD_LOGGING_ONLY

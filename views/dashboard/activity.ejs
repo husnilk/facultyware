@@ -1,0 +1,268 @@
+<%- include('../partials/header') %>
+   <%- include('../partials/sidebar') %>
+
+      <main id="content">
+         <%- include('../partials/navbar') %>
+
+            <style>
+               .dash-label {
+                  font-size: .78rem;
+                  text-transform: uppercase;
+                  letter-spacing: .06em;
+                  color: var(--color-muted-foreground);
+                  font-weight: 600;
+                  margin-bottom: .85rem;
+               }
+
+               .panel-title {
+                  font-size: 1.02rem;
+                  font-weight: 600;
+                  color: var(--color-foreground);
+               }
+
+               .act-feed {
+                  display: flex;
+                  flex-direction: column;
+               }
+
+               .act-item {
+                  position: relative;
+                  display: flex;
+                  gap: .85rem;
+                  padding: .7rem .55rem;
+                  border-radius: .65rem;
+                  transition: background-color .15s ease;
+               }
+
+               .act-item:hover {
+                  background: var(--color-muted);
+               }
+
+               .act-item:not(:last-child)::before {
+                  content: "";
+                  position: absolute;
+                  left: calc(.55rem + 1.125rem);
+                  top: 2.55rem;
+                  bottom: -.15rem;
+                  width: 2px;
+                  background: var(--color-border);
+               }
+
+               .act-icon {
+                  position: relative;
+                  z-index: 1;
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 2.25rem;
+                  height: 2.25rem;
+                  border-radius: 9999px;
+                  flex: none;
+               }
+
+               .act-icon svg {
+                  width: 1.1rem;
+                  height: 1.1rem;
+               }
+
+               .act-icon.act-approved {
+                  background: #dcfce7;
+                  color: #15803d;
+               }
+
+               .act-icon.act-rejected {
+                  background: #fee2e2;
+                  color: #b91c1c;
+               }
+
+               .act-icon.act-info {
+                  background: #dbeafe;
+                  color: #1d4ed8;
+               }
+
+               .act-icon.act-done {
+                  background: #e0e7ff;
+                  color: #4338ca;
+               }
+
+               .act-body {
+                  display: flex;
+                  flex-direction: column;
+                  gap: .12rem;
+                  min-width: 0;
+                  padding-top: .15rem;
+               }
+
+               .act-text {
+                  font-size: .9rem;
+                  font-weight: 500;
+                  color: var(--color-foreground);
+               }
+
+               .act-time {
+                  font-size: .72rem;
+                  color: var(--color-muted-foreground);
+               }
+
+               /* Pagination */
+               .pagination {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: .5rem;
+                  margin-top: 1.5rem;
+               }
+
+               .pagination a,
+               .pagination span {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-width: 2rem;
+                  height: 2rem;
+                  padding: 0 .5rem;
+                  border-radius: .5rem;
+                  font-size: .85rem;
+                  font-weight: 500;
+                  text-decoration: none;
+                  transition: background .15s ease;
+               }
+
+               .pagination a {
+                  background: var(--color-muted);
+                  color: var(--color-foreground);
+               }
+
+               .pagination a:hover {
+                  background: var(--color-primary);
+                  color: #fff;
+               }
+
+               .pagination .active {
+                  background: var(--color-primary);
+                  color: #fff;
+                  pointer-events: none;
+               }
+
+               .pagination .disabled {
+                  opacity: .4;
+                  pointer-events: none;
+                  background: var(--color-muted);
+                  color: var(--color-muted-foreground);
+               }
+            </style>
+
+            <div class="p-4 md:p-6 xl:p-12">
+               <div class="max-w-screen-lg mx-auto">
+                  <div class="mb-8">
+                     <div class="flex items-center justify-between mb-1">
+                        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Riwayat Aktivitas</h1>
+                        <a href="/dashboard" class="text-sm font-medium text-primary hover:underline shrink-0">&larr;
+                           Kembali ke Dashboard</a>
+                     </div>
+                     <p class="text-muted-foreground text-sm mt-1">
+                        Total <strong>
+                           <%= totalItems %>
+                        </strong> aktivitas tercatat
+                     </p>
+                  </div>
+
+                  <% if (activities && activities.length> 0) { %>
+                     <section class="card p-6 mb-8">
+                        <div class="act-feed">
+                           <% activities.forEach(function (a) { %>
+                              <div class="act-item">
+                                 <span class="act-icon act-<%= a.kind %>">
+                                    <% if (a.kind==='approved' ) { %>
+                                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                          stroke-linejoin="round">
+                                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                          <polyline points="22 4 12 14.01 9 11.01" />
+                                       </svg>
+                                       <% } else if (a.kind==='rejected' ) { %>
+                                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                             <circle cx="12" cy="12" r="10" />
+                                             <line x1="15" y1="9" x2="9" y2="15" />
+                                             <line x1="9" y1="9" x2="15" y2="15" />
+                                          </svg>
+                                          <% } else if (a.kind==='done' ) { %>
+                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path
+                                                   d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                                                <line x1="12" y1="22.08" x2="12" y2="12" />
+                                             </svg>
+                                             <% } else { %>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                   stroke-linejoin="round">
+                                                   <path
+                                                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                   <polyline points="14 2 14 8 20 8" />
+                                                </svg>
+                                                <% } %>
+                                 </span>
+                                 <div class="act-body">
+                                    <span class="act-text">
+                                       <%= a.title %>
+                                    </span>
+                                    <span class="act-time">
+                                       <%= a.meta %> &middot; <%= a.at_label %>
+                                    </span>
+                                 </div>
+                              </div>
+                              <% }) %>
+                        </div>
+                     </section>
+
+                     <!-- Pagination -->
+                     <% if (totalPages> 1) { %>
+                        <nav class="pagination">
+                           <% if (page> 1) { %>
+                              <a href="?page=<%= page - 1 %>">&laquo; Prev</a>
+                              <% } else { %>
+                                 <span class="disabled">&laquo; Prev</span>
+                                 <% } %>
+
+                                    <% for (let p=1; p <=totalPages; p++) { %>
+                                       <% if (p===page) { %>
+                                          <span class="active">
+                                             <%= p %>
+                                          </span>
+                                          <% } else { %>
+                                             <a href="?page=<%= p %>">
+                                                <%= p %>
+                                             </a>
+                                             <% } %>
+                                                <% } %>
+
+                                                   <% if (page < totalPages) { %>
+                                                      <a href="?page=<%= page + 1 %>">Next &raquo;</a>
+                                                      <% } else { %>
+                                                         <span class="disabled">Next &raquo;</span>
+                                                         <% } %>
+                        </nav>
+                        <% } %>
+
+                           <% } else { %>
+                              <div class="card p-8 text-center">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" class="mx-auto mb-4 text-muted-foreground">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                 </svg>
+                                 <p class="text-muted-foreground">Belum ada aktivitas tercatat.</p>
+                              </div>
+                              <% } %>
+
+               </div>
+            </div>
+      </main>
+
+      <%- include('../partials/footer') %>

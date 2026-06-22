@@ -59,3 +59,31 @@ typings/
 
 # next.js build output
 .next
+
+# ──── Non-production: dokumentasi, skrip, tes, IDE ────
+
+# Markdown (dokumentasi & catatan)
+*.md
+!README.md
+
+# Skrip migrasi / seed / uji coba
+scratch/
+scripts/
+
+# Editor / IDE
+.vscode/
+*.code-workspace
+.qoder/
+
+# Log server
+srv_*.log
+
+# Berkas unggahan runtime (simpan .gitkeep saja)
+public/assets/uploads/**/*
+!public/assets/uploads/**/.gitkeep
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

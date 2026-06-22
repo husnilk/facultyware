@@ -1,0 +1,18 @@
+<%
+  // Badge status seragam. Sertakan via include dengan data { status: x }
+  // atau dengan label kustom { status: x, label: 'Teks' }.
+  // Dari view di subfolder, gunakan path '../partials/status-badge'.
+  const _s = (typeof status !== 'undefined' && status) ? String(status).toLowerCase() : '';
+  const _map = {
+    draft:     { t: 'Draf',                 bg: '#fef9c3', fg: '#854d0e' },
+    submitted: { t: 'Menunggu Persetujuan', bg: '#dbeafe', fg: '#1e40af' },
+    pending:   { t: 'Menunggu Persetujuan', bg: '#dbeafe', fg: '#1e40af' },
+    approved:  { t: 'Disetujui',            bg: '#dcfce7', fg: '#166534' },
+    rejected:  { t: 'Ditolak',              bg: '#fee2e2', fg: '#991b1b' },
+    fulfilled: { t: 'Terpenuhi',            bg: '#dbeafe', fg: '#1e40af' },
+    completed: { t: 'Selesai',              bg: '#dcfce7', fg: '#166534' }
+  };
+  const _m = _map[_s] || { t: (typeof status !== 'undefined' && status) ? status : '-', bg: '#e5e7eb', fg: '#374151' };
+  const _label = (typeof label !== 'undefined' && label) ? label : _m.t;
+%>
+<span class="status-badge" style="background: <%= _m.bg %>; color: <%= _m.fg %>;"><%= _label %></span>
