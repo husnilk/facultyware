@@ -1,0 +1,91 @@
+      </div>
+    </main>
+
+    <div id="toaster" class="toaster"></div>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.3.0/tsparticles.bundle.min.js"></script>
+
+  <script>
+  
+    function nyalakanPartikel() {
+
+      if (typeof tsParticles !== 'undefined' && document.getElementById("tsparticles")) {
+        tsParticles.load({
+          id: "tsparticles",
+          options: {
+            background: { color: { value: "transparent" } },
+            particles: {
+              number: { value: 60 }, 
+              color: { value: "#94a3b8" }, 
+              links: {
+                enable: true,
+                color: "#94a3b8",
+                distance: 150,
+                opacity: 0.3,
+                width: 1,
+              },
+              move: { enable: true, speed: 1 },
+              size: { value: { min: 1, max: 2 } },
+            },
+            interactivity: {
+              events: { onHover: { enable: true, mode: "grab" } },
+              modes: {
+                grab: { distance: 140, links: { opacity: 0.8 } },
+              },
+            },
+            detectRetina: true,
+          },
+        });
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", nyalakanPartikel);
+
+    document.body.addEventListener("htmx:afterSwap", nyalakanPartikel);
+  </script>
+
+ <style>
+
+  #sidebar, #content {
+    transition: all 0.3s ease-in-out !important;
+  }
+  
+  body.sidebar-closed #sidebar {
+    transform: translateX(-100%) !important;
+    opacity: 0 !important; 
+    pointer-events: none !important; 
+  }
+  
+  body.sidebar-closed #content {
+    margin-left: 0 !important;
+  }
+</style>
+
+<script>
+  (function() {
+   
+    let isClosed = localStorage.getItem('sidebarClosed') === 'true';
+
+    window.toggleSidebar = function() {
+      isClosed = !isClosed;
+      localStorage.setItem('sidebarClosed', isClosed);
+      applySidebarState();
+    };
+
+    function applySidebarState() {
+      if (isClosed) {
+        document.body.classList.add('sidebar-closed');
+      } else {
+        document.body.classList.remove('sidebar-closed');
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", applySidebarState);
+    
+    document.body.addEventListener("htmx:afterSwap", applySidebarState);
+    
+    applySidebarState();
+  })();
+</script>
+</body>
+  </body>
+</html>

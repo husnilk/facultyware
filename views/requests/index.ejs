@@ -1,0 +1,116 @@
+<%- include('../partials/_head.ejs') %>
+
+<div class="p-6 md:p-10 ml-2">
+  <div class="mx-auto space-y-6" style="max-width: 1000px;"> 
+
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight">Riwayat Permohonan</h1>
+        <p class="text-sm text-muted-foreground mt-0.5">Daftar permohonan surat aktif dan kelulusan Anda.</p>
+      </div>
+      <a href="/requests/create" class="btn text-sm h-9 px-4 shrink-0" hx-boost="true">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Buat Permohonan Baru
+      </a>
+    </header>
+
+    <form method="GET" action="/requests" class="mb-5 flex gap-2">
+      <input type="text" name="search" value="<%= search %>"
+        class="input h-9 text-sm w-full max-w-xs"
+        placeholder="Cari nomor, judul, atau jenis...">
+      <button type="submit" class="btn-outline h-9 text-sm px-4">Cari</button>
+      <% if (search) { %>
+        <a href="/requests" class="btn-ghost h-9 text-sm px-3 text-muted-foreground">✕ Reset</a>
+      <% } %>
+    </form>
+
+    <div class="card overflow-hidden">
+      <table class="table w-full text-sm">
+        <thead>
+          <tr class="bg-muted border-b">
+            <th class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">No Surat</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Jenis</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Keperluan</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tanggal</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (requests.length > 0) { %>
+            <% requests.forEach(r => { %>
+              <tr class="border-t hover:bg-muted/30 transition-colors">
+                <td class="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap"><%= r.request_nunmber %></td>
+                <td class="px-4 py-3">
+                  <span class="uppercase text-xs font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground"><%= r.request_type %></span>
+                </td>
+<td class="px-4 py-3 max-w-[200px] truncate font-medium" title="<%= r.title %>"><%= r.title || '-' %></td>
+                <td class="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                  <%= new Date(r.requested_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                </td>
+                <td class="px-4 py-3">
+                 <% 
+  let labelStatus = r.badge.label.toLowerCase();
+  let forceStyle = "";
+  
+  if (labelStatus.includes('selesai') || labelStatus.includes('batal')) {
+    // Paksa Latar Putih dan Tulisan Hitam
+    forceStyle = "background-color: #ffffff !important; color: #000000 !important; border: 1px solid #d1d5db !important;";
+  } else if (labelStatus.includes('tolak')) {
+    // Paksa Latar Merah dan Tulisan Hitam
+    forceStyle = "background-color: #ef4444 !important; color: #000000 !important; border: 1px solid #b91c1c !important;";
+  } else {
+    // Default (misal untuk Menunggu / Diproses) - Latar Kuning Tulisan Hitam
+    forceStyle = "background-color: #facc15 !important; color: #000000 !important; border: 1px solid #eab308 !important;";
+  }
+%>
+<span style="clear: none;<%= forceStyle %>" class="btn-outline h-5 px-3 py-1 rounded-md text-xs font-semibold whitespace-nowrap shadow-sm">
+  <%= r.badge.label %>
+</span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <a href="/requests/<%= r.id %>" class="btn-outline h-5 text-xs px-3 py-2 flex items-center justify-center" hx-boost="true">Detail</a>
+                    
+                    <% if (r.status === 3) { %>
+                   <a href="/requests/<%= r.id %>/download" target="_blank" class="h-7 px-3 flex items-center justify-center  bg-green-50 dark:bg-green-500/10  border-green-200 dark:border-green-500/20 text-xs font-semibold text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/20 transition-colors">
+  Unduh PDF
+</a>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" class="px-4 py-16 text-center text-muted-foreground text-sm">
+                <% if (search) { %>
+                  Tidak ada hasil untuk "<strong><%= search %></strong>".
+                <% } else { %>
+                  Belum ada permohonan. <a href="/requests/create" class="text-primary hover:underline">Buat sekarang →</a>
+                <% } %>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (pagination.totalPages > 1) { %>
+    <div class="flex justify-center items-center gap-2 mt-5">
+      <% if (pagination.page > 1) { %>
+        <a href="/requests?page=<%= pagination.page - 1 %>&search=<%= search %>" class="btn-outline h-8 text-xs px-3">← Sebelumnya</a>
+      <% } %>
+      <span class="text-xs text-muted-foreground px-2">
+        Halaman <%= pagination.page %> / <%= pagination.totalPages %>
+      </span>
+      <% if (pagination.page < pagination.totalPages) { %>
+        <a href="/requests?page=<%= pagination.page + 1 %>&search=<%= search %>" class="btn-outline h-8 text-xs px-3">Selanjutnya →</a>
+      <% } %>
+    </div>
+    <% } %>
+
+  </div>
+</div>
+
+<%- include('../partials/_foot.ejs') %>

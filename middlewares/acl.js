@@ -1,48 +1,45 @@
 const db = require("../lib/db");
 
-/**
- * ACL Middleware to check if a user has the required permission(s).
- * 
- * @param {string|string[]} requiredPermissions - A single permission or an array of permissions.
- * If an array is provided, the user must have at least one of the permissions.
- * 
- * Database Schema Requirements:
- * 
- * 1. roles: id, name
- * 2. permissions: id, name
- * 3. role_has_permissions: role_id, permission_id
- * 4. user_has_roles: user_id, role_id
- */
-
 const checkPermission = (requiredPermissions) => {
   return async (req, res, next) => {
     if (!req.session.userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(401).json({ status: "error", message: "Unauthorized" });
+      }
+      return res.redirect("/login");
     }
 
-    const permissionsArray = Array.isArray(requiredPermissions) 
-      ? requiredPermissions 
-      : [requiredPermissions];
+    const permissionsArray = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
 
     try {
-      // Query to check if the user has a role that contains any of the required permissions
-      const query = `
-        SELECT DISTINCT p.name 
-        FROM permissions p
-        JOIN role_has_permissions rhp ON p.id = rhp.permission_id
-        JOIN user_has_roles uhr ON rhp.role_id = uhr.role_id
-        WHERE uhr.user_id = ? AND p.name IN (?)
-      `;
+      const [rows] = await db.query(
+        `SELECT DISTINCT p.name
+         FROM permissions p
+         JOIN role_has_permissions rhp ON p.id = rhp.permission_id
+         JOIN model_has_roles mhr ON rhp.role_id = mhr.role_id
+         WHERE mhr.model_id = ?
+           AND mhr.model_type LIKE '%User%'  -- <-- [PERBAIKAN SAKTI: Anti jebakan backslash]
+           AND p.name IN (?)`,
+        [req.session.userId, permissionsArray]
+      );
 
-      const [rows] = await db.query(query, [req.session.userId, permissionsArray]);
+      console.log("\n[CCTV POS SATPAM ACL] ==========================");
+      console.log("1. User ID yg mencoba masuk :", req.session.userId);
+      console.log("2. Halaman ini menagih KTA  :", permissionsArray);
+      console.log("3. KTA yg dipunya User di DB:", rows.map(r => r.name));
+      console.log("Hasil Putusan               :", rows.length > 0 ? "DIIZINKAN MASUK 🟢" : "TENDANG KELUAR 🔴");
+      console.log("================================================\n");
 
       if (rows.length > 0) {
         return next();
       }
 
-      // If no matching permission found, return Forbidden
-      res.status(403).render("error", {
-        message: "Forbidden: You do not have permission to access this resource.",
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(403).json({ status: "error", message: "Forbidden" });
+      }
+
+      return res.status(403).render("error", {
+        message: "Akses ditolak. Anda tidak memiliki izin untuk mengakses halaman ini.",
         error: { status: 403, stack: "" }
       });
     } catch (err) {
@@ -51,6 +48,23 @@ const checkPermission = (requiredPermissions) => {
   };
 };
 
-module.exports = {
-  checkPermission
+const checkRole = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.session || !req.session.role) {
+      return res.redirect('/login');
+    }
+
+    const userRole = req.session.role.toLowerCase();
+
+    if (allowedRoles.includes(userRole)) {
+      return next();
+    }
+
+    if (userRole === 'admin') return res.redirect('/admin/requests');
+    if (userRole === 'dekan' || userRole === 'wakil dekan') return res.redirect('/dekan/requests');
+    
+    return res.redirect('/home');
+  };
 };
+
+module.exports = { checkPermission, checkRole };

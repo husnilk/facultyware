@@ -1,0 +1,134 @@
+<%- include('../partials/_head.ejs') %>
+
+<div class="p-6 md:p-10 ml-2">
+  <div class="mx-auto space-y-6" style="max-width: 780px;"> 
+
+    <div class="mb-6">
+      <h1 class="text-xl font-bold mt-3">Formulir Permohonan Surat</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">Isi data di bawah dan unggah berkas persyaratan.</p>
+    </div>
+
+    <% if (errors && errors.length > 0) { %>
+    <div class="mb-6 p-4 rounded-lg border border-destructive/50 bg-destructive/5 text-sm">
+      <p class="font-semibold text-destructive mb-1.5">Permohonan gagal:</p>
+      <ul class="list-disc list-inside space-y-0.5 text-destructive/90 text-xs">
+        <% errors.forEach(e => { %><li><%= e %></li><% }) %>
+      </ul>
+    </div>
+    <% } %>
+
+    <form action="/requests" method="POST" enctype="multipart/form-data">
+      
+      <div class="card grid gap-6" style="padding: 24px;">
+
+        <div class="grid gap-1.5">
+          <label for="request_type" class="text-sm font-medium">
+            Jenis Permohonan <span class="text-destructive">*</span>
+          </label>
+          <select name="request_type" id="request_type" class="select w-full" required
+            onchange="toggleDocLabel(this.value)">
+            <option value="" disabled <%= !old.request_type ? 'selected' : '' %>>Pilih jenis surat...</option>
+            <option value="aktif" <%= old.request_type === 'aktif' ? 'selected' : '' %>>Surat Keterangan Aktif</option>
+            <option value="lulus" <%= old.request_type === 'lulus' ? 'selected' : '' %>>Surat Keterangan Lulus</option>
+          </select>
+          <p class="text-xs text-muted-foreground">Pilih sesuai kebutuhan.</p>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label for="title" class="text-sm font-medium">
+            Keperluan / Judul <span class="text-destructive">*</span>
+          </label>
+          <input type="text" name="title" id="title" class="input w-full"
+            placeholder="Cth: Syarat Beasiswa Pemprov 2026"
+            value="<%= old.title || '' %>"
+            minlength="5" maxlength="255" required>
+          <p class="text-xs text-muted-foreground">Min. 5 karakter.</p>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label for="semester" class="text-sm font-medium">
+            Semester <span class="text-destructive">*</span>
+          </label>
+          <select name="semester" id="semester" class="select w-full" required>
+            <option value="" disabled <%= !old.semester ? 'selected' : '' %>>Pilih semester...</option>
+            <option value="Ganjil"<%= old.semester === 'Ganjil' ? 'selected' : '' %>>Ganjil</option>
+            <option value="Genap" <%= old.semester === 'Genap' ? 'selected' : '' %>>Genap</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label for="tahun_akademik" class="text-sm font-medium">
+            Tahun Akademik <span class="text-destructive">*</span>
+          </label>
+          <input type="text" name="tahun_akademik" id="tahun_akademik" class="input w-full"
+            placeholder="Cth: 2025/2026"
+            value="<%= old.tahun_akademik || '' %>"
+            pattern="\d{4}/\d{4}"
+            title="Format: YYYY/YYYY, contoh: 2025/2026"
+            required>
+          <p class="text-xs text-muted-foreground">Format: 2025/2026</p>
+        </div>
+        <div class="grid gap-1.5">
+          <label for="description" class="text-sm font-medium">
+            Keterangan Tambahan
+            <span class="text-muted-foreground font-normal text-xs">(opsional)</span>
+          </label>
+          <textarea name="description" id="description" class="textarea w-full text-sm" rows="3"
+            placeholder="Instansi tujuan, batas waktu, atau informasi penting lainnya..."><%= old.description || '' %></textarea>
+          <p class="text-xs text-muted-foreground">Informasi tambahan yang perlu diketahui admin.</p>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label for="krs_file" class="text-sm font-medium">
+            Unggah KRS <span class="text-destructive">*</span>
+          </label>
+          <input type="file" name="krs_file" id="krs_file"
+            class="input w-full py-2 text-sm cursor-pointer"
+            accept=".pdf,.jpg,.jpeg,.png" required>
+          <p class="text-xs text-muted-foreground">Format: PDF, JPG, atau PNG — maks. 5 MB.</p>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label for="additional_file" class="text-sm font-medium" id="additional_file_label">
+            Dokumen Tambahan
+            <span class="text-muted-foreground font-normal text-xs">(opsional)</span>
+          </label>
+          <input type="file" name="additional_file" id="additional_file"
+            class="input w-full py-2 text-sm cursor-pointer"
+            accept=".pdf,.jpg,.jpeg,.png">
+          <p class="text-xs text-muted-foreground" id="additional_file_hint">
+            Dokumen pendukung lainnya jika diperlukan — maks. 5 MB.
+          </p>
+        </div>
+
+        <hr class="border-border my-2">
+
+        <div class="flex items-center justify-end gap-3">
+          <a href="/requests" class="btn-outline text-sm h-9 px-4" hx-boost="true">Batal</a>
+          <button type="submit" class="btn text-sm h-9 px-5">Kirim Permohonan</button>
+        </div>
+
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleDocLabel(type) {
+    const label = document.getElementById('additional_file_label');
+    const hint  = document.getElementById('additional_file_hint');
+    if (type === 'lulus') {
+      label.innerHTML = 'Bukti Pendaftaran Wisuda <span class="text-muted-foreground font-normal text-xs">(opsional)</span>';
+      hint.textContent = 'Unggah bukti pendaftaran wisuda atau dokumen kelulusan — maks. 5 MB.';
+    } else {
+      label.innerHTML = 'Dokumen Tambahan <span class="text-muted-foreground font-normal text-xs">(opsional)</span>';
+      hint.textContent = 'Dokumen pendukung lainnya jika diperlukan — maks. 5 MB.';
+    }
+  }
+  const sel = document.getElementById('request_type');
+  if (sel && sel.value) toggleDocLabel(sel.value);
+</script>
+
+
+<%- include('../partials/_foot.ejs') %>

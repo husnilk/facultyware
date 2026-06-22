@@ -8,7 +8,14 @@ var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var requestsRouter = require('./routes/requests');
+var apiRouter = require('./routes/api');
+var adminRouter = require('./routes/admin');
+var dekanRouter = require('./routes/dekan');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+
+
+
 
 var app = express();
 
@@ -21,6 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
 
 // Session configuration
 const sessionStore = new MySQLStore({
@@ -43,6 +52,10 @@ app.use(session({
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/requests', requestsRouter);
+app.use('/api', apiRouter);
+app.use('/admin', adminRouter);
+app.use('/dekan', dekanRouter);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);
