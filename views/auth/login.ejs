@@ -1,0 +1,191 @@
+<!-- ============================================
+     Halaman Login — FacultyWare
+
+     Styling menggunakan:
+     - Basecoat UI (btn, input, alert, card, label)
+     - Tailwind CSS (utility classes untuk layout)
+     - Custom CSS (untuk layout panel kiri-kanan)
+============================================ -->
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — FacultyWare</title>
+    <meta name="description" content="Sistem Informasi Data Induk FTI Universitas Andalas" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+
+    <!-- Basecoat UI CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/js/all.min.js" defer></script>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Inter', -apple-system, sans-serif; }
+
+        /* Background blur */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40px; left: -40px; right: -40px; bottom: -40px;
+            background: url('/images/bg-fti.png') center/cover no-repeat;
+            filter: blur(10px);
+            z-index: 0;
+        }
+
+        /* Dark overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        /* Login card */
+        .login-card {
+            display: flex;
+            width: 800px;
+            min-height: 460px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            background: #fff;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Panel kiri: branding */
+        .panel-left {
+            width: 340px;
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: #2c2c2c;
+            border-radius: 20px 30% 30% 20px / 20px 50% 50% 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            top: -50px; left: -50px; right: -50px; bottom: -50px;
+            background: url('/images/bg-fti.png') center/cover no-repeat;
+            filter: blur(6px);
+            z-index: 0;
+        }
+
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(40, 40, 40, 0.75);
+            z-index: 1;
+        }
+
+        .panel-left > * { position: relative; z-index: 2; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-card { flex-direction: column; width: 90%; max-width: 400px; }
+            .panel-left { width: 100%; padding: 2rem; border-radius: 0 0 30% 30% / 0 0 15% 15%; }
+            .panel-left .logo-img { width: 60px !important; }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center bg-[#1a1a1a]">
+    <div class="login-card">
+
+        <!-- Panel kiri: branding -->
+        <div class="panel-left">
+            <img src="/images/logo-fti.png" alt="Logo FTI" class="logo-img" style="width: 100px; margin-bottom: 1.5rem; opacity: 0.7;">
+            <div class="text-xs font-normal tracking-[3px] uppercase text-white/60 mb-2">Selamat Datang</div>
+            <h1 class="text-4xl font-bold text-white tracking-wide mb-4">FacultyWare</h1>
+            <p class="text-xs text-white/40 leading-relaxed max-w-[240px] tracking-wide">
+                Sistem Informasi Data Induk Kepegawaian
+                Fakultas Teknologi Informasi
+            </p>
+            <div class="mt-8 pt-4 border-t border-white/10 text-[0.65rem] text-white/25 tracking-widest uppercase">Universitas Andalas</div>
+        </div>
+
+        <!-- Panel kanan: form login -->
+        <div class="flex-1 px-10 py-12 flex flex-col justify-center bg-white">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">Login</h2>
+
+            <!-- Error alert (Basecoat alert) -->
+            <% if (error && error.length > 0) { %>
+                <div class="alert alert-destructive mb-5 text-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <span><%= error[0] %></span>
+                </div>
+            <% } %>
+
+            <!-- Form login -->
+            <form action="/login" method="POST" class="form space-y-5">
+                <!-- Email (Basecoat label + input) -->
+                <div class="grid gap-2">
+                    <label for="login-email" class="label text-xs text-gray-500">Email</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </span>
+                        <input type="email" id="login-email" name="email" placeholder="nama@fti.unand.ac.id" required autofocus
+                               class="input pl-10 text-sm">
+                    </div>
+                </div>
+
+                <!-- Password (Basecoat label + input) -->
+                <div class="grid gap-2">
+                    <label for="login-password" class="label text-xs text-gray-500">Password</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </span>
+                        <input type="password" id="login-password" name="password" placeholder="••••••••" required
+                               class="input pl-10 pr-10 text-sm">
+                        <button type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors cursor-pointer bg-transparent border-none p-1" onclick="togglePassword()">
+                            <svg id="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg id="icon-eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tombol Login (Basecoat btn) -->
+                <button type="submit" class="btn w-full !text-white mt-2"
+                        style="background: linear-gradient(135deg, #555 0%, #2c2c2c 100%);">
+                    Login
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+    function togglePassword() {
+        const input = document.getElementById('login-password');
+        const iconEye = document.getElementById('icon-eye');
+        const iconEyeOff = document.getElementById('icon-eye-off');
+        if (input.type === 'password') {
+            input.type = 'text';
+            iconEye.style.display = 'none';
+            iconEyeOff.style.display = 'block';
+        } else {
+            input.type = 'password';
+            iconEye.style.display = 'block';
+            iconEyeOff.style.display = 'none';
+        }
+    }
+</script>
+</html>
