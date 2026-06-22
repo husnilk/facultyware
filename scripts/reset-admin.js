@@ -6,39 +6,44 @@ async function resetAdmin() {
     const passwordHash = await bcrypt.hash("password", 10);
 
     const [rows] = await db.query(
-      "SELECT id FROM users WHERE id = 1 OR email = ? OR username = ? LIMIT 1",
-      ["admin@facultyware.test", "admin"]
+      `
+      SELECT id
+      FROM users
+      WHERE id = 1 OR email = ? OR name = ?
+      LIMIT 1
+      `,
+      ["admin@facultyware.test", "Admin Facultyware"]
     );
 
     if (rows.length > 0) {
       await db.query(
         `
         UPDATE users
-        SET username = ?, name = ?, email = ?, password = ?, updated_at = NOW()
+        SET name = ?,
+            email = ?,
+            password = ?,
+            updated_at = NOW()
         WHERE id = ?
         `,
-        [
-          "admin",
-          "Admin Facultyware",
-          "admin@facultyware.test",
-          passwordHash,
-          rows[0].id,
-        ]
+        ["Admin Facultyware", "admin@facultyware.test", passwordHash, rows[0].id]
       );
+
+      console.log("Admin berhasil direset.");
     } else {
       await db.query(
         `
-        INSERT INTO users (username, name, email, password, created_at, updated_at)
-        VALUES (?, ?, ?, ?, NOW(), NOW())
+        INSERT INTO users (name, email, password, created_at, updated_at)
+        VALUES (?, ?, ?, NOW(), NOW())
         `,
-        ["admin", "Admin Facultyware", "admin@facultyware.test", passwordHash]
+        ["Admin Facultyware", "admin@facultyware.test", passwordHash]
       );
+
+      console.log("Admin berhasil dibuat.");
     }
 
-    console.log("Admin berhasil direset.");
-    console.log("Username : admin");
-    console.log("Email    : admin@facultyware.test");
-    console.log("Password : password");
+    console.log("Login:");
+    console.log("Email/Nama : admin@facultyware.test");
+    console.log("Password   : password");
 
     process.exit(0);
   } catch (err) {

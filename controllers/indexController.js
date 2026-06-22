@@ -6,7 +6,10 @@ const index = (req, res) => {
 };
 
 const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+  res.render("home", {
+    title: "Home",
+    user: req.session.username,
+  });
 };
 
 const loginPage = (req, res) => {
@@ -14,7 +17,10 @@ const loginPage = (req, res) => {
     return res.redirect("/home");
   }
 
-  res.render("login", { title: "Login", error: null });
+  res.render("login", {
+    title: "Login",
+    error: null,
+  });
 };
 
 const login = async (req, res, next) => {
@@ -24,18 +30,32 @@ const login = async (req, res, next) => {
     if (!username || !password) {
       return res.render("login", {
         title: "Login",
-        error: "Username/email dan password wajib diisi",
+        error: "Email/nama dan password wajib diisi",
       });
     }
 
+    /*
+      DB dosen:
+      users tidak memiliki kolom username.
+      Kolom yang tersedia: id, name, email, password, dll.
+      Jadi input form bernama username tetap boleh,
+      tetapi query ke database memakai email atau name.
+    */
     const [rows] = await db.query(
       `
-      SELECT *
-      FROM users
-      WHERE username = ? OR email = ? OR name = ?
+      SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.password,
+        e.id AS employee_id,
+        e.status AS employee_status
+      FROM users u
+      LEFT JOIN employees e ON e.id = u.id
+      WHERE u.email = ? OR u.name = ?
       LIMIT 1
       `,
-      [username, username, username]
+      [username, username]
     );
 
     if (rows.length === 0) {
@@ -56,8 +76,9 @@ const login = async (req, res, next) => {
     }
 
     req.session.userId = user.id;
-    req.session.username = user.username || user.name;
+    req.session.username = user.name;
     req.session.email = user.email;
+    req.session.employeeId = user.employee_id || null;
 
     res.redirect("/home");
   } catch (err) {

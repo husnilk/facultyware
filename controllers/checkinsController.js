@@ -1,42 +1,78 @@
-const db = require('../lib/db');
+const db = require("../lib/db");
+
+const getCurrentEmployeeId = async (req) => {
+  if (req.session.employeeId) {
+    return req.session.employeeId;
+  }
+
+  const [rows] = await db.query(
+    `
+    SELECT id
+    FROM employees
+    WHERE id = ? AND status = 'active'
+    LIMIT 1
+    `,
+    [req.session.userId]
+  );
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  req.session.employeeId = rows[0].id;
+  return rows[0].id;
+};
 
 const index = async (req, res) => {
-  res.render('checkins/index', {
-    title: 'Check-in Peserta',
+  res.render("checkins/index", {
+    title: "Check-in Peserta",
     success: null,
     error: null,
     result: null,
-    form: {}
+    form: {},
   });
 };
 
 const process = async (req, res, next) => {
   const { ticket_number, attendance_method } = req.body;
-  const checkedBy = req.session.userId;
-  const method = attendance_method || 'manual';
+  const method = attendance_method || "manual";
 
   try {
-    if (!ticket_number || ticket_number.trim() === '') {
-      return res.render('checkins/index', {
-        title: 'Check-in Peserta',
+    if (!ticket_number || ticket_number.trim() === "") {
+      return res.render("checkins/index", {
+        title: "Check-in Peserta",
         success: null,
-        error: 'Ticket number wajib diisi.',
+        error: "Ticket number wajib diisi.",
         result: null,
-        form: req.body
+        form: req.body,
       });
     }
 
-    if (!['manual', 'qr_scan', 'system'].includes(method)) {
-      return res.render('checkins/index', {
-        title: 'Check-in Peserta',
+    if (!["manual", "qr_scan", "system"].includes(method)) {
+      return res.render("checkins/index", {
+        title: "Check-in Peserta",
         success: null,
-        error: 'Metode check-in tidak valid.',
+        error: "Metode check-in tidak valid.",
         result: null,
-        form: req.body
+        form: req.body,
       });
     }
 
-    const [registrations] = await db.query(`
+    const checkedBy = await getCurrentEmployeeId(req);
+
+    if (!checkedBy) {
+      return res.render("checkins/index", {
+        title: "Check-in Peserta",
+        success: null,
+        error:
+          "Akun login belum terdaftar sebagai employee/panitia aktif. Check-in hanya dapat dilakukan oleh employee.",
+        result: null,
+        form: req.body,
+      });
+    }
+
+    const [registrations] = await db.query(
+      `
       SELECT
         er.id AS registration_id,
         er.ticket_number,
@@ -50,66 +86,83 @@ const process = async (req, res, next) => {
       JOIN users u ON er.user_id = u.id
       WHERE er.ticket_number = ?
       LIMIT 1
-    `, [ticket_number.trim()]);
+      `,
+      [ticket_number.trim()]
+    );
 
     if (registrations.length === 0) {
-      return res.render('checkins/index', {
-        title: 'Check-in Peserta',
+      return res.render("checkins/index", {
+        title: "Check-in Peserta",
         success: null,
-        error: 'Ticket number tidak ditemukan.',
+        error: "Ticket number tidak ditemukan.",
         result: null,
-        form: req.body
+        form: req.body,
       });
     }
 
     const registration = registrations[0];
 
-    if (registration.attendance_status === 'cancelled') {
-      return res.render('checkins/index', {
-        title: 'Check-in Peserta',
+    if (registration.attendance_status === "cancelled") {
+      return res.render("checkins/index", {
+        title: "Check-in Peserta",
         success: null,
-        error: 'Registrasi peserta sudah dibatalkan.',
+        error: "Registrasi peserta sudah dibatalkan.",
         result: registration,
-        form: req.body
+        form: req.body,
       });
     }
 
-    const [existing] = await db.query(`
+    const [existing] = await db.query(
+      `
       SELECT id
       FROM event_attendances
       WHERE event_registration_id = ?
       LIMIT 1
-    `, [registration.registration_id]);
+      `,
+      [registration.registration_id]
+    );
 
     if (existing.length > 0) {
-      return res.render('checkins/index', {
-        title: 'Check-in Peserta',
+      return res.render("checkins/index", {
+        title: "Check-in Peserta",
         success: null,
-        error: 'Peserta ini sudah melakukan check-in sebelumnya.',
+        error: "Peserta ini sudah melakukan check-in sebelumnya.",
         result: registration,
-        form: req.body
+        form: req.body,
       });
     }
 
-    await db.query(`
+    /*
+      DB dosen:
+      event_attendances.checked_by      -> employees.id
+      event_attendances.checked_by_id   -> wajib diisi
+    */
+    await db.query(
+      `
       INSERT INTO event_attendances
         (event_registration_id, checked_in_at, checked_by, attendance_method, status, checked_by_id, created_at, updated_at)
       VALUES
         (?, NOW(), ?, ?, 'present', ?, NOW(), NOW())
-    `, [registration.registration_id, checkedBy, method, checkedBy]);
+      `,
+      [registration.registration_id, checkedBy, method, checkedBy]
+    );
 
-    await db.query(`
+    await db.query(
+      `
       UPDATE event_registrations
-      SET attendance_status = 'attended', updated_at = NOW()
+      SET attendance_status = 'attended',
+          updated_at = NOW()
       WHERE id = ?
-    `, [registration.registration_id]);
+      `,
+      [registration.registration_id]
+    );
 
-    return res.render('checkins/index', {
-      title: 'Check-in Peserta',
-      success: 'Check-in peserta berhasil dicatat.',
+    return res.render("checkins/index", {
+      title: "Check-in Peserta",
+      success: "Check-in peserta berhasil dicatat.",
       error: null,
       result: registration,
-      form: {}
+      form: {},
     });
   } catch (err) {
     next(err);
@@ -118,5 +171,5 @@ const process = async (req, res, next) => {
 
 module.exports = {
   index,
-  process
+  process,
 };

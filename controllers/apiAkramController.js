@@ -1,4 +1,27 @@
-const db = require('../lib/db');
+const db = require("../lib/db");
+
+const getCurrentEmployeeId = async (req) => {
+  if (req.session.employeeId) {
+    return req.session.employeeId;
+  }
+
+  const [rows] = await db.query(
+    `
+    SELECT id
+    FROM employees
+    WHERE id = ? AND status = 'active'
+    LIMIT 1
+    `,
+    [req.session.userId]
+  );
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  req.session.employeeId = rows[0].id;
+  return rows[0].id;
+};
 
 const reminders = async (req, res) => {
   try {
@@ -18,13 +41,13 @@ const reminders = async (req, res) => {
 
     res.json({
       success: true,
-      data: rows
+      data: rows,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil data reminder.',
-      error: err.message
+      message: "Gagal mengambil data reminder.",
+      error: err.message,
     });
   }
 };
@@ -52,13 +75,13 @@ const attendances = async (req, res) => {
 
     res.json({
       success: true,
-      data: rows
+      data: rows,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil data attendance.',
-      error: err.message
+      message: "Gagal mengambil data attendance.",
+      error: err.message,
     });
   }
 };
@@ -83,38 +106,48 @@ const attendanceRecap = async (req, res) => {
 
     res.json({
       success: true,
-      data: rows
+      data: rows,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Gagal mengambil rekap attendance.',
-      error: err.message
+      message: "Gagal mengambil rekap attendance.",
+      error: err.message,
     });
   }
 };
 
 const checkin = async (req, res) => {
   const { ticket_number, attendance_method } = req.body;
-  const checkedBy = req.session.userId;
-  const method = attendance_method || 'manual';
+  const method = attendance_method || "manual";
 
   try {
-    if (!ticket_number || ticket_number.trim() === '') {
+    if (!ticket_number || ticket_number.trim() === "") {
       return res.status(400).json({
         success: false,
-        message: 'Ticket number wajib diisi.'
+        message: "Ticket number wajib diisi.",
       });
     }
 
-    if (!['manual', 'qr_scan', 'system'].includes(method)) {
+    if (!["manual", "qr_scan", "system"].includes(method)) {
       return res.status(400).json({
         success: false,
-        message: 'Metode check-in tidak valid.'
+        message: "Metode check-in tidak valid.",
       });
     }
 
-    const [registrations] = await db.query(`
+    const checkedBy = await getCurrentEmployeeId(req);
+
+    if (!checkedBy) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Akun login belum terdaftar sebagai employee/panitia aktif. Check-in hanya dapat dilakukan oleh employee.",
+      });
+    }
+
+    const [registrations] = await db.query(
+      `
       SELECT
         er.id AS registration_id,
         er.ticket_number,
@@ -128,63 +161,75 @@ const checkin = async (req, res) => {
       JOIN users u ON er.user_id = u.id
       WHERE er.ticket_number = ?
       LIMIT 1
-    `, [ticket_number.trim()]);
+      `,
+      [ticket_number.trim()]
+    );
 
     if (registrations.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Ticket number tidak ditemukan.'
+        message: "Ticket number tidak ditemukan.",
       });
     }
 
     const registration = registrations[0];
 
-    if (registration.attendance_status === 'cancelled') {
+    if (registration.attendance_status === "cancelled") {
       return res.status(400).json({
         success: false,
-        message: 'Registrasi peserta sudah dibatalkan.',
-        data: registration
+        message: "Registrasi peserta sudah dibatalkan.",
+        data: registration,
       });
     }
 
-    const [existing] = await db.query(`
+    const [existing] = await db.query(
+      `
       SELECT id
       FROM event_attendances
       WHERE event_registration_id = ?
       LIMIT 1
-    `, [registration.registration_id]);
+      `,
+      [registration.registration_id]
+    );
 
     if (existing.length > 0) {
       return res.status(409).json({
         success: false,
-        message: 'Peserta ini sudah melakukan check-in sebelumnya.',
-        data: registration
+        message: "Peserta ini sudah melakukan check-in sebelumnya.",
+        data: registration,
       });
     }
 
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO event_attendances
         (event_registration_id, checked_in_at, checked_by, attendance_method, status, checked_by_id, created_at, updated_at)
       VALUES
         (?, NOW(), ?, ?, 'present', ?, NOW(), NOW())
-    `, [registration.registration_id, checkedBy, method, checkedBy]);
+      `,
+      [registration.registration_id, checkedBy, method, checkedBy]
+    );
 
-    await db.query(`
+    await db.query(
+      `
       UPDATE event_registrations
-      SET attendance_status = 'attended', updated_at = NOW()
+      SET attendance_status = 'attended',
+          updated_at = NOW()
       WHERE id = ?
-    `, [registration.registration_id]);
+      `,
+      [registration.registration_id]
+    );
 
     res.json({
       success: true,
-      message: 'Check-in berhasil.',
-      data: registration
+      message: "Check-in berhasil.",
+      data: registration,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Gagal melakukan check-in.',
-      error: err.message
+      message: "Gagal melakukan check-in.",
+      error: err.message,
     });
   }
 };
@@ -193,5 +238,5 @@ module.exports = {
   reminders,
   attendances,
   attendanceRecap,
-  checkin
+  checkin,
 };
