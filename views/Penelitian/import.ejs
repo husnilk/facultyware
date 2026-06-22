@@ -1,0 +1,180 @@
+<%- include('../partials/header') %>
+<%- include('../partials/_toast-container') %>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-0">
+
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-slate-500 mb-6 flex items-center gap-2">
+    <a href="/penelitian/my-penelitian" class="text-blue-600 hover:text-blue-700 font-medium">Data Penelitian</a>
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    <span class="text-slate-800">Import dari Excel</span>
+  </nav>
+
+  <div class="card-premium overflow-hidden mb-8">
+    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+      <h2 class="text-xl font-bold text-slate-900 m-0">Import Data Penelitian dari Excel</h2>
+      <p class="text-sm text-slate-500 mt-1 mb-0">
+        Unggah file Excel (.xlsx / .xls) dengan format kolom yang sesuai.
+        Maksimal ukuran file: <strong class="text-slate-700">5 MB</strong>.
+      </p>
+    </div>
+
+    <div class="p-6">
+      <!-- Hasil Import -->
+      <% if (result) { %>
+        <div class="mb-6 p-4 rounded-xl border flex items-start gap-3 <%= result.skipped > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200' %>">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+            <% if (result.skipped > 0) { %>
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            <% } else { %>
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            <% } %>
+          </svg>
+          <div>
+            <strong class="font-bold text-sm block mb-2">Proses import selesai</strong>
+            <ul class="list-disc pl-5 m-0 text-sm space-y-1">
+              <li>Total baris dibaca: <strong><%= result.total %></strong></li>
+              <li>Berhasil diimpor: <strong class="text-emerald-700"><%= result.inserted %></strong></li>
+              <li>Dilewati (error): <strong class="<%= result.skipped > 0 ? 'text-red-600' : '' %>"><%= result.skipped %></strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Detail baris error -->
+        <% if (result.errorRows && result.errorRows.length > 0) { %>
+          <div class="mb-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+              <h4 class="text-sm font-bold text-slate-900 m-0">Detail Baris yang Dilewati</h4>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                    <th class="py-2.5 px-4 text-center w-28">Baris Excel</th>
+                    <th class="py-2.5 px-4">Alasan Error</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <% result.errorRows.forEach(r => { %>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                      <td class="py-2.5 px-4 text-center font-medium text-slate-700"><%= r.rowNumber %></td>
+                      <td class="py-2.5 px-4 text-red-600"><%= r.errors.join('; ') %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% } %>
+
+        <a href="/penelitian/my-penelitian" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm mb-6">
+          Lihat Data Penelitian Saya
+        </a>
+      <% } %>
+
+      <!-- Form Upload -->
+      <form method="POST" action="/penelitian/import" enctype="multipart/form-data" id="importForm">
+        <div class="mb-6">
+          <label for="file_excel" class="block text-sm font-semibold text-slate-900 mb-2">
+            Pilih File Excel <span class="text-red-500">*</span>
+          </label>
+
+          <!-- Drop Zone -->
+          <div id="dropZone" class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all" onclick="document.getElementById('file_excel').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 text-slate-400">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p id="dropText" class="text-sm text-slate-600 mb-1">
+              Drag &amp; drop file di sini, atau <span class="text-blue-600 font-semibold">klik untuk memilih</span>
+            </p>
+            <p class="text-xs text-slate-400 m-0">
+              Hanya .xlsx / .xls — Maks. 5 MB
+            </p>
+          </div>
+
+          <input type="file" id="file_excel" name="file_excel" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="hidden" required onchange="handleFileChange(this)">
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit" id="btnImport" class="flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Proses Import</span>
+          </button>
+          <a href="/penelitian/my-penelitian" class="flex-1 sm:flex-none flex justify-center items-center px-5 py-2.5 bg-white text-slate-700 border border-slate-300 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">Batal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Panduan Format -->
+  <div class="card-premium overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+      <h3 class="text-base font-bold text-slate-900 m-0">Format File Excel</h3>
+      <p class="text-sm text-slate-500 mt-1 mb-0">
+        Baris pertama adalah <strong class="text-slate-700">header</strong> (akan dilewati). Data dimulai dari baris ke-2.
+      </p>
+    </div>
+    <div class="overflow-x-auto p-4 sm:p-6">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-200">
+            <th class="py-2.5 px-4 text-center w-20">Kolom</th>
+            <th class="py-2.5 px-4">Nama Kolom</th>
+            <th class="py-2.5 px-4">Keterangan</th>
+            <th class="py-2.5 px-4 text-center w-24">Wajib?</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr class="hover:bg-slate-50/50 transition-colors"><td class="py-3 px-4 text-center font-medium text-slate-700 bg-slate-50">A</td><td class="py-3 px-4 font-semibold text-slate-900">Judul</td><td class="py-3 px-4 text-slate-600">Judul penelitian (maks. 500 karakter)</td><td class="py-3 px-4 text-center text-emerald-600 font-bold">✓</td></tr>
+          <tr class="hover:bg-slate-50/50 transition-colors"><td class="py-3 px-4 text-center font-medium text-slate-700 bg-slate-50">B</td><td class="py-3 px-4 font-semibold text-slate-900">Deskripsi</td><td class="py-3 px-4 text-slate-600">Abstrak / deskripsi singkat</td><td class="py-3 px-4 text-center text-slate-400">–</td></tr>
+          <tr class="hover:bg-slate-50/50 transition-colors"><td class="py-3 px-4 text-center font-medium text-slate-700 bg-slate-50">C</td><td class="py-3 px-4 font-semibold text-slate-900">Tahun Mulai</td><td class="py-3 px-4 text-slate-600">Angka tahun, mis: 2024</td><td class="py-3 px-4 text-center text-emerald-600 font-bold">✓</td></tr>
+          <tr class="hover:bg-slate-50/50 transition-colors"><td class="py-3 px-4 text-center font-medium text-slate-700 bg-slate-50">D</td><td class="py-3 px-4 font-semibold text-slate-900">Tahun Selesai</td><td class="py-3 px-4 text-slate-600">Angka tahun (boleh kosong)</td><td class="py-3 px-4 text-center text-slate-400">–</td></tr>
+          <tr class="hover:bg-slate-50/50 transition-colors"><td class="py-3 px-4 text-center font-medium text-slate-700 bg-slate-50">E</td><td class="py-3 px-4 font-semibold text-slate-900">Status</td><td class="py-3 px-4 text-slate-600"><code class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-xs">draft</code> / <code class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-xs">aktif</code> / <code class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-xs">selesai</code> / <code class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-xs">ditolak</code></td><td class="py-3 px-4 text-center text-slate-400">–</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function handleFileChange(input) {
+  const dropText = document.getElementById('dropText');
+  const dropZone = document.getElementById('dropZone');
+  if (input.files && input.files[0]) {
+    dropText.innerHTML = '<span class="flex items-center justify-center gap-2 text-blue-700"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> <strong class="font-semibold">' + input.files[0].name + '</strong></span>';
+    dropZone.classList.add('border-blue-500', 'bg-blue-50/50');
+    dropZone.classList.remove('border-slate-300');
+  }
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  const dropZone = document.getElementById('dropZone');
+  dropZone.classList.add('border-blue-500', 'bg-blue-50/50');
+  dropZone.classList.remove('border-slate-300');
+}
+
+function handleDragLeave(e) {
+  const dropZone = document.getElementById('dropZone');
+  dropZone.classList.remove('border-blue-500', 'bg-blue-50/50');
+  dropZone.classList.add('border-slate-300');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const fileInput = document.getElementById('file_excel');
+  if (e.dataTransfer.files.length) {
+    fileInput.files = e.dataTransfer.files;
+    handleFileChange(fileInput);
+  }
+}
+
+document.getElementById('importForm').addEventListener('submit', function() {
+  const btn = document.getElementById('btnImport');
+  btn.classList.add('opacity-70', 'cursor-not-allowed');
+  btn.disabled = true;
+  btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Memproses...</span>`;
+});
+</script>
+
+<%- include('../partials/footer') %>

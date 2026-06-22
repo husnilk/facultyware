@@ -1,0 +1,69 @@
+<%- include('../partials/header') %>
+<%- include('../partials/_toast-container') %>
+
+<%- include('../partials/_page-header', {
+  title: 'Kelola Pengguna',
+  subtitle: 'Manajemen akun pengguna sistem penelitian FTI',
+  badge: 'Total: <strong class="text-slate-900">' + users.length + '</strong> pengguna'
+}) %>
+
+<%- include('../partials/_search-bar', {
+  action: '/auth/users/search',
+  inputName: 'keyword',
+  placeholder: 'Cari nama atau email pengguna...',
+  value: typeof keyword !== 'undefined' ? keyword : '',
+  resetHref: (typeof keyword !== 'undefined' && keyword) ? '/auth/users' : ''
+}) %>
+
+<div class="card-premium overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="text-center w-12">No</th>
+          <th>Nama</th>
+          <th>Email</th>
+          <th class="text-center">Peran</th>
+          <th class="text-center">Status</th>
+          <th class="text-center">Tgl Daftar</th>
+          <th class="text-center w-24">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (users.length === 0) { %>
+          <%- include('../partials/_empty-state', {
+            colspan: 7,
+            title: 'Tidak ada pengguna ditemukan',
+            message: 'Coba kata kunci pencarian lain.'
+          }) %>
+        <% } else { %>
+          <% users.forEach((item, i) => { %>
+            <tr>
+              <td class="text-center text-slate-500"><%= i + 1 %></td>
+              <td class="font-semibold text-slate-900"><%= item.name %></td>
+              <td class="text-slate-500"><%= item.email %></td>
+              <td class="text-center">
+                <span class="<%= item.role === 'admin' ? 'badge-role-ketua' : 'badge-role-anggota' %> capitalize"><%= item.role %></span>
+              </td>
+              <td class="text-center">
+                <% if (item.status === 'aktif') { %>
+                  <span class="badge-status-aktif">Aktif</span>
+                <% } else { %>
+                  <span class="badge-status-ditolak">Nonaktif</span>
+                <% } %>
+              </td>
+              <td class="text-center text-slate-500">
+                <%= item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) : '-' %>
+              </td>
+              <td class="text-center">
+                <a href="/auth/users/<%= item.id %>" class="btn-detail">Detail</a>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

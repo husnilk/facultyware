@@ -1,0 +1,203 @@
+<%- include('../partials/header') %>
+<%- include('../partials/_toast-container') %>
+
+<%- include('../partials/_breadcrumb', {
+  items: [
+    { label: 'Data Penelitian', href: '/penelitian/my-penelitian' },
+    { label: 'Detail Penelitian' }
+  ]
+}) %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+  <!-- ── KOLOM KIRI: Info Utama ──────────────────────────────── -->
+  <div class="lg:col-span-2 flex flex-col gap-6">
+    <div class="card-premium p-6 sm:p-8">
+
+      <!-- Header Kartu -->
+      <div class="flex flex-col sm:flex-row justify-between items-start mb-8 gap-5 border-b border-slate-100 pb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 m-0 tracking-tight leading-snug"><%= penelitian.judul %></h2>
+          
+          <div class="flex flex-wrap items-center gap-3 mt-3">
+            <%- include('../partials/_badge-status', { status: penelitian.status }) %>
+            <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">ID #<%= penelitian.id %></span>
+          </div>
+
+          <% if (currentMembership && currentMembership.status === 'pending' && !isKetua && !isAdmin) { %>
+            <div class="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 max-w-xl">
+              <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5 text-amber-600"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div>
+                  <strong class="font-bold text-sm block mb-1 text-amber-900">Anda diundang sebagai anggota penelitian ini.</strong>
+                  <div class="text-sm text-amber-700">Silakan pilih <em class="font-semibold">Terima</em> atau <em class="font-semibold">Tolak</em> di daftar anggota di bawah.</div>
+                </div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+
+        <% if (isKetua || isAdmin) { %>
+          <div class="flex flex-wrap sm:flex-nowrap gap-2 shrink-0 w-full sm:w-auto">
+            <a href="/penelitian/<%= penelitian.id %>/edit" class="btn btn-secondary btn-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </a>
+            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('<%= penelitian.id %>', '<%= penelitian.judul.replace(/'/g, "\\'") %>')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Hapus
+            </button>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 mb-8">
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ketua Penelitian</p>
+          <p class="font-semibold text-slate-900 m-0"><%= penelitian.ketua_name || '-' %></p>
+          <p class="text-sm text-slate-500 mt-0.5"><%= penelitian.ketua_email || '' %></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Periode</p>
+          <p class="font-semibold text-slate-900 m-0">
+            <%= penelitian.tahun_mulai %>
+            <% if (penelitian.tahun_selesai) { %>– <%= penelitian.tahun_selesai %><% } else { %>– sekarang<% } %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Dibuat</p>
+          <p class="text-slate-700 m-0 text-sm font-medium">
+            <%= new Date(penelitian.created_at).toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' }) %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Diperbarui</p>
+          <p class="text-slate-700 m-0 text-sm font-medium">
+            <%= new Date(penelitian.updated_at).toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' }) %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Deskripsi -->
+      <div class="pt-6 border-t border-slate-100">
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Deskripsi / Abstrak</p>
+        <div class="text-slate-700 leading-relaxed text-sm">
+          <% if (penelitian.deskripsi) { %>
+            <p class="m-0 whitespace-pre-wrap"><%= penelitian.deskripsi %></p>
+          <% } else { %>
+            <em class="text-slate-400">Belum ada deskripsi.</em>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabel Anggota -->
+    <div class="card-premium overflow-hidden">
+      <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
+        <h3 class="text-lg font-bold text-slate-900 m-0">Tim Penelitian</h3>
+        <% if (isKetua || isAdmin) { %>
+          <a href="/penelitian/<%= penelitian.id %>/anggota" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-slate-700 border border-slate-300 text-xs font-semibold rounded hover:bg-slate-50 transition-colors shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Kelola Anggota
+          </a>
+        <% } %>
+      </div>
+
+      <% if (anggotaList.length === 0) { %>
+        <p class="text-center text-slate-500 py-10">
+          Belum ada anggota terdaftar.
+        </p>
+      <% } else { %>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-200">
+                <th class="py-3 px-6">Nama</th>
+                <th class="py-3 px-6">Email</th>
+                <th class="py-3 px-6 text-center">Peran</th>
+                <th class="py-3 px-6 text-center">Status</th>
+                <% if (!isKetua && !isAdmin) { %>
+                  <th class="py-3 px-6 text-center">Aksi</th>
+                <% } %>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-sm">
+              <% anggotaList.forEach(a => { %>
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                  <td class="py-3 px-6 font-semibold text-slate-900"><%= a.dosen_name || '-' %></td>
+                  <td class="py-3 px-6 text-slate-500 text-xs"><%= a.dosen_email || '-' %></td>
+                  <td class="py-3 px-6 text-center">
+                    <span class="<%= a.role === 'Ketua' ? 'badge-role-ketua' : 'badge-role-anggota' %>">
+                      <%= a.role %>
+                    </span>
+                  </td>
+                  <td class="py-3 px-6 text-center">
+                    <% if (a.status === 'approved') { %>
+                      <span class="badge-status-aktif">Diterima</span>
+                    <% } else if (a.status === 'rejected') { %>
+                      <span class="badge-status-ditolak">Ditolak</span>
+                    <% } else { %>
+                      <span class="badge-pending">Menunggu</span>
+                    <% } %>
+                  </td>
+                  <% if (!isKetua && !isAdmin && Number(a.dosen_id) === Number(user.id) && a.status === 'pending') { %>
+                    <td class="py-3 px-6 text-center">
+                      <form method="POST" action="/penelitian/<%= penelitian.id %>/membership/update" class="inline-flex gap-2 justify-center">
+                        <button name="status" value="approved" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition-colors shadow-sm">Terima</button>
+                        <button name="status" value="rejected" class="px-3 py-1.5 bg-white text-red-600 border border-red-200 text-xs font-semibold rounded hover:bg-red-50 transition-colors shadow-sm">Tolak</button>
+                      </form>
+                    </td>
+                  <% } else if (!isKetua && !isAdmin && Number(a.dosen_id) === Number(user.id) && a.status !== 'pending') { %>
+                    <td class="py-3 px-6 text-center"><span class="text-slate-300">–</span></td>
+                  <% } %>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- ── KOLOM KANAN: Sidebar Aksi ────────────────────────────── -->
+  <div class="flex flex-col gap-6">
+    <!-- Ekspor -->
+    <div class="card-premium p-6">
+      <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 m-0">Ekspor Data</h4>
+      <div class="flex flex-col gap-3">
+        <a href="/penelitian/export/excel" class="w-full inline-flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 border border-slate-300 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Unduh Excel (.xlsx)
+        </a>
+        <a href="/penelitian/export/pdf" class="w-full inline-flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 border border-slate-300 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Unduh PDF
+        </a>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="card-premium p-6">
+      <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 m-0">Statistik</h4>
+      <div class="flex flex-col gap-3 text-sm">
+        <div class="flex justify-between items-center py-1 border-b border-slate-50">
+          <span class="text-slate-600 font-medium">Total Anggota</span>
+          <strong class="text-slate-900 bg-slate-100 px-2 py-0.5 rounded"><%= anggotaList.length %></strong>
+        </div>
+        <div class="flex justify-between items-center py-1 border-b border-slate-50">
+          <span class="text-slate-600 font-medium">Anggota Aktif</span>
+          <strong class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded"><%= anggotaList.filter(a => a.status === 'approved').length %></strong>
+        </div>
+        <div class="flex justify-between items-center py-1">
+          <span class="text-slate-600 font-medium">Menunggu</span>
+          <strong class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded"><%= anggotaList.filter(a => a.status === 'pending').length %></strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../partials/_modal-delete') %>
+<%- include('../partials/footer') %>
