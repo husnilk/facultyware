@@ -305,8 +305,9 @@ exports.getHistoryLeaveRequestsLvl1 = async (search, status, leaveTypeId, limit,
         countParams.push(leaveTypeId);
     }
 
-    queryStr += ` ORDER BY lr.created_at DESC LIMIT ? OFFSET ?`;
-    queryParams.push(limit, offset);
+    // Perbaikan: Masukkan angka limit dan offset langsung ke dalam string SQL
+    queryStr += ` ORDER BY lr.created_at DESC LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
+    // Pastikan limit dan offset TIDAK di-push ke queryParams lagi
 
     const [requests] = await db.execute(queryStr, queryParams);
     const [countResult] = await db.execute(countQueryStr, countParams);
