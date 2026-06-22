@@ -59,3 +59,12 @@ typings/
 
 # next.js build output
 .next
+
+# Hasil generate Playwright (bukan kode, jangan di-commit)
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Uploaded receipts (keep folder, ignore contents)
+uploads/receipts/*
+!uploads/receipts/.gitkeep
