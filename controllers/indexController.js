@@ -5,9 +5,6 @@ const index = (req, res) => {
   res.render("index", { title: "Express" });
 };
 
-const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.name });
-};
 
 // Helper: cek apakah user punya permission tertentu
 const hasPermission = async (userId, permissionName) => {
@@ -118,7 +115,6 @@ const logout = (req, res, next) => {
 
 module.exports = {
   index,
-  home,
   loginPage,
   login,
   logout
