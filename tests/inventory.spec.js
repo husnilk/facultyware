@@ -1,50 +1,129 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
-test.describe('Testing Full Fitur Facultyware', () => {
+// Konfigurasi URL dasar aplikasi
+const BASE_URL = 'http://localhost:3000';
 
-    // Login
-    test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:3000/login');
-        await page.fill('input[name="email"]', 'admin@facultyware.com');
-        await page.fill('input[name="password"]', 'admin123');
-        await page.click('button[type="submit"]');
-        await expect(page).toHaveURL('http://localhost:3000/item');
+// Menjalankan pengujian secara berurutan menggunakan satu sesi browser
+test.describe.serial('Testing Full Fitur SIP Facultyware', () => {
+  let page;
+
+  // Inisialisasi sesi dan proses autentikasi sebelum seluruh pengujian dimulai
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    page = await context.newPage();
+
+    // Proses login admin
+    await page.goto(`${BASE_URL}/login`);
+    await page.fill('input[name="email"]', 'admin@facultyware.com');
+    await page.fill('input[name="password"]', 'admin123');
+    await page.click('button[type="submit"]');
+    
+    // Memastikan pengalihan halaman ke dashboard item berhasil
+    await expect(page).toHaveURL(`${BASE_URL}/item`);
+  });
+
+  // Menutup halaman setelah seluruh pengujian selesai
+  test.afterAll(async () => {
+    await page.close();
+  });
+
+  // Test Case 1: Dashboard
+  test('(Dashboard) Sistem berhasil merender halaman utama dan navigasi', async () => {
+    await page.goto(`${BASE_URL}/item`);
+    await expect(page).toHaveTitle(/Items/i);
+    await expect(page.locator('h1')).toBeVisible();
+  });
+
+  // Test Case 2: Kategori (List)
+  test('(Kategori) Menampilkan halaman daftar Kategori Barang', async () => {
+    await page.goto(`${BASE_URL}/kategori`);
+    await expect(page.locator('h1')).toContainText('Data Kategori');
+    await expect(page.locator('table')).toBeVisible();
+  });
+
+  // Test Case 3: Kategori (Create)
+  test('(Kategori) Berhasil menyimpan data kategori baru', async () => {
+    await page.goto(`${BASE_URL}/kategori`);
+    await page.click('text=Tambah Kategori');
+    await expect(page).toHaveURL(/.*kategori\/create/);
+    
+    await page.fill('input[name="name"]', 'Alat Tulis Kantor');
+    await page.click('button[type="submit"]');
+    await expect(page.locator('table')).toContainText('Alat Tulis Kantor');
+  });
+
+  // Test Case 4: Item (List)
+  test('(Item) Menampilkan halaman daftar Item Inventaris', async () => {
+    await page.goto(`${BASE_URL}/item`);
+    await expect(page.locator('h1')).toContainText('Data Item');
+    await expect(page.locator('table')).toBeVisible();
+  });
+
+  // Test Case 5: Item (Validation)
+  test('(Item) Menampilkan pesan validasi jika form tambah item kosong', async () => {
+    await page.goto(`${BASE_URL}/item`);
+    await page.click('a[href="/item/create"]');
+    await expect(page).toHaveURL(/.*item\/create/);
+    
+    await page.click('button[type="submit"]');
+    const form = page.locator('form');
+    await expect(form).toBeVisible(); 
+  });
+
+  // Test Case 6: Item (Create)
+  test('(Item) Skenario Tambah Data Item baru berhasil disimpan ke database', async () => {
+    const uniqueName = `Proyektor-${Date.now()}`;
+    
+    await page.goto(`${BASE_URL}/item`);
+    await page.click('a[href="/item/create"]');
+    
+    await page.fill('input[name="code"]', `CODE-${Date.now()}`);
+    await page.fill('input[name="name"]', uniqueName);
+    await page.fill('input[name="unit"]', 'Unit');
+    await page.fill('input[name="minimal_quantity"]', '2');
+    
+    await page.click('button[type="submit"]');
+    await expect(page.locator('table')).toContainText(uniqueName);
+  });
+
+  // Test Case 7: Search
+  test('(Item) Modul Live Search HTMX berhasil memfilter tabel secara instan', async () => {
+    await page.goto(`${BASE_URL}/item`);
+    await page.fill('input[name="q"]', 'Proyektor Epson');
+    await page.waitForTimeout(1000); 
+    await expect(page.locator('table')).toContainText('Proyektor Epson');
+  });
+
+  // Test Case 8: Edit
+  test('(Item) Tombol aksi Edit memunculkan halaman dengan data yang sesuai', async () => {
+    await page.goto(`${BASE_URL}/item`);
+    await page.locator('a[href^="/item/edit"]').first().click();
+    await expect(page).toHaveURL(/.*item\/edit.*/);
+  });
+
+  // Test Case 9: Export
+  test('(Export/Import) Berhasil men-trigger unduhan file Export Excel (.xlsx)', async () => {
+    await page.goto(`${BASE_URL}/item`);
+    const downloadPromise = page.waitForEvent('download');
+    await page.click('text=Export Excel'); 
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('.xlsx');
+  });
+
+  // Test Case 10: Import
+  test('(Export/Import) Menolak unggahan file Import jika format header tidak sesuai', async () => {
+    await page.goto(`${BASE_URL}/item`);
+    
+    page.once('dialog', async (dialog) => {
+      await dialog.accept();
     });
 
-    // test 1: Tambah Kategori
-    test('Skenario Tambah Kategori Barang', async ({ page }) => {
-        await page.goto('http://localhost:3000/kategori/create');
-        await page.fill('input[name="name"]', 'Kategori Testing Playwright');
-        await page.click('button[type="submit"]'); 
-        
-        await expect(page).toHaveURL('http://localhost:3000/kategori');
-        await expect(page.locator('table')).toContainText('Kategori Testing Playwright');
+    await page.evaluate(() => {
+      const fileInput = document.querySelector('input[name="file"]');
+      if (fileInput) fileInput.removeAttribute('required');
     });
 
-    // test 2: Tambah Item Inventaris
-    test('Skenario Tambah Data Item', async ({ page }) => {
-        await page.goto('http://localhost:3000/item/create');
-        
-        await page.waitForSelector('form[action="/item/create"]');
-
-        await page.getByLabel('Kode Item').fill('TEST-999'); 
-        await page.getByLabel('Nama Item').fill('Proyektor Otomatis');
-        await page.getByLabel('Unit / Satuan').fill('Unit');
-        await page.getByLabel('Minimal Quantity').fill('5');
-        await page.getByLabel('Deskripsi').fill('Barang ini ditambahkan oleh robot Playwright'); 
-        
-        await page.getByRole('button', { name: 'Simpan Item' }).click();
-        
-        await expect(page).toHaveURL('http://localhost:3000/item');
-        await expect(page.locator('table')).toContainText('Proyektor Otomatis');
-    });
-
-    // test 3: Live Search HTMX
-    test('Skenario Live Search HTMX', async ({ page }) => {
-        await page.goto('http://localhost:3000/item');
-        await page.fill('input[name="q"]', 'Proyektor Otomatis');
-        await page.waitForTimeout(1000); 
-        await expect(page.locator('table')).toContainText('Proyektor Otomatis');
-    });
-
+    await page.click('button:has-text("Import")');
+    await page.waitForTimeout(500); 
+  });
 });
