@@ -1,0 +1,14 @@
+<%
+/**
+ * Badge Status Penelitian
+ * @param {string} status - 'draft' | 'aktif' | 'selesai' | 'ditolak'
+ */
+const badgeMap = {
+  draft:   { cls: 'badge-status-draft',   label: 'Draft'   },
+  aktif:   { cls: 'badge-status-aktif',   label: 'Aktif'   },
+  selesai: { cls: 'badge-status-selesai', label: 'Selesai' },
+  ditolak: { cls: 'badge-status-ditolak', label: 'Ditolak' },
+};
+const badge = badgeMap[status] || { cls: 'badge-status-draft', label: status || '-' };
+%>
+<span class="<%= badge.cls %>"><%= badge.label %></span>

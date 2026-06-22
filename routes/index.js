@@ -1,17 +1,27 @@
-var express = require("express");
-var router = express.Router();
-const indexController = require("../controllers/indexController");
-const { isAuthenticated } = require("../middlewares/auth");
+'use strict';
 
-/* GET home page. */
-router.get("/", indexController.index);
+const express = require('express');
+const jwt     = require('jsonwebtoken');
+const { JWT_SECRET } = require('../middleware/auth');
+const router  = express.Router();
 
-router.get("/home", isAuthenticated, indexController.home);
+// ── Landing Page ──────────────────────────────────────────────────────────────
+router.get('/', (req, res) => {
+  const token = req.cookies.token;
+  if (token) {
+    try {
+      jwt.verify(token, JWT_SECRET);
+      return res.redirect('/auth/dashboard');
+    } catch {
+      res.clearCookie('token');
+    }
+  }
+  return res.render('index', { isLoggedIn: false });
+});
 
-router.get("/login", indexController.loginPage);
-
-router.post("/login", indexController.login);
-
-router.get("/logout", indexController.logout);
+// ── Health Check ──────────────────────────────────────────────────────────────
+router.get('/health', (_req, res) => {
+  res.json({ status: 'OK', timestamp: new Date() });
+});
 
 module.exports = router;
