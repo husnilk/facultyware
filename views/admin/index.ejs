@@ -1,0 +1,81 @@
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-6 border-b border-gray-100">
+        <h2 class="text-xl font-bold text-gray-800">Daftar Pengajuan Cuti</h2>
+        <p class="text-sm text-gray-500 mt-1">Rekapitulasi seluruh data pengajuan cuti pegawai.</p>
+    </div>
+    
+    <div class="p-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+        <form action="/admin" method="GET" class="flex items-center gap-3">
+            <label for="status" class="text-sm font-medium text-gray-700">Filter Status:</label>
+            <select name="status" id="status" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>Semua Status</option>
+                <option value="pending" <%= currentStatus === 'pending' ? 'selected' : '' %>>Menunggu</option>
+                <option value="approved" <%= currentStatus === 'approved' ? 'selected' : '' %>>Disetujui</option>
+                <option value="rejected" <%= currentStatus === 'rejected' ? 'selected' : '' %>>Ditolak</option>
+            </select>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:bg-blue-700 transition">
+                Terapkan
+            </button>
+        </form>
+
+        <div class="flex gap-2">
+            <a href="/admin/export/pdf?status=<%= typeof currentStatus !== 'undefined' ? currentStatus : 'all' %>" 
+               class="bg-red-500 text-white px-4 py-1.5 rounded-md text-sm hover:bg-red-600 transition flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                PDF
+            </a>
+            
+            <a href="/admin/export/docx?status=<%= typeof currentStatus !== 'undefined' ? currentStatus : 'all' %>" 
+               class="bg-blue-800 text-white px-4 py-1.5 rounded-md text-sm hover:bg-blue-900 transition flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Word
+            </a>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+            <thead class="bg-gray-50 border-b border-gray-100">
+                <tr>
+                    <th class="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Pegawai</th>
+                    <th class="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Cuti</th>
+                    <th class="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal Mulai</th>
+                    <th class="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal Selesai</th>
+                    <th class="py-3 px-6 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Lama (Hari)</th>
+                    <th class="py-3 px-6 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% if (leaveRequests.length > 0) { %>
+                    <% leaveRequests.forEach(function(request) { %>
+                        <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="py-4 px-6 text-sm font-medium text-gray-800"><%= request.employee_name %></td>
+                            <td class="py-4 px-6 text-sm text-gray-600"><%= request.leave_type %></td>
+                            <td class="py-4 px-6 text-sm text-gray-600"><%= new Date(request.start_date).toLocaleDateString('id-ID') %></td>
+                            <td class="py-4 px-6 text-sm text-gray-600"><%= new Date(request.end_date).toLocaleDateString('id-ID') %></td>
+                            <td class="py-4 px-6 text-sm text-gray-600 text-center font-medium"><%= request.total_days %></td>
+                            <td class="py-4 px-6 text-sm text-center">
+                                <% if(request.status === 'approved') { %>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
+                                <% } else if(request.status === 'rejected') { %>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
+                                <% } else { %>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-sm text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Belum ada data pengajuan cuti yang sesuai dengan filter.
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>

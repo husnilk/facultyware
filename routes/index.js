@@ -1,17 +1,25 @@
-var express = require("express");
-var router = express.Router();
-const indexController = require("../controllers/indexController");
-const { isAuthenticated } = require("../middlewares/auth");
+const express = require('express');
+const router = express.Router();
 
-/* GET home page. */
-router.get("/", indexController.index);
+// Panggil authController yang baru
+const authController = require('../controllers/authController');
 
-router.get("/home", isAuthenticated, indexController.home);
+// Panggil middleware auth jika butuh memproteksi rute tertentu di sini
+const auth = require('../middlewares/auth');
 
-router.get("/login", indexController.loginPage);
+// 1. Route Root (/)
+// Kalau ada yang akses localhost:3000 langsung kita arahkan ke halaman login
+router.get('/', (req, res) => {
+    res.redirect('/login');
+});
 
-router.post("/login", indexController.login);
+// 2. Route untuk menampilkan halaman login
+router.get('/login', authController.renderLogin);
 
-router.get("/logout", indexController.logout);
+// 3. Route untuk memproses submit form login
+router.post('/login', authController.processLogin);
+
+// 4. Route untuk logout
+router.get('/logout', authController.processLogout);
 
 module.exports = router;

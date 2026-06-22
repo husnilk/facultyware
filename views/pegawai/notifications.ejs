@@ -1,0 +1,67 @@
+<div class="max-w-3xl mx-auto w-full">
+    <div class="mb-6 flex flex-col justify-start">
+        <a href="/pegawai" class="text-gray-500 hover:text-gray-700 text-sm font-medium inline-block mb-3 w-max">&larr; Kembali ke Dashboard</a>
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Notifikasi Anda</h2>
+            <p class="text-sm text-gray-500 mt-1">Pembaruan terbaru dari atasan terkait status pengajuan cuti Anda.</p>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-sm border border-gray-100 rounded-xl overflow-hidden">
+        <% if (notifications && notifications.length > 0) { %>
+            <ul class="divide-y divide-gray-100">
+                <% notifications.forEach(notif => { %>
+                    <% const isApproved = notif.approval_status === 'approved'; %>
+                    <li class="p-5 md:p-6 hover:bg-gray-50/50 transition-colors flex flex-col sm:flex-row gap-4 sm:gap-5">
+                        
+                        <div class="shrink-0 mt-1 flex items-start">
+                            <% if (isApproved) { %>
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shadow-sm border border-green-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                </div>
+                            <% } else { %>
+                                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shadow-sm border border-red-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div class="flex-1">
+                            <h3 class="text-base font-bold text-gray-900 mb-1 leading-snug">
+                                Pengajuan <%= notif.leave_type_name %> <%= isApproved ? 'Disetujui' : 'Ditolak' %>
+                            </h3>
+                            <p class="text-sm text-gray-600">
+                                Pengajuan cuti Anda (ID: #<%= notif.leave_request_id %>) telah <%= isApproved ? 'disetujui' : 'ditolak' %> oleh <strong><%= notif.approver_name || 'Atasan' %></strong>.
+                            </p>
+                            
+                            <% if (!isApproved && notif.notes) { %>
+                                <div class="mt-3 p-3.5 bg-white border-l-4 border-red-400 rounded-r-lg shadow-sm text-sm text-gray-700 italic">
+                                    <span class="font-semibold block mb-1 not-italic text-xs text-gray-500 uppercase tracking-wider">Komentar Atasan:</span>
+                                    "<%= notif.notes %>"
+                                </div>
+                            <% } %>
+                            
+                            <div class="mt-4 flex items-center justify-between">
+                                <span class="text-xs text-gray-400 font-medium">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-1 -mt-0.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    <%= new Date(notif.action_date || notif.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'}) %>
+                                </span>
+                                <a href="/pegawai/<%= notif.leave_request_id %>" class="text-blue-600 hover:text-blue-800 text-sm font-semibold hover:underline flex items-center gap-1 transition-all">
+                                    Cek Pengajuan <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <div class="py-16 px-6 flex flex-col items-center justify-center text-center">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 mb-4 shadow-inner border border-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900">Belum ada notifikasi</h3>
+                <p class="text-sm text-gray-500 mt-1">Saat ini belum ada pembaruan dari atasan terkait pengajuan cuti Anda.</p>
+            </div>
+        <% } %>
+    </div>
+</div>
