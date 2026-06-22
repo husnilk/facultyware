@@ -34,13 +34,6 @@ const login = async (req, res, next) => {
       });
     }
 
-    /*
-      DB dosen:
-      users tidak memiliki kolom username.
-      Kolom yang tersedia: id, name, email, password, dll.
-      Jadi input form bernama username tetap boleh,
-      tetapi query ke database memakai email atau name.
-    */
     const [rows] = await db.query(
       `
       SELECT
