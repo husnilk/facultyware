@@ -52,8 +52,26 @@ const createPage = async (req, res, next) => {
 const create = async (req, res, next) => {
   const { equipment_id, start_date, end_date } = req.body;
   const userId = req.session.userId;
+  // ── TAMBAHKAN VALIDASI TANGGAL DI SINI ──
+  const tglMulai = new Date(start_date);
+  const tglSelesai = new Date(end_date);
 
+  if (tglSelesai < tglMulai) {
+    return res.status(400).send("Gagal Update: Tanggal Selesai tidak boleh sebelum Tanggal Mulai. Silakan kembali dan perbaiki tanggal.");
+  }
   try {
+    const [peminjamanAktif] = await db.query(`
+      SELECT id FROM equipment_loans 
+      WHERE employee_id = ? 
+        AND equipment_id = ? 
+        AND status IN ('requested', 'approved')
+    `, [userId, equipment_id]);
+
+    // Jika ditemukan ada data yang statusnya masih requested/approved
+    if (peminjamanAktif.length > 0) {
+      return res.status(400).send("Gagal: Anda tidak dapat meminjam alat ini karena Anda masih memiliki pengajuan atau peminjaman aktif untuk alat yang sama yang belum dikembalikan.");
+    }
+
     await db.query(`
       INSERT INTO equipment_loans (equipment_id, employee_id, start_date, end_date, status, approved_by_id) 
       VALUES (?, ?, ?, ?, 'requested', 1)
@@ -95,6 +113,12 @@ const update = async (req, res, next) => {
   const userId = req.session.userId;
   const { equipment_id, start_date, end_date } = req.body;
 
+  const tglMulai = new Date(start_date);
+  const tglSelesai = new Date(end_date);
+
+  if (tglSelesai < tglMulai) {
+    return res.status(400).send("Gagal Update: Tanggal Selesai tidak boleh sebelum Tanggal Mulai. Silakan kembali dan perbaiki tanggal.");
+  }
   try {
     await db.query(`
       UPDATE equipment_loans 
@@ -233,8 +257,12 @@ const cetak = async (req, res) => {
         doc.moveDown(1);
 
         const startDetailX = 80; // Agak menjorok ke dalam
+
+        const tglMulai = new Date(data.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const tglSelesai = new Date(data.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
         doc.text(`Nama Alat    : ${data.nama_alat}`, startDetailX, doc.y);
-        doc.text(`Tanggal        : ${new Date(data.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, startDetailX, doc.y);
+        doc.text(`Tanggal        : ${tglMulai} - ${tglSelesai}`, startDetailX, doc.y);
 
         doc.moveDown(1.5);
         doc.text('Peminjam berkewajiban untuk menjaga kondisi alat dengan baik selama masa penggunaan. Apabila batas waktu peminjaman telah berakhir, mohon untuk segera mengembalikan alat tersebut kepada Penanggung Jawab terkait. Atas perhatian dan kerja sama yang baik, kami ucapkan terima kasih.', 50, doc.y, { align: 'justify' });
