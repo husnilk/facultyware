@@ -1,4 +1,5 @@
 const db = require('../lib/db');
+const fs = require('fs');
 
 exports.getAllItems = async (req, res, next) => {
     try {
@@ -80,18 +81,40 @@ const XLSX = require('xlsx');
 
 exports.exportItems = async (req, res, next) => {
     try {
-        const [rows] = await db.query('SELECT code, name, unit, minimal_quantity, description FROM items');
+        const [rows] = await db.query('SELECT code, name, unit, minimal_quantity, description FROM items ORDER BY id DESC');
         
-        const worksheet = XLSX.utils.json_to_sheet(rows);
+        const formattedRows = rows.map((item, index) => ({
+            'No': index + 1,
+            'Kode Item': item.code,
+            'Nama Barang': item.name,
+            'Satuan': item.unit,
+            'Min. Stok': item.minimal_quantity,
+            'Deskripsi': item.description || '-'
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(formattedRows);
+
+        worksheet['!cols'] = [
+            { wch: 5 },
+            { wch: 15 },
+            { wch: 30 },
+            { wch: 15 },
+            { wch: 12 },
+            { wch: 50 }
+        ];
+
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Items");
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Data Inventaris");
         
         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
         
-        res.setHeader('Content-Disposition', 'attachment; filename=data-item.xlsx');
+        res.setHeader('Content-Disposition', 'attachment; filename=Data_Inventaris_Facultyware.xlsx');
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(excelBuffer);
-    } catch (err) { next(err); }
+        
+    } catch (err) { 
+        next(err); 
+    }
 };
 
 const multer = require('multer');
@@ -101,17 +124,44 @@ exports.upload = upload.single('file');
 
 exports.importItems = async (req, res, next) => {
     try {
-        const file = req.file;
-        const workbook = XLSX.readFile(file.path);
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(sheet);
-
-        for (const item of data) {
-            await db.query(
-                'INSERT INTO items (code, name, unit, minimal_quantity, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
-                [item.code, item.name, item.unit, item.minimal_quantity, item.description]
-            );
+        if (!req.file) {
+            return res.send("<script>alert('Silahkan Pilih File.'); window.location='/item';</script>");
         }
-        res.redirect('/item');
-    } catch (err) { next(err); }
+
+        const file = req.file;
+
+        const validMimeTypes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel'
+        ];
+
+        if (!validMimeTypes.includes(file.mimetype)) {
+            fs.unlinkSync(file.path);
+            return res.send("<script>alert('Error! File harus bertipe Excel (.xlsx atau .xls)'); window.location='/item';</script>");
+        }
+
+        try {
+            const workbook = XLSX.readFile(file.path);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(sheet);
+
+            for (const item of data) {
+                await db.query(
+                    'INSERT INTO items (code, name, unit, minimal_quantity, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+                    [item.code, item.name, item.unit, item.minimal_quantity, item.description]
+                );
+            }
+
+            fs.unlinkSync(file.path);
+            res.redirect('/item');
+
+        } catch (readErr) {
+            fs.unlinkSync(file.path);
+            console.error('Error baca Excel:', readErr);
+            return res.send("<script>alert('Isi file tidak bisa dibaca! Pastikan file berisi tabel Excel.'); window.location='/item';</script>");
+        }
+
+    } catch (err) { 
+        next(err); 
+    }
 };

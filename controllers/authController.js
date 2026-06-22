@@ -23,7 +23,7 @@ exports.loginSubmit = async (req, res, next) => {
             }
         }
 
-        res.redirect('/login');
+        return res.render('login', { error: 'Email atau Password Salah!' });
     } catch (err) {
         next(err);
     }

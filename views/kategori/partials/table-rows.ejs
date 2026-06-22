@@ -5,7 +5,9 @@
         <td class="px-6 py-4 text-sm text-muted max-w-[200px] truncate" title="<%= category.description %>">
             <%= category.description || '-' %>
         </td>
-        <td class="px-6 py-4 text-sm text-muted"><%= category.created_at || '-' %></td>
+        <td class="px-6 py-4 text-sm text-muted">
+            <%= category.created_at ? new Date(category.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' %>
+        </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
             <div class="flex items-center justify-end gap-1">
                 <a href="/kategori/edit/<%= category.id %>" class="text-muted hover:text-emerald-500 hover:bg-emerald-500/10 p-2 rounded-md transition-all" title="Edit">
