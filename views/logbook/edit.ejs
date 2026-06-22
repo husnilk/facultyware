@@ -1,0 +1,41 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Edit Logbook</h2>
+  </div>
+</div>
+
+<% if (errors.length > 0) { %>
+<div class="alert alert-danger">
+  <% errors.forEach(e => { %><div>✕ <%= e %></div><% }) %>
+</div>
+<% } %>
+
+<div class="form-card">
+  <form action="/logbook/<%= logbook.id %>/edit" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label class="form-label">Tanggal <span class="req">*</span></label>
+      <input type="date" name="progress_date" class="form-input" required
+        value="<%= new Date(logbook.progress_date).toISOString().split('T')[0] %>"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kegiatan <span class="req">*</span></label>
+      <textarea name="description" class="form-textarea" rows="6" required><%= logbook.description %></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ganti Dokumentasi (opsional)</label>
+      <input type="file" name="attachment" class="form-input" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"/>
+      <% if (logbook.attachment) { %>
+      <span class="form-hint">File saat ini: <a href="/uploads/<%= logbook.attachment %>" target="_blank" style="color:var(--accent)"><%= logbook.attachment %></a></span>
+      <% } %>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Simpan</button>
+      <a href="/logbook" class="btn btn-outline">Batal</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

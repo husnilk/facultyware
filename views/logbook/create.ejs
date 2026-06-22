@@ -1,0 +1,42 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Tambah Logbook</h2>
+    <p>Catat kegiatan harianmu</p>
+  </div>
+</div>
+
+<% if (errors.length > 0) { %>
+<div class="alert alert-danger">
+  <% errors.forEach(e => { %><div>✕ <%= e %></div><% }) %>
+</div>
+<% } %>
+
+<div class="form-card">
+  <form action="/logbook/create" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label class="form-label">Tanggal <span class="req">*</span></label>
+      <input type="date" name="progress_date" class="form-input" required
+        value="<%= new Date().toISOString().split('T')[0] %>"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kegiatan yang Dilakukan <span class="req">*</span></label>
+      <textarea name="description" class="form-textarea" rows="6" required
+        placeholder="Ceritakan kegiatan yang kamu lakukan hari ini..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Dokumentasi (opsional)</label>
+      <input type="file" name="attachment" class="form-input"
+        accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"/>
+      <span class="form-hint">Format: PDF, PNG, JPG, DOC, DOCX</span>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Simpan</button>
+      <a href="/logbook" class="btn btn-outline">Batal</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>
