@@ -2,32 +2,34 @@ const bcrypt = require("bcryptjs");
 const db = require("../lib/db");
 
 const index = (req, res) => {
-  res.render("index", { title: "Express" });
+  if (req.session.userId) {
+    return res.redirect("/projects");
+  }
+  res.redirect("/login");
 };
 
+// Redirect /home → /projects (projects list is the main dashboard)
 const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+  res.redirect("/projects");
 };
 
 const loginPage = (req, res) => {
   if (req.session.userId) {
-    return res.redirect("/home");
+    return res.redirect("/projects");
   }
   res.render("login", { title: "Login", error: null });
 };
 
 const login = async (req, res, next) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
 
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau password tidak valid.",
       });
     }
 
@@ -37,15 +39,26 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau password tidak valid.",
       });
     }
 
-    // Set session
-    req.session.userId = user.id;
-    req.session.username = user.username;
+    // Cari employee record berdasarkan user.id (FK: employees.id → users.id)
+    const [empRows] = await db.query(
+      "SELECT id FROM employees WHERE id = ?", [user.id]
+    );
 
-    res.redirect("/home");
+    // Set session — userName diberi fallback ke email/Admin agar sidebar tidak error
+    // jika kolom `name` di tabel users bernilai null/kosong (Fix #3 - Flow 2)
+    req.session.userId     = user.id;
+    req.session.userName   = user.name || user.email || 'Admin';
+    req.session.userEmail  = user.email;
+    req.session.employeeId = empRows.length > 0 ? empRows[0].id : null;
+
+    req.session.save((err) => {
+      if (err) return next(err);
+      res.redirect("/projects");
+    });
   } catch (err) {
     next(err);
   }
@@ -53,9 +66,7 @@ const login = async (req, res, next) => {
 
 const logout = (req, res, next) => {
   req.session.destroy((err) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
     res.redirect("/login");
   });
 };
@@ -65,5 +76,5 @@ module.exports = {
   home,
   loginPage,
   login,
-  logout
+  logout,
 };

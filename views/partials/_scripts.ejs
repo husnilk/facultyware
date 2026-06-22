@@ -1,0 +1,224 @@
+  <%# Toast container %>
+  <div id="toaster" class="toaster group" aria-live="polite" aria-label="Notifications"></div>
+
+  <%# Global Delete Confirmation Modal %>
+  <div id="deleteOverlay" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+  ">
+    <%# Click backdrop to close %>
+    <div onclick="closeDeleteModal()" style="position:absolute;inset:0;"></div>
+
+    <%# Modal Card — sits on top of backdrop div %>
+    <div class="card" style="
+      position: relative;
+      z-index: 1;
+      width: 440px;
+      max-width: calc(100vw - 2rem);
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+    ">
+      <%# Body %>
+      <div style="padding: 2.25rem 2rem 1.5rem; text-align: center;">
+        <%# Icon %>
+        <div style="
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 3.5rem;
+          height: 3.5rem;
+          border-radius: 9999px;
+          margin-bottom: 1.25rem;
+          background-color: color-mix(in oklab, var(--destructive) 12%, transparent);
+          color: var(--destructive);
+        ">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <%# Title %>
+        <h3 style="
+          font-size: 1.125rem;
+          font-weight: 700;
+          letter-spacing: -0.025em;
+          margin-bottom: 0.5rem;
+          color: var(--foreground);
+        ">Hapus Data Ini?</h3>
+        <%# Description %>
+        <p style="
+          font-size: 0.875rem;
+          color: var(--muted-foreground);
+          line-height: 1.65;
+        ">
+          Tindakan ini
+          <strong style="color: var(--foreground); font-weight: 600;">tidak dapat dibatalkan</strong>.
+          Data yang dihapus akan hilang secara permanen.
+        </p>
+      </div>
+
+      <%# Footer Buttons %>
+      <div style="
+        display: flex;
+        gap: 0.75rem;
+        padding: 1.25rem 2rem;
+        border-top: 1px solid var(--border);
+        background-color: color-mix(in oklab, var(--muted) 40%, transparent);
+      ">
+        <button type="button" onclick="closeDeleteModal()" class="btn-outline"
+                style="flex: 1; justify-content: center;">
+          Batalkan
+        </button>
+        <button type="button" onclick="executeDeleteForm()" class="btn"
+                style="flex: 1; justify-content: center; background-color: var(--destructive); color: var(--destructive-foreground); border-color: var(--destructive);">
+          Ya, Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.__formToDelete = null;
+
+    function showDeleteModal(form) {
+      window.__formToDelete = form;
+      var overlay = document.getElementById('deleteOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeDeleteModal() {
+      window.__formToDelete = null;
+      var overlay = document.getElementById('deleteOverlay');
+      if (overlay) {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    function executeDeleteForm() {
+      if (window.__formToDelete) {
+        window.__formToDelete.submit();
+      }
+    }
+
+    function triggerDownload(url, filename) {
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'download';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { document.body.removeChild(a); }, 200);
+    }
+  </script>
+
+  <%# ─── [E4] HTMX Server Error Handler ─────────────────────────────────────── %>
+  <%# Menangani kondisi server backend tidak aktif / network error saat HTMX request %>
+  <%# Sesuai Flow 2 E4: server ExpressJS berhenti/crash, frontend tampilkan notifikasi %>
+  <script>
+    (function () {
+      if (window.__htmxErrorHandlersAdded) return;
+      window.__htmxErrorHandlersAdded = true;
+
+      // [E4] HTMX send error — server tidak dapat dijangkau (crash / network down)
+      document.addEventListener('htmx:sendError', function (evt) {
+        console.error('[E4] HTMX send error — server tidak aktif:', evt.detail);
+        showServerToast('Server sedang tidak tersedia. Periksa koneksi atau coba beberapa saat lagi.', 'error');
+      });
+
+      // [E4] HTMX response error — server merespons dengan status error (5xx)
+      document.addEventListener('htmx:responseError', function (evt) {
+        var status = evt.detail.xhr ? evt.detail.xhr.status : 0;
+        console.error('[E4/E3] HTMX response error — status:', status);
+
+        if (status === 0 || status >= 500) {
+          showServerToast('Server sedang tidak tersedia. Silakan coba lagi.', 'error');
+        } else if (status === 404) {
+          showServerToast('Halaman atau data tidak ditemukan (404).', 'warning');
+        } else if (status === 403 || status === 401) {
+          showServerToast('Sesi Anda telah habis. Mengarahkan ke halaman login...', 'warning');
+          setTimeout(function () { window.location.href = '/login'; }, 2000);
+        }
+      });
+
+      // [E5] HTMX timeout
+      document.addEventListener('htmx:timeout', function (evt) {
+        console.error('[E5] HTMX timeout:', evt.detail);
+        showServerToast('Permintaan melebihi batas waktu. Coba lagi.', 'error');
+      });
+
+      // Custom server toast trigger via HX-Trigger header
+      document.body.addEventListener('showToast', function(evt) {
+        if (evt.detail) {
+          showServerToast(evt.detail.message || 'Aksi berhasil', evt.detail.type || 'success');
+        }
+      });
+
+      function showServerToast(message, type) {
+        var toaster = document.getElementById('toaster');
+        if (!toaster) { alert(message); return; }
+
+        var toast = document.createElement('div');
+        toast.setAttribute('role', 'alert');
+
+        var bgColor   = type === 'error' ? 'var(--destructive)' : '#f59e0b';
+        var textColor = 'white';
+
+        toast.style.cssText = [
+          'display:flex','align-items:center','gap:0.625rem',
+          'padding:0.75rem 1rem','border-radius:0.5rem',
+          'font-size:0.875rem','font-weight:500',
+          'background-color:' + bgColor,
+          'color:' + textColor,
+          'box-shadow:0 4px 12px rgba(0,0,0,0.2)',
+          'max-width:380px',
+        ].join(';');
+
+        var iconSvg = '';
+        if (type === 'error') {
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+        } else if (type === 'success') {
+          bgColor = '#10b981'; // emerald-500
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+        } else {
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        }
+
+        toast.innerHTML = iconSvg + '<span>' + message + '</span>';
+        toaster.appendChild(toast);
+
+        setTimeout(function () {
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 0.3s ease';
+          setTimeout(function () {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 300);
+        }, 5000);
+      }
+    })();
+  </script>
+
+  <% if (typeof toast !== 'undefined' && toast) { %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        document.body.dispatchEvent(new CustomEvent('showToast', { detail: <%- JSON.stringify(toast) %> }));
+      }, 100);
+    });
+  </script>
+  <% } %>

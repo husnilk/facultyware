@@ -1,4 +1,8 @@
 require('dotenv').config();
+
+console.log("DB_HOST =", process.env.DB_HOST);
+console.log("DB_NAME =", process.env.DB_NAME);
+console.log("SESSION_SECRET =", process.env.SESSION_SECRET);
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -6,8 +10,15 @@ var logger = require('morgan');
 var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var indexRouter      = require('./routes/index');
+var usersRouter      = require('./routes/users');
+var projectsRouter   = require('./routes/projects');
+var committeesRouter = require('./routes/committees');
+var progressesRouter = require('./routes/progresses');
+var reportsRouter    = require('./routes/reports');
+var dashboardRouter  = require('./routes/dashboard');
+var budgetsRouter    = require('./routes/budgets');
+var tasksRouter      = require('./routes/tasks');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
@@ -28,6 +39,18 @@ const sessionStore = new MySQLStore({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  schema: {
+    tableName: 'sessions',
+    columnNames: {
+      session_id: 'id',
+      expires: 'last_activity',
+      data: 'payload'
+    }
+  }
+});
+
+sessionStore.on('error', function(error) {
+  console.error('[Session Store Error]', error);
 });
 
 app.use(session({
@@ -41,8 +64,39 @@ app.use(session({
   }
 }));
 
+app.use((req, res, next) => {
+  if (req.session.toast) {
+    res.locals.toast = req.session.toast;
+    delete req.session.toast;
+  }
+  res.locals.reqPath = req.path;
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/projects',    projectsRouter);
+app.use('/committees',  committeesRouter);
+app.use('/committees/:id/budgets', budgetsRouter);
+app.use('/committees/:id/tasks',   tasksRouter);
+app.use('/progresses', progressesRouter);
+app.use('/reports', reportsRouter);
+app.use('/dashboard', dashboardRouter);
+
+// REST API routes
+const projectController  = require('./controllers/projectController');
+const { isAuthenticated } = require('./middlewares/auth');
+const { checkPermission } = require('./middlewares/acl');
+const { rabSelector, expenseSelector } = require('./controllers/budgetController');
+const { taskSelector } = require('./controllers/taskController');
+const selectorGuard = [isAuthenticated, checkPermission(['manage_committees', 'manage_all'])];
+app.get('/budgets',   ...selectorGuard, rabSelector);
+app.get('/tasks',     ...selectorGuard, taskSelector);
+app.get('/expenses',  ...selectorGuard, expenseSelector);
+const apiGuard = [isAuthenticated, checkPermission(['manage_projects', 'manage_all'])];
+app.get('/api/projects',     ...apiGuard, projectController.apiIndex);
+app.get('/api/projects/:id', ...apiGuard, projectController.apiShow);
+app.post('/api/projects',    ...apiGuard, projectController.apiStore);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);
