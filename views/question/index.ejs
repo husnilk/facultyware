@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="UTF-8">
+
+    <title><%= title %></title>
+
+</head>
+
+<body>
+
+<h2>Data Pertanyaan Survey</h2>
+
+<p>
+
+    <a href="/home">Home</a> |
+
+    <a href="/survey">Survey</a> |
+
+    <a href="/question/create">Tambah Pertanyaan</a>
+
+</p>
+
+<!-- SEARCH -->
+
+<form action="/question" method="GET">
+
+    <input
+        type="text"
+        name="search"
+        placeholder="Cari pertanyaan..."
+        value="<%= search || '' %>"
+    >
+
+    <button type="submit">
+        Cari
+    </button>
+
+    <a href="/question">
+        Reset
+    </a>
+
+</form>
+
+<br>
+
+<table border="1" cellpadding="10">
+
+    <tr>
+
+        <th>No</th>
+
+        <th>Pertanyaan</th>
+
+        <th>Tipe</th>
+
+        <th>Aksi</th>
+
+    </tr>
+
+    <% if(questions.length==0){ %>
+
+    <tr>
+
+        <td colspan="4" align="center">
+
+            Tidak ada data.
+
+        </td>
+
+    </tr>
+
+    <% } %>
+
+    <% questions.forEach((question,index)=>{ %>
+
+    <tr>
+
+        <td>
+
+            <%= ((page-1)*5)+index+1 %>
+
+        </td>
+
+        <td>
+
+            <%= question.question_text %>
+
+        </td>
+
+        <td>
+
+            <%= question.type %>
+
+        </td>
+
+        <td>
+
+            <a href="/question/edit/<%= question.id %>">
+
+                Edit
+
+            </a>
+
+            |
+
+            <form
+                action="/question/delete/<%= question.id %>"
+                method="POST"
+                style="display:inline">
+
+                <button
+                    onclick="return confirm('Yakin ingin menghapus?')">
+
+                    Hapus
+
+                </button>
+
+            </form>
+
+        </td>
+
+    </tr>
+
+    <% }) %>
+
+</table>
+
+<br>
+
+<!-- PAGINATION -->
+
+<div>
+
+    <% if(page>1){ %>
+
+        <a href="/question?page=<%= page-1 %>&search=<%= search %>">
+
+            ← Sebelumnya
+
+        </a>
+
+    <% } %>
+
+    &nbsp;
+
+    Halaman
+
+    <%= page %>
+
+    dari
+
+    <%= totalPage %>
+
+    &nbsp;
+
+    <% if(page<totalPage){ %>
+
+        <a href="/question?page=<%= page+1 %>&search=<%= search %>">
+
+            Selanjutnya →
+
+        </a>
+
+    <% } %>
+
+</div>
+
+</body>
+</html>

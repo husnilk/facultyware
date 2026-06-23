@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+
+</head>
+
+<body class="bg-muted">
+
+<div class="container mx-auto p-10">
+
+<div class="card p-6">
+
+<h1 class="text-2xl font-bold">
+
+Tambah Assignment
+
+</h1>
+
+<form action="/assignment/create" method="POST">
+
+<div class="mt-4">
+
+<label>Survey</label>
+
+<select
+name="survey_id"
+class="input w-full"
+required>
+
+<% surveys.forEach(survey=>{ %>
+
+<option value="<%= survey.id %>">
+
+<%= survey.title %>
+
+</option>
+
+<% }) %>
+
+</select>
+
+</div>
+
+<div class="mt-4">
+
+<label>Pertanyaan</label>
+
+<select
+name="survey_question_id"
+class="input w-full"
+required>
+
+<% questions.forEach(question=>{ %>
+
+<option value="<%= question.id %>">
+
+<%= question.question_text %>
+
+</option>
+
+<% }) %>
+
+</select>
+
+</div>
+
+<div class="mt-4">
+
+<label>Urutan</label>
+
+<input
+type="number"
+name="order"
+class="input w-full"
+value="1"
+required>
+
+</div>
+
+<div class="mt-6">
+
+<button
+    type="submit"
+    class="btn">
+
+    Simpan
+
+
+</button>
+
+<a href="/assignment" class="btn-outline">
+
+Batal
+
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

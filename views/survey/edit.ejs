@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title><%= title %></title>
+
+    <link rel="stylesheet" href="/assets/styles.css">
+
+</head>
+
+<body>
+
+<div class="container mx-auto p-10">
+
+<h1 class="text-3xl font-bold mb-6">
+
+    Edit Survey
+
+</h1>
+
+<form action="/survey/edit/<%= survey.id %>" method="POST">
+
+    <div class="mb-4">
+
+        <label>Judul Survey</label>
+
+        <input
+            type="text"
+            name="title"
+            value="<%= survey.title %>"
+            class="border w-full p-2"
+            required>
+
+    </div>
+
+    <div class="mb-4">
+
+        <label>Deskripsi</label>
+
+        <textarea
+            name="description"
+            rows="5"
+            class="border w-full p-2"
+            required><%= survey.description %></textarea>
+
+    </div>
+
+    <div class="mb-4">
+
+        <label>Tanggal Mulai</label>
+
+        <input
+            type="date"
+            name="start_date"
+            value="<%= survey.start_date.toISOString().split('T')[0] %>"
+            class="border w-full p-2"
+            required>
+
+    </div>
+
+    <div class="mb-4">
+
+        <label>Tanggal Selesai</label>
+
+        <input
+            type="date"
+            name="end_date"
+            value="<%= survey.end_date.toISOString().split('T')[0] %>"
+            class="border w-full p-2"
+            required>
+
+    </div>
+
+    <button class="btn">
+
+        Update
+
+    </button>
+
+    <a href="/survey" class="btn">
+
+        Batal
+
+    </a>
+
+</form>
+
+</div>
+
+</body>
+
+</html>

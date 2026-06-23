@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+
+</head>
+
+<body class="bg-muted">
+
+<div class="container mx-auto p-10">
+
+<div class="card p-6">
+
+<h1 class="text-2xl font-bold">
+Edit Opsi Jawaban
+</h1>
+
+<form action="/option/edit/<%= option.id %>" method="POST">
+
+<div class="mt-4">
+
+<label>Pertanyaan</label>
+
+<select
+name="survey_question_id"
+class="input w-full"
+required>
+
+<% questions.forEach(question=>{ %>
+
+<option
+value="<%= question.id %>"
+<%= question.id==option.survey_question_id ? 'selected' : '' %>>
+
+<%= question.question_text %>
+
+</option>
+
+<% }) %>
+
+</select>
+
+</div>
+
+<div class="mt-4">
+
+<label>Opsi Jawaban</label>
+
+<input
+type="text"
+name="option_text"
+class="input w-full"
+value="<%= option.option_text %>"
+required>
+
+</div>
+
+<div class="mt-4">
+
+<label>Bobot</label>
+
+<input
+type="number"
+step="0.01"
+name="weight"
+class="input w-full"
+value="<%= option.weight %>"
+required>
+
+</div>
+
+<div class="mt-6">
+
+<button class="btn">
+Update
+</button>
+
+<a href="/option" class="btn-outline">
+Batal
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

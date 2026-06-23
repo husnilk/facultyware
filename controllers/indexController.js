@@ -1,61 +1,103 @@
 const bcrypt = require("bcryptjs");
 const db = require("../lib/db");
 
+/**
+ * Halaman awal
+ */
 const index = (req, res) => {
-  res.render("index", { title: "Express" });
+  if (req.session.userId) {
+    return res.redirect("/home");
+  }
+
+  res.redirect("/login");
 };
 
+/**
+ * Halaman home setelah login
+ */
 const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+  res.render("home", {
+    title: "Home",
+    user: req.session.name,
+  });
 };
 
+/**
+ * Menampilkan halaman login
+ */
 const loginPage = (req, res) => {
   if (req.session.userId) {
     return res.redirect("/home");
   }
-  res.render("login", { title: "Login", error: null });
+
+  res.render("login", {
+    title: "Login",
+    error: null,
+  });
 };
 
+/**
+ * Proses login menggunakan email
+ */
 const login = async (req, res, next) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    // Cari user berdasarkan email
+   const [rows] = await db.query(
+  "SELECT * FROM users WHERE email = ?",
+  [email]
+);
 
+console.log("Email input:", email);
+console.log("Data user:", rows);
+
+    // Jika email tidak ditemukan
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau password salah",
       });
     }
 
     const user = rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
 
+    // Cek password bcrypt
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    // Jika password salah
     if (!isMatch) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau password salah",
       });
     }
 
-    // Set session
+    // Simpan data ke session
     req.session.userId = user.id;
-    req.session.username = user.username;
+    req.session.name = user.name;
+    req.session.email = user.email;
 
+    // Redirect ke halaman home
     res.redirect("/home");
-  } catch (err) {
-    next(err);
+
+  } catch (error) {
+    next(error);
   }
 };
 
+/**
+ * Logout
+ */
 const logout = (req, res, next) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return next(err);
+  req.session.destroy((error) => {
+    if (error) {
+      return next(error);
     }
+
     res.redirect("/login");
   });
 };
@@ -65,5 +107,5 @@ module.exports = {
   home,
   loginPage,
   login,
-  logout
+  logout,
 };

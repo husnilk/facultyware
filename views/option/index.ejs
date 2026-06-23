@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title><%= title %></title>
+
+    <link rel="stylesheet" href="/assets/styles.css">
+
+</head>
+
+<body class="bg-muted">
+
+<div class="container mx-auto p-10">
+
+    <div class="card p-6">
+
+        <div class="flex justify-between items-center">
+
+            <h1 class="text-2xl font-bold">
+
+                Data Opsi Jawaban
+
+            </h1>
+
+            <a href="/option/create" class="btn">
+
+                Tambah Opsi
+
+            </a>
+
+        </div>
+
+        <br>
+
+        <!-- SEARCH -->
+
+        <form action="/option" method="GET">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Cari pertanyaan / opsi..."
+                value="<%= search || '' %>"
+                style="padding:8px;width:300px;">
+
+            <button type="submit">
+
+                Cari
+
+            </button>
+
+            <a href="/option">
+
+                Reset
+
+            </a>
+
+        </form>
+
+        <br>
+
+        <table class="table-auto w-full mt-6 border">
+
+            <thead>
+
+                <tr>
+
+                    <th>No</th>
+
+                    <th>Pertanyaan</th>
+
+                    <th>Opsi Jawaban</th>
+
+                    <th>Bobot</th>
+
+                    <th>Aksi</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            <% if(options.length==0){ %>
+
+                <tr>
+
+                    <td colspan="5" align="center">
+
+                        Tidak ada data.
+
+                    </td>
+
+                </tr>
+
+            <% } %>
+
+            <% options.forEach((option,index)=>{ %>
+
+                <tr>
+
+                    <td>
+
+                        <%= ((page-1)*5)+index+1 %>
+
+                    </td>
+
+                    <td>
+
+                        <%= option.question_text %>
+
+                    </td>
+
+                    <td>
+
+                        <%= option.option_text %>
+
+                    </td>
+
+                    <td>
+
+                        <%= option.weight %>
+
+                    </td>
+
+                    <td>
+
+                        <a href="/option/edit/<%= option.id %>">
+
+                            Edit
+
+                        </a>
+
+                        |
+
+                        <form
+                            action="/option/delete/<%= option.id %>"
+                            method="POST"
+                            style="display:inline;">
+
+                            <button
+                                onclick="return confirm('Yakin hapus data?')">
+
+                                Hapus
+
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+            <% }) %>
+
+            </tbody>
+
+        </table>
+
+        <br>
+
+        <!-- PAGINATION -->
+
+        <div>
+
+            <% if(page>1){ %>
+
+                <a href="/option?page=<%= page-1 %>&search=<%= search %>">
+
+                    ← Sebelumnya
+
+                </a>
+
+            <% } %>
+
+            &nbsp;
+
+            Halaman
+
+            <%= page %>
+
+            dari
+
+            <%= totalPage %>
+
+            &nbsp;
+
+            <% if(page<totalPage){ %>
+
+                <a href="/option?page=<%= page+1 %>&search=<%= search %>">
+
+                    Selanjutnya →
+
+                </a>
+
+            <% } %>
+
+        </div>
+
+        <br>
+
+        <a href="/home" class="btn-outline">
+
+            Kembali
+
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

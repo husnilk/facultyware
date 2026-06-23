@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+
+</head>
+
+<body>
+
+<div class="container mx-auto p-10">
+
+<div class="flex justify-between mb-5">
+
+<div>
+
+<h1 class="text-3xl font-bold">
+
+<%= survey.title %>
+
+</h1>
+
+<p>Daftar Pertanyaan Survey</p>
+
+</div>
+
+<a href="/survey" class="btn-outline">
+
+← Kembali
+
+</a>
+
+</div>
+
+<table class="table w-full border">
+
+<thead>
+
+<tr>
+
+<th>No</th>
+
+<th>Urutan</th>
+
+<th>Pertanyaan</th>
+
+<th>Tipe</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<% if(questions.length==0){ %>
+
+<tr>
+
+<td colspan="4" align="center">
+
+Belum ada pertanyaan
+
+</td>
+
+</tr>
+
+<% } %>
+
+<% questions.forEach((question,index)=>{ %>
+
+<tr>
+
+<td><%= index+1 %></td>
+
+<td><%= question.order %></td>
+
+<td><%= question.question_text %></td>
+
+<td><%= question.type %></td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+
+</html>
