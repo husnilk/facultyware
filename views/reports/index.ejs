@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel="icon" href="/assets/favicon.svg">   <!-- baris 5, tambah disini -->
+  <link rel="stylesheet" href="/assets/basecoat.min.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/assets/basecoat.min.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+
+  <style>
+    * {
+      letter-spacing: normal;
+    }
+
+    body {
+      margin: 0;
+      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #111;
+    }
+
+    .container {
+      width: 820px;
+      margin: 70px auto;
+      background-color: #fff;
+      padding: 28px 32px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+    }
+
+    .top-action {
+      margin-bottom: 20px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    input {
+      flex: 1;
+      height: 34px;
+      padding: 6px 10px;
+      border: 1px solid #999;
+    }
+
+    button {
+      height: 34px;
+      padding: 6px 18px;
+      border: 1px solid #999;
+      background-color: #eee;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+    }
+
+    th, td {
+      padding: 9px 6px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      border-bottom: 1px solid #ddd;
+      font-weight: 700;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 18px;
+    }
+
+    a {
+      color: #4b2e83;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="top-action">
+      <a href="/participants">← Kembali ke Peserta</a>
+    </div>
+
+    <h1>Laporan Kegiatan</h1>
+    <p>Daftar laporan kegiatan yang telah diunggah oleh admin.</p>
+
+    <p>
+      <a href="/reports/upload">Upload Laporan Kegiatan</a>
+    </p>
+
+    <form method="GET" action="/reports" class="search-row">
+      <input
+        type="text"
+        name="search"
+        value="<%= search %>"
+        placeholder="Cari judul laporan, event, atau jenis dokumen"
+      >
+      <button type="submit">Cari</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Judul Laporan</th>
+          <th>Event</th>
+          <th>Jenis</th>
+          <th>Tanggal Upload</th>
+          <th>File</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% if (reports.length === 0) { %>
+          <tr>
+            <td colspan="6" class="empty">Belum ada laporan kegiatan.</td>
+          </tr>
+        <% } %>
+
+        <% reports.forEach((report, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td><%= report.title %></td>
+            <td><%= report.event_title %></td>
+            <td><%= report.document_type %></td>
+            <td><%= report.uploaded_at %></td>
+            <td>
+              <a href="<%= report.file_path %>" target="_blank">Lihat File</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

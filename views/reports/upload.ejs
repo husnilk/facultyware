@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel="icon" href="/assets/favicon.svg">   <!-- baris 5, tambah disini -->
+  <link rel="stylesheet" href="/assets/basecoat.min.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/assets/basecoat.min.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #111;
+    }
+
+    .container {
+      width: 720px;
+      margin: 70px auto;
+      background-color: #fff;
+      padding: 28px 32px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      margin-top: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #999;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    textarea {
+      height: 110px;
+    }
+
+    button {
+      margin-top: 18px;
+      padding: 8px 18px;
+      border: 1px solid #999;
+      background-color: #eee;
+      cursor: pointer;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    a {
+      color: #4b2e83;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <p>
+      <a href="/reports">← Kembali ke Laporan</a>
+    </p>
+
+    <h1>Upload Laporan Kegiatan</h1>
+    <p>Unggah file laporan kegiatan berdasarkan event yang tersedia.</p>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <form method="POST" action="/reports/upload" enctype="multipart/form-data">
+      <label>Event</label>
+      <select name="event_id" required>
+        <option value="">-- Pilih Event --</option>
+        <% events.forEach((event) => { %>
+          <option value="<%= event.id %>"><%= event.title %></option>
+        <% }) %>
+      </select>
+
+      <label>Judul Laporan</label>
+      <input type="text" name="title" placeholder="Contoh: Laporan Kegiatan Seminar" required>
+
+      <label>Jenis Dokumen</label>
+      <select name="document_type" required>
+        <option value="">-- Pilih Jenis Dokumen --</option>
+        <option value="report">Report</option>
+        <option value="photo">Photo</option>
+        <option value="proposal">Proposal</option>
+        <option value="minutes">Minutes</option>
+        <option value="attendance">Attendance</option>
+        <option value="other">Other</option>
+      </select>
+
+      <label>Deskripsi</label>
+      <textarea name="description" placeholder="Deskripsi singkat laporan kegiatan"></textarea>
+
+      <label>File Laporan</label>
+      <input type="file" name="report_file" accept=".pdf,.docx,.jpg,.jpeg,.png" required>
+
+      <button type="submit">Upload Laporan</button>
+    </form>
+  </div>
+</body>
+</html>

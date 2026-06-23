@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/assets/basecoat.min.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #f7f7f7;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #111;
+    }
+
+    .container {
+      width: 820px;
+      margin: 75px auto;
+      background-color: #fff;
+      padding: 28px 32px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+      letter-spacing: normal;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    input {
+      flex: 1;
+      height: 34px;
+      padding: 6px 10px;
+      border: 1px solid #999;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    button {
+      height: 34px;
+      padding: 6px 18px;
+      border: 1px solid #999;
+      background-color: #eee;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    th {
+      text-align: left;
+      font-weight: 700;
+      padding: 9px 6px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    td {
+      padding: 9px 6px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .empty {
+      text-align: center;
+      color: #333;
+      padding: 18px;
+    }
+
+    .pagination {
+      margin-top: 20px;
+    }
+
+    .bottom-link {
+      margin-top: 18px;
+    }
+
+    a {
+      color: #4b2e83;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Daftar Peserta Event</h1>
+    <p>Halaman ini menampilkan peserta yang sudah terdaftar pada event.</p>
+
+    <form method="GET" action="/participants">
+      <label>Cari Peserta</label>
+      <div class="search-row">
+        <input
+          type="text"
+          name="search"
+          value="<%= search %>"
+          placeholder="Cari nama, email, event, atau nomor registrasi"
+        >
+        <button type="submit">Cari</button>
+      </div>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama Peserta</th>
+          <th>Email</th>
+          <th>Event</th>
+          <th>Status Daftar</th>
+          <th>Status Hadir</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% if (participants.length === 0) { %>
+          <tr>
+            <td colspan="7" class="empty">Belum ada data peserta.</td>
+          </tr>
+        <% } %>
+
+        <% participants.forEach((participant, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td><%= participant.participant_name %></td>
+            <td><%= participant.participant_email %></td>
+            <td><%= participant.event_title %></td>
+            <td><%= participant.attendance_status || "-" %></td>
+            <td><%= participant.checkin_status || "-" %></td>
+            <td>
+              <a href="/participants/<%= participant.id %>">Detail</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <p>Halaman <%= page %> dari <%= totalPages || 1 %></p>
+
+      <% if (page > 1) { %>
+        <a href="/participants?page=<%= page - 1 %>&search=<%= search %>">Sebelumnya</a>
+      <% } %>
+
+      <% if (page < totalPages) { %>
+        <a href="/participants?page=<%= page + 1 %>&search=<%= search %>">Selanjutnya</a>
+      <% } %>
+    </div>
+
+    <div class="bottom-link">
+      <a href="/certificates">Lihat Peserta Layak Sertifikat</a>
+    </div>
+  </div>
+</body>
+</html>
