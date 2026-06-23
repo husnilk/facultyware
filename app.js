@@ -20,6 +20,11 @@ var apiGhufranRouter = require('./routes/apiGhufran');
 var registrationsRouter = require('./routes/registrations');
 var ticketsRouter = require('./routes/tickets');
 
+var certificatesRouter = require('./routes/certificates');
+var participantsRouter = require('./routes/participants');
+var reportsRouter = require('./routes/reports');
+var apiHanaRouter = require('./routes/apiHana');
+
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
@@ -70,6 +75,14 @@ app.use('/events', registrationsRouter);
 app.use('/registrations', registrationsRouter);
 app.use('/tickets', ticketsRouter);
 app.use('/api/ghufran', apiGhufranRouter);
+
+
+// Hana routes
+app.use('/certificates', certificatesRouter);
+app.use('/participants', participantsRouter);
+app.use('/reports', reportsRouter);
+app.use('/api/hana', apiHanaRouter);
+
 
 // Admin routes
 app.use('/admin', adminRouter);
