@@ -12,7 +12,6 @@ const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -22,24 +21,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-
   createDatabaseTable: true,
   schema: {
-    tableName: 'sessions', // Ubah menjadi 'sssion' jika memang namanya persis seperti itu
+    tableName: 'sessions',
     columnNames: {
-      session_id: 'id',           // Menerjemahkan session_id menjadi id
-      expires: 'last_activity',   // Menerjemahkan expires menjadi last_activity
-      data: 'payload'             // Menerjemahkan data menjadi payload
+      session_id: 'id',
+      expires: 'last_activity',
+      data: 'payload'
     }
   }
-  
 });
 
 sessionStore.onReady().then(() => {
@@ -55,19 +51,27 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
+    maxAge: 1000 * 60 * 60 * 24
   }
 }));
 
+console.log('✓ Session middleware loaded');
+
 app.use('/', indexRouter);
+console.log('✓ Index router loaded');
+
 app.use('/users', usersRouter);
+console.log('✓ Users router loaded');
 
 app.use('/equipment-loans', require('./routes/equipment-loans'));
-app.use('/manager', require('./routes/manager'));
-// catch 404 and forward to error handler
-app.use(notFoundHandler);
+console.log('✓ Equipment loans router loaded');
 
-// error handler
+app.use('/manager', require('./routes/manager'));
+console.log('✓ Manager router loaded');
+
+app.use(notFoundHandler);
 app.use(errorHandler);
+
+console.log('✓ App fully loaded');
 
 module.exports = app;
