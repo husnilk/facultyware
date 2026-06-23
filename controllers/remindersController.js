@@ -131,11 +131,6 @@ const send = async (req, res, next) => {
       });
     }
 
-    /*
-      DB dosen:
-      event_reminders.sent_by      -> employees.id
-      event_reminders.sent_by_id   -> wajib diisi
-    */
     await db.query(
       `
       INSERT INTO event_reminders
@@ -187,11 +182,17 @@ const history = async (req, res, next) => {
       `
       SELECT
         er.id,
+        er.event_id,
         er.channel,
         er.message,
         er.sent_at,
+        er.sent_at AS created_at,
+        er.sent_by,
         e.title AS event_title,
-        emp.name AS sender_name
+        e.title AS nama_event,
+        emp.name AS sender_name,
+        emp.name AS sent_by_name,
+        'berhasil' AS status
       FROM event_reminders er
       JOIN events e ON er.event_id = e.id
       LEFT JOIN employees emp ON er.sent_by = emp.id
@@ -207,10 +208,19 @@ const history = async (req, res, next) => {
 
     res.render("reminders/history", {
       title: "Riwayat Reminder",
+
+      // Nama utama
       reminders,
+
+      // Alias supaya cocok dengan view lama yang mungkin membaca nama variabel berbeda
+      logs: reminders,
+      reminderLogs: reminders,
+      histories: reminders,
+
       search,
       page,
       totalPages,
+      totalData,
     });
   } catch (err) {
     next(err);

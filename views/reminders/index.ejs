@@ -1,58 +1,184 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title><%= title %></title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 30px; background: #f7f7f7; }
-    .card { background: white; padding: 24px; border-radius: 10px; max-width: 760px; margin: auto; }
-    label { display: block; margin-top: 14px; font-weight: bold; }
-    select, textarea { width: 100%; padding: 10px; margin-top: 6px; }
-    button { margin-top: 18px; padding: 10px 18px; cursor: pointer; }
-    .success { background: #d1fae5; padding: 12px; margin-bottom: 12px; }
-    .error { background: #fee2e2; padding: 12px; margin-bottom: 12px; }
-    a { display: inline-block; margin-top: 16px; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Kirim Reminder Event</h1>
+<%
+  const safeEvents = typeof events !== "undefined" && Array.isArray(events) ? events : [];
+  const safeForm = typeof form !== "undefined" && form ? form : {};
+  const selectedEventId = safeForm.event_id || "";
+  const selectedChannel = safeForm.channel || "";
+  const messageValue = safeForm.message || "";
+%>
 
-    <% if (success) { %>
-      <div class="success"><%= success %></div>
-    <% } %>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= typeof title !== "undefined" ? title : "Kirim Reminder" %> - Facultyware</title>
 
-    <% if (error) { %>
-      <div class="error"><%= error %></div>
-    <% } %>
+    <link rel="stylesheet" href="/assets/styles.css" />
 
-    <form action="/reminders/send" method="POST">
-      <label>Event</label>
-      <select name="event_id" required>
-        <option value="">-- Pilih Event --</option>
-        <% events.forEach(event => { %>
-          <option value="<%= event.id %>" <%= form.event_id == event.id ? 'selected' : '' %>>
-            <%= event.title %> - <%= event.start_date %>
-          </option>
-        <% }) %>
-      </select>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
-      <label>Channel</label>
-      <select name="channel" required>
-        <option value="">-- Pilih Channel --</option>
-        <option value="email" <%= form.channel === 'email' ? 'selected' : '' %>>Email</option>
-        <option value="whatsapp" <%= form.channel === 'whatsapp' ? 'selected' : '' %>>WhatsApp</option>
-        <option value="sms" <%= form.channel === 'sms' ? 'selected' : '' %>>SMS</option>
-        <option value="system" <%= form.channel === 'system' ? 'selected' : '' %>>System</option>
-      </select>
+    <script>
+      (() => {
+        try {
+          if (
+            localStorage.getItem("themeMode") === "dark" ||
+            (!localStorage.getItem("themeMode") &&
+              matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
 
-      <label>Pesan Reminder</label>
-      <textarea name="message" rows="6" required><%= form.message || '' %></textarea>
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+          }
+        } catch (event) {
+          console.error("Could not apply theme variant", event);
+        }
+      })();
+    </script>
+  </head>
 
-      <button type="submit">Kirim Reminder</button>
-    </form>
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="max-w-4xl mx-auto space-y-6">
+      <header class="flex justify-between items-center pb-6 border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xl tracking-tight">Facultyware</span>
+          <span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Reminder</span>
+        </div>
 
-    <a href="/reminders/history">Lihat Riwayat Reminder</a>
-  </div>
-</body>
+        <nav class="flex gap-4 items-center">
+          <a href="/home" class="text-sm font-medium hover:underline">Dashboard</a>
+          <a href="/reminders/history" class="text-sm font-medium hover:underline">Riwayat</a>
+          <a href="/checkins" class="text-sm font-medium hover:underline">Check-in</a>
+          <a href="/attendances" class="text-sm font-medium hover:underline">Attendance</a>
+
+          <% if (typeof user !== "undefined" && user) { %>
+            <span class="text-sm text-muted-foreground">Halo, <strong><%= user %></strong></span>
+          <% } else { %>
+            <a href="/login" class="text-sm font-medium hover:underline">Login</a>
+          <% } %>
+        </nav>
+      </header>
+
+      <main class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">Kirim Reminder Event</h1>
+            <p class="text-muted-foreground text-sm mt-2">
+              Pilih event, channel, dan isi pesan reminder untuk peserta.
+            </p>
+          </div>
+
+          <a
+            href="/reminders/history"
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+          >
+            Riwayat Reminder
+          </a>
+        </div>
+
+        <% if (typeof success !== "undefined" && success) { %>
+          <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <%= success %>
+          </div>
+        <% } %>
+
+        <% if (typeof error !== "undefined" && error) { %>
+          <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <%= error %>
+          </div>
+        <% } %>
+
+        <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md">
+          <div class="p-6 border-b border-border">
+            <h2 class="text-xl font-bold tracking-tight">Form Reminder</h2>
+            <p class="text-sm text-muted-foreground mt-1">
+              Reminder yang dikirim akan tercatat pada halaman riwayat reminder.
+            </p>
+          </div>
+
+          <form action="/reminders/send" method="POST" class="p-6 space-y-5">
+            <% if (safeEvents.length === 0) { %>
+              <div class="rounded-md border border-border border-dashed bg-muted px-4 py-3 text-sm text-muted-foreground">
+                Belum ada event yang tersedia. Tambahkan atau publish event terlebih dahulu.
+              </div>
+            <% } %>
+
+            <div class="space-y-2">
+              <label for="event_id" class="text-sm font-medium">Event</label>
+              <select
+                id="event_id"
+                name="event_id"
+                required
+                class="w-full h-10 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">Pilih Event</option>
+
+                <% safeEvents.forEach(event => { %>
+                  <option value="<%= event.id %>" <%= String(selectedEventId) === String(event.id) ? "selected" : "" %>>
+                    <%= event.title %>
+                    <%= event.start_date ? " - " + new Date(event.start_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "" %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label for="channel" class="text-sm font-medium">Channel</label>
+              <select
+                id="channel"
+                name="channel"
+                required
+                class="w-full h-10 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">Pilih Channel</option>
+                <option value="email" <%= selectedChannel === "email" ? "selected" : "" %>>Email</option>
+                <option value="whatsapp" <%= selectedChannel === "whatsapp" ? "selected" : "" %>>WhatsApp</option>
+                <option value="sms" <%= selectedChannel === "sms" ? "selected" : "" %>>SMS</option>
+                <option value="system" <%= selectedChannel === "system" ? "selected" : "" %>>System</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label for="message" class="text-sm font-medium">Pesan Reminder</label>
+              <textarea
+                id="message"
+                name="message"
+                required
+                rows="6"
+                placeholder="Contoh: Kami mengingatkan bahwa event akan dilaksanakan pada tanggal ..."
+                class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              ><%= messageValue %></textarea>
+              <p class="text-xs text-muted-foreground">
+                Isi pesan secara singkat, jelas, dan memuat informasi penting event.
+              </p>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+              <a
+                href="/home"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+              >
+                Kembali
+              </a>
+
+              <button
+                type="submit"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
+              >
+                Kirim Reminder
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </body>
 </html>

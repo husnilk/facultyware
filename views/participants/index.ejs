@@ -1,178 +1,261 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title><%= title %></title>
-  <link rel="stylesheet" href="/assets/basecoat.min.css">
-  <link rel="stylesheet" href="/assets/styles.css">
+<%
+  const pageTitle = typeof title !== "undefined" ? title : "Daftar Peserta Event";
+  const safeParticipants = typeof participants !== "undefined" && Array.isArray(participants) ? participants : [];
+  const safeSearch = typeof search !== "undefined" ? search : "";
+  const safePage = typeof page !== "undefined" ? Number(page) : 1;
+  const safeTotalPages = typeof totalPages !== "undefined" && Number(totalPages) > 0 ? Number(totalPages) : 1;
+  const encodedSearch = encodeURIComponent(safeSearch || "");
 
-  <style>
-    body {
-      margin: 0;
-      background-color: #f7f7f7;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      color: #111;
-    }
+  const getAttendanceStatus = (status) => {
+    return status || "-";
+  };
 
-    .container {
-      width: 820px;
-      margin: 75px auto;
-      background-color: #fff;
-      padding: 28px 32px;
-      border-radius: 8px;
-    }
+  const getCheckinStatus = (status) => {
+    return status || "-";
+  };
 
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0 0 12px 0;
-      letter-spacing: normal;
-    }
+  const isPresent = (status) => {
+    const value = String(status || "").toLowerCase();
+    return value === "hadir" || value === "present" || value === "checked_in" || value === "checkin" || value === "yes" || value === "1";
+  };
 
-    p {
-      margin-top: 0;
-      margin-bottom: 22px;
-    }
+  const isRegistered = (status) => {
+    const value = String(status || "").toLowerCase();
+    return value === "registered" || value === "terdaftar" || value === "approved" || value === "aktif" || value === "hadir";
+  };
+%>
 
-    label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    .search-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
+    <title><%= pageTitle %> - Facultyware</title>
 
-    input {
-      flex: 1;
-      height: 34px;
-      padding: 6px 10px;
-      border: 1px solid #999;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
+    <link rel="stylesheet" href="/assets/styles.css" />
 
-    button {
-      height: 34px;
-      padding: 6px 18px;
-      border: 1px solid #999;
-      background-color: #eee;
-      cursor: pointer;
-      font-size: 14px;
-    }
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-      font-size: 14px;
-    }
+    <script>
+      (() => {
+        try {
+          if (
+            localStorage.getItem("themeMode") === "dark" ||
+            (!localStorage.getItem("themeMode") &&
+              matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
 
-    th {
-      text-align: left;
-      font-weight: 700;
-      padding: 9px 6px;
-      border-bottom: 1px solid #ddd;
-    }
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+          }
+        } catch (event) {
+          console.error("Could not apply theme variant", event);
+        }
+      })();
+    </script>
+  </head>
 
-    td {
-      padding: 9px 6px;
-      border-bottom: 1px solid #eee;
-    }
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <header class="flex justify-between items-center pb-6 border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xl tracking-tight">Facultyware</span>
+          <span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Hana</span>
+        </div>
 
-    .empty {
-      text-align: center;
-      color: #333;
-      padding: 18px;
-    }
+        <nav class="flex gap-4 items-center">
+          <a href="/home" class="text-sm font-medium hover:underline">Dashboard</a>
+          <a href="/participants" class="text-sm font-medium hover:underline">Peserta</a>
+          <a href="/certificates" class="text-sm font-medium hover:underline">Sertifikat</a>
+          <a href="/reports" class="text-sm font-medium hover:underline">Laporan</a>
+          <a href="/logout" class="text-sm font-medium hover:underline">Logout</a>
+        </nav>
+      </header>
 
-    .pagination {
-      margin-top: 20px;
-    }
+      <main class="space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">Daftar Peserta Event</h1>
+            <p class="text-muted-foreground text-sm mt-2">
+              Halaman ini menampilkan peserta yang sudah terdaftar pada event.
+            </p>
+          </div>
 
-    .bottom-link {
-      margin-top: 18px;
-    }
+          <span class="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full w-fit">
+            <%= safeParticipants.length %> Peserta
+          </span>
+        </div>
 
-    a {
-      color: #4b2e83;
-      text-decoration: underline;
-    }
-  </style>
-</head>
+        <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md">
+          <div class="p-6 border-b border-border">
+            <h2 class="text-xl font-bold tracking-tight">Cari Peserta</h2>
+            <p class="text-sm text-muted-foreground mt-1">
+              Cari berdasarkan nama, email, event, atau nomor registrasi.
+            </p>
+          </div>
 
-<body>
-  <div class="container">
-    <h1>Daftar Peserta Event</h1>
-    <p>Halaman ini menampilkan peserta yang sudah terdaftar pada event.</p>
+          <form method="GET" action="/participants" class="p-6">
+            <div class="flex flex-col md:flex-row gap-3">
+              <input
+                type="text"
+                name="search"
+                value="<%= safeSearch %>"
+                placeholder="Cari nama, email, event, atau nomor registrasi"
+                class="flex-1 h-10 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
 
-    <form method="GET" action="/participants">
-      <label>Cari Peserta</label>
-      <div class="search-row">
-        <input
-          type="text"
-          name="search"
-          value="<%= search %>"
-          placeholder="Cari nama, email, event, atau nomor registrasi"
-        >
-        <button type="submit">Cari</button>
-      </div>
-    </form>
+              <button
+                type="submit"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
+              >
+                Cari
+              </button>
+            </div>
+          </form>
+        </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Nama Peserta</th>
-          <th>Email</th>
-          <th>Event</th>
-          <th>Status Daftar</th>
-          <th>Status Hadir</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
+        <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md overflow-hidden">
+          <div class="p-6 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold tracking-tight">Data Peserta</h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                Daftar peserta yang sudah melakukan pendaftaran pada event.
+              </p>
+            </div>
 
-      <tbody>
-        <% if (participants.length === 0) { %>
-          <tr>
-            <td colspan="7" class="empty">Belum ada data peserta.</td>
-          </tr>
-        <% } %>
+            <a
+              href="/certificates"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-border bg-background h-10 px-4 py-2 hover:bg-accent transition-colors w-fit"
+            >
+              Lihat Peserta Layak Sertifikat
+            </a>
+          </div>
 
-        <% participants.forEach((participant, index) => { %>
-          <tr>
-            <td><%= index + 1 %></td>
-            <td><%= participant.participant_name %></td>
-            <td><%= participant.participant_email %></td>
-            <td><%= participant.event_title %></td>
-            <td><%= participant.attendance_status || "-" %></td>
-            <td><%= participant.checkin_status || "-" %></td>
-            <td>
-              <a href="/participants/<%= participant.id %>">Detail</a>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+          <% if (safeParticipants.length > 0) { %>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="border-b border-border bg-muted/50">
+                  <tr>
+                    <th class="text-left font-semibold px-4 py-3">No</th>
+                    <th class="text-left font-semibold px-4 py-3">Nama Peserta</th>
+                    <th class="text-left font-semibold px-4 py-3">Email</th>
+                    <th class="text-left font-semibold px-4 py-3">Event</th>
+                    <th class="text-left font-semibold px-4 py-3">Status Daftar</th>
+                    <th class="text-left font-semibold px-4 py-3">Status Hadir</th>
+                    <th class="text-left font-semibold px-4 py-3">Aksi</th>
+                  </tr>
+                </thead>
 
-    <div class="pagination">
-      <p>Halaman <%= page %> dari <%= totalPages || 1 %></p>
+                <tbody>
+                  <% safeParticipants.forEach((participant, index) => { %>
+                    <tr class="border-b border-border last:border-0">
+                      <td class="px-4 py-3 text-muted-foreground">
+                        <%= (safePage - 1) * 10 + index + 1 %>
+                      </td>
 
-      <% if (page > 1) { %>
-        <a href="/participants?page=<%= page - 1 %>&search=<%= search %>">Sebelumnya</a>
-      <% } %>
+                      <td class="px-4 py-3">
+                        <div class="font-medium">
+                          <%= participant.participant_name || "-" %>
+                        </div>
 
-      <% if (page < totalPages) { %>
-        <a href="/participants?page=<%= page + 1 %>&search=<%= search %>">Selanjutnya</a>
-      <% } %>
+                        <% if (participant.registration_number) { %>
+                          <div class="text-xs text-muted-foreground mt-0.5">
+                            Reg: <%= participant.registration_number %>
+                          </div>
+                        <% } %>
+                      </td>
+
+                      <td class="px-4 py-3 text-muted-foreground">
+                        <%= participant.participant_email || "-" %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <%= participant.event_title || "-" %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <% if (isRegistered(participant.attendance_status)) { %>
+                          <span class="inline-flex items-center rounded-md border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
+                            <%= getAttendanceStatus(participant.attendance_status) %>
+                          </span>
+                        <% } else { %>
+                          <span class="inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-xs font-semibold">
+                            <%= getAttendanceStatus(participant.attendance_status) %>
+                          </span>
+                        <% } %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <% if (isPresent(participant.checkin_status)) { %>
+                          <span class="inline-flex items-center rounded-md border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
+                            <%= getCheckinStatus(participant.checkin_status) %>
+                          </span>
+                        <% } else { %>
+                          <span class="inline-flex items-center rounded-md border border-yellow-200 bg-yellow-50 px-2 py-0.5 text-xs font-semibold text-yellow-700">
+                            <%= getCheckinStatus(participant.checkin_status) %>
+                          </span>
+                        <% } %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <a
+                          href="/participants/<%= participant.id %>"
+                          class="inline-flex items-center justify-center rounded-md text-xs font-medium bg-primary text-primary-foreground h-8 px-3 hover:bg-primary/90 transition-colors"
+                        >
+                          Detail
+                        </a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="text-center py-12">
+              <h3 class="text-lg font-semibold mb-2">Belum ada data peserta</h3>
+              <p class="text-muted-foreground text-sm">
+                Data peserta yang sudah terdaftar akan tampil di sini.
+              </p>
+            </div>
+          <% } %>
+
+          <div class="p-6 border-t border-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <p class="text-sm text-muted-foreground">
+              Halaman <%= safePage %> dari <%= safeTotalPages %>
+            </p>
+
+            <div class="flex gap-2">
+              <% if (safePage > 1) { %>
+                <a
+                  href="/participants?page=<%= safePage - 1 %>&search=<%= encodedSearch %>"
+                  class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-border bg-background h-9 px-3 hover:bg-accent transition-colors"
+                >
+                  Sebelumnya
+                </a>
+              <% } %>
+
+              <% if (safePage < safeTotalPages) { %>
+                <a
+                  href="/participants?page=<%= safePage + 1 %>&search=<%= encodedSearch %>"
+                  class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-border bg-background h-9 px-3 hover:bg-accent transition-colors"
+                >
+                  Selanjutnya
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
-
-    <div class="bottom-link">
-      <a href="/certificates">Lihat Peserta Layak Sertifikat</a>
-    </div>
-  </div>
-</body>
+  </body>
 </html>

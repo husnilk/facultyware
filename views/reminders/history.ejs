@@ -1,71 +1,228 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title><%= title %></title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 30px; background: #f7f7f7; }
-    .card { background: white; padding: 24px; border-radius: 10px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-    th, td { border: 1px solid #ddd; padding: 10px; }
-    th { background: #f0f0f0; }
-    input { padding: 10px; width: 300px; }
-    button { padding: 10px 16px; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Riwayat Reminder</h1>
+<%
+  const safeLogs =
+    typeof logs !== "undefined" && Array.isArray(logs)
+      ? logs
+      : typeof reminderLogs !== "undefined" && Array.isArray(reminderLogs)
+        ? reminderLogs
+        : typeof histories !== "undefined" && Array.isArray(histories)
+          ? histories
+          : [];
 
-    <form method="GET" action="/reminders/history">
-      <input type="text" name="search" placeholder="Cari event/channel/pesan" value="<%= search %>">
-      <button type="submit">Cari</button>
-      <a href="/reminders/history">Reset</a>
-    </form>
+  const formatDate = (value) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
 
-    <table>
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Event</th>
-          <th>Channel</th>
-          <th>Pesan</th>
-          <th>Dikirim Oleh</th>
-          <th>Waktu</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (reminders.length === 0) { %>
-          <tr>
-            <td colspan="6">Belum ada data reminder.</td>
-          </tr>
+  const getEventName = (log) => {
+    return (
+      log.event_title ||
+      log.event_name ||
+      log.nama_event ||
+      log.title ||
+      (log.event_id ? `Event #${log.event_id}` : "-")
+    );
+  };
+
+  const getSender = (log) => {
+    return (
+      log.sender_name ||
+      log.admin_name ||
+      log.created_by ||
+      log.sent_by ||
+      "Admin"
+    );
+  };
+
+  const getStatus = (log) => {
+    return log.status || log.delivery_status || "Terkirim";
+  };
+%>
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= typeof title !== "undefined" ? title : "Riwayat Reminder" %> - Facultyware</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <script>
+      (() => {
+        try {
+          if (
+            localStorage.getItem("themeMode") === "dark" ||
+            (!localStorage.getItem("themeMode") &&
+              matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+          }
+        } catch (event) {
+          console.error("Could not apply theme variant", event);
+        }
+      })();
+    </script>
+  </head>
+
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <header class="flex justify-between items-center pb-6 border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xl tracking-tight">Facultyware</span>
+          <span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Reminder History</span>
+        </div>
+
+        <nav class="flex gap-4 items-center">
+          <a href="/home" class="text-sm font-medium hover:underline">Dashboard</a>
+          <a href="/reminders" class="text-sm font-medium hover:underline">Kirim Reminder</a>
+          <a href="/checkins" class="text-sm font-medium hover:underline">Check-in</a>
+          <a href="/attendances" class="text-sm font-medium hover:underline">Attendance</a>
+
+          <% if (typeof user !== "undefined" && user) { %>
+            <span class="text-sm text-muted-foreground">Halo, <strong><%= user %></strong></span>
+          <% } else { %>
+            <a href="/login" class="text-sm font-medium hover:underline">Login</a>
+          <% } %>
+        </nav>
+      </header>
+
+      <main class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">Riwayat Reminder</h1>
+            <p class="text-muted-foreground text-sm mt-2">
+              Daftar reminder yang sudah dikirim kepada peserta event.
+            </p>
+          </div>
+
+          <a
+            href="/reminders"
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
+          >
+            Kirim Reminder
+          </a>
+        </div>
+
+        <% if (typeof success !== "undefined" && success) { %>
+          <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <%= success %>
+          </div>
         <% } %>
 
-        <% reminders.forEach((item, index) => { %>
-          <tr>
-            <td><%= index + 1 %></td>
-            <td><%= item.event_title %></td>
-            <td><%= item.channel %></td>
-            <td><%= item.message %></td>
-            <td><%= item.sender_name || '-' %></td>
-            <td><%= item.sent_at %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        <% if (typeof error !== "undefined" && error) { %>
+          <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <%= error %>
+          </div>
+        <% } %>
 
-    <p>Halaman <%= page %> dari <%= totalPages %></p>
+        <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md overflow-hidden">
+          <div class="p-6 border-b border-border flex items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold tracking-tight">Data Riwayat Reminder</h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                Total <%= safeLogs.length %> data reminder tercatat.
+              </p>
+            </div>
 
-    <% if (page > 1) { %>
-      <a href="/reminders/history?page=<%= page - 1 %>&search=<%= search %>">Sebelumnya</a>
-    <% } %>
+            <span class="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
+              <%= safeLogs.length %> Log
+            </span>
+          </div>
 
-    <% if (page < totalPages) { %>
-      <a href="/reminders/history?page=<%= page + 1 %>&search=<%= search %>">Berikutnya</a>
-    <% } %>
+          <% if (safeLogs.length > 0) { %>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="border-b border-border bg-muted/50">
+                  <tr>
+                    <th class="text-left font-semibold px-4 py-3">No</th>
+                    <th class="text-left font-semibold px-4 py-3">Event</th>
+                    <th class="text-left font-semibold px-4 py-3">Channel</th>
+                    <th class="text-left font-semibold px-4 py-3">Pesan</th>
+                    <th class="text-left font-semibold px-4 py-3">Status</th>
+                    <th class="text-left font-semibold px-4 py-3">Pengirim</th>
+                    <th class="text-left font-semibold px-4 py-3">Waktu</th>
+                  </tr>
+                </thead>
 
-    <br><br>
-    <a href="/reminders">Kembali ke Kirim Reminder</a>
-  </div>
-</body>
+                <tbody>
+                  <% safeLogs.forEach((log, index) => { %>
+                    <tr class="border-b border-border last:border-0">
+                      <td class="px-4 py-3 text-muted-foreground">
+                        <%= index + 1 %>
+                      </td>
+
+                      <td class="px-4 py-3 font-medium">
+                        <%= getEventName(log) %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                          <%= log.channel || "-" %>
+                        </span>
+                      </td>
+
+                      <td class="px-4 py-3 text-muted-foreground" style="max-width: 320px;">
+                        <span class="line-clamp-2">
+                          <%= log.message || log.pesan || "-" %>
+                        </span>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold border border-border bg-background">
+                          <%= getStatus(log) %>
+                        </span>
+                      </td>
+
+                      <td class="px-4 py-3 text-muted-foreground">
+                        <%= getSender(log) %>
+                      </td>
+
+                      <td class="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                        <%= formatDate(log.created_at || log.sent_at || log.updated_at) %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="text-center py-12">
+              <h3 class="text-lg font-semibold mb-2">Belum ada riwayat reminder</h3>
+              <p class="text-muted-foreground text-sm mb-5">
+                Reminder yang sudah dikirim akan muncul pada halaman ini.
+              </p>
+
+              <a
+                href="/reminders"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
+              >
+                Kirim Reminder
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </main>
+    </div>
+  </body>
 </html>

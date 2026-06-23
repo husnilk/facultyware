@@ -51,7 +51,7 @@
     <meta http-equiv="Content-Language" content="id" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Dashboard Akram - FTI Event Management</title>
+    <title>Dashboard - FTI Event Management</title>
 
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <link rel="stylesheet" href="/assets/styles.css" />
@@ -188,121 +188,224 @@
 
   <body class="bg-background text-foreground">
     <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
-      <nav aria-label="Sidebar navigation">
-        <header>
-          <a href="/home" class="btn-ghost p-2 h-12 w-full justify-start">
-            <div
-              class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-bold"
-            >
-              A
-            </div>
+  <nav aria-label="Sidebar navigation">
+    <header>
+      <a href="/home" class="btn-ghost p-2 h-12 w-full justify-start">
+        <div
+          class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-bold"
+        >
+          F
+        </div>
 
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium">Akram Module</span>
-              <span class="truncate text-xs">Reminder & Attendance</span>
-            </div>
-          </a>
-        </header>
+        <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="truncate font-medium">FTI Event</span>
+          <span class="truncate text-xs">Management System</span>
+        </div>
+      </a>
+    </header>
 
-        <section class="scrollbar">
-          <div role="group">
-            <h3>Dashboard</h3>
-            <ul>
-              <li>
-                <a href="/home">
-                  <span>Dashboard Akram</span>
-                </a>
-              </li>
-            </ul>
-          </div>
+    <section class="scrollbar">
+      <div role="group">
+        <h3>Dashboard</h3>
+        <ul>
+          <li>
+            <a href="/home">
+              <span>Dashboard Utama</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-          <div role="group">
-            <h3>Reminder</h3>
-            <ul>
-              <li>
-                <a href="/reminders">
-                  <span>Kirim Reminder</span>
-                </a>
-              </li>
+      <div role="group">
+        <h3>Event & Panitia</h3>
+        <ul>
+          <li>
+            <a href="/admin/events">
+              <span>Manajemen Event</span>
+            </a>
+          </li>
 
-              <li>
-                <a href="/reminders/history">
-                  <span>Riwayat Reminder</span>
-                </a>
-              </li>
-            </ul>
-          </div>
+          <li>
+            <a href="/admin/events">
+              <span>Tambah Event</span>
+            </a>
+          </li>
 
-          <div role="group">
-            <h3>Check-in</h3>
-            <ul>
-              <li>
-                <a href="/checkins">
-                  <span>Check-in Peserta</span>
-                </a>
-              </li>
-            </ul>
-          </div>
+          <li>
+            <a href="/admin/events">
+              <span>Publish Event</span>
+            </a>
+          </li>
 
-          <div role="group">
-            <h3>Attendance</h3>
-            <ul>
-              <li>
-                <a href="/attendances">
-                  <span>Attendance List</span>
-                </a>
-              </li>
+          <li>
+            <a href="/admin/events">
+              <span>Kelola Panitia</span>
+            </a>
+          </li>
 
-              <li>
-                <a href="/attendances/recap">
-                  <span>Rekap Attendance</span>
-                </a>
-              </li>
+          <li>
+            <a href="/admin/events">
+              <span>Export Panitia</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-              <li>
-                <a href="/attendances/export/excel">
-                  <span>Export Attendance Excel</span>
-                </a>
-              </li>
-            </ul>
-          </div>
+      <div role="group">
+        <h3>Registrasi & Tiket</h3>
+        <ul>
+          <li>
+            <a href="/events">
+              <span>Daftar Event</span>
+            </a>
+          </li>
 
-          <div role="group">
-            <h3>REST API</h3>
-            <ul>
-              <li>
-                <a href="/api/akram/reminders">
-                  <span>API Reminder</span>
-                </a>
-              </li>
+          <li>
+            <a href="/registrations">
+              <span>Registrasi Peserta</span>
+            </a>
+          </li>
 
-              <li>
-                <a href="/api/akram/attendances">
-                  <span>API Attendance</span>
-                </a>
-              </li>
+          <li>
+            <a href="/registrations">
+              <span>Detail Registrasi</span>
+            </a>
+          </li>
 
-              <li>
-                <a href="/api/akram/attendance-recap">
-                  <span>API Recap</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </section>
+          <li>
+            <a href="/registrations">
+              <span>Akses E-Ticket</span>
+            </a>
+          </li>
 
-        <footer>
-          <a href="/logout" class="btn-ghost p-2 h-12 w-full justify-start">
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium">
-                <%= typeof user !== "undefined" && user ? user : "Admin Facultyware" %>
-              </span>
-              <span class="truncate text-xs">Logout</span>
-            </div>
-          </a>
-        </footer>
-      </nav>
-    </aside>
+          <li>
+            <a href="/registrations">
+              <span>Detail Tiket Peserta</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div role="group">
+        <h3>Reminder & Attendance</h3>
+        <ul>
+          <li>
+            <a href="/reminders">
+              <span>Kirim Reminder</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/reminders/history">
+              <span>Riwayat Reminder</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/checkins">
+              <span>Verifikasi Tiket</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/checkins">
+              <span>Check-in Peserta</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/attendances">
+              <span>Attendance List</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/attendances/recap">
+              <span>Rekap Attendance</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/attendances/export/excel">
+              <span>Export Attendance Excel</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div role="group">
+        <h3>Peserta & Sertifikat</h3>
+        <ul>
+          <li>
+            <a href="/participants">
+              <span>Data Peserta</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/participants">
+              <span>Detail Peserta</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/certificates">
+              <span>Data Sertifikat</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/certificates">
+              <span>Eligible Sertifikat</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/certificates">
+              <span>Lihat Sertifikat</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div role="group">
+        <h3>Laporan & Dokumen</h3>
+        <ul>
+          <li>
+            <a href="/reports">
+              <span>Laporan Event</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/reports/upload">
+              <span>Upload Laporan</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/reports">
+              <span>Dokumen Event</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      
+    </section>
+
+    <footer>
+      <a href="/logout" class="btn-ghost p-2 h-12 w-full justify-start">
+        <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="truncate font-medium">
+            <%= typeof user !== "undefined" && user ? user : "Admin" %>
+          </span>
+          <span class="truncate text-xs">Logout</span>
+        </div>
+      </a>
+    </footer>
+  </nav>
+</aside>
 
     <main id="content">
       <header
@@ -430,9 +533,9 @@
             <p class="dashboard-subtitle text-muted-foreground">
               Selamat datang,
               <strong class="text-foreground">
-                <%= typeof user !== "undefined" && user ? user : "Admin Facultyware" %>
+                <%= typeof user !== "undefined" && user ? user : "Admins" %>
               </strong>.
-              Halaman ini berfokus pada fitur Akram dalam FTI Event Management:
+              Halaman ini berfokus pada fitur dalam FTI Event Management:
               pengiriman reminder event, validasi check-in peserta, pencatatan
               attendance, rekap kehadiran, export Excel, dan REST API.
             </p>
@@ -524,64 +627,11 @@
             </div>
           </section>
 
-          <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div class="card">
-              <header>
-                <h2>API Reminder</h2>
-                <p class="text-muted-foreground">
-                  Endpoint JSON untuk melihat data reminder event.
-                </p>
-              </header>
-
-              <footer class="card-footer-actions">
-                <a href="/api/akram/reminders" class="btn-outline">Buka API</a>
-              </footer>
-
-              <p class="text-muted-foreground text-sm mt-3">
-                API menampilkan data dalam format JSON.
-              </p>
-            </div>
-
-            <div class="card">
-              <header>
-                <h2>API Attendance</h2>
-                <p class="text-muted-foreground">
-                  Endpoint JSON untuk melihat data attendance peserta.
-                </p>
-              </header>
-
-              <footer class="card-footer-actions">
-                <a href="/api/akram/attendances" class="btn-outline">Buka API</a>
-              </footer>
-
-              <p class="text-muted-foreground text-sm mt-3">
-                API menampilkan data dalam format JSON.
-              </p>
-            </div>
-
-            <div class="card">
-              <header>
-                <h2>API Recap</h2>
-                <p class="text-muted-foreground">
-                  Endpoint JSON untuk melihat rekap attendance per event.
-                </p>
-              </header>
-
-              <footer class="card-footer-actions">
-                <a href="/api/akram/attendance-recap" class="btn-outline">Buka API</a>
-              </footer>
-
-              <p class="text-muted-foreground text-sm mt-3">
-                API menampilkan data dalam format JSON.
-              </p>
-            </div>
-          </section>
-
           <section class="card flow-card">
             <header>
               <h2>Alur Testing dari Dashboard</h2>
               <p class="text-muted-foreground">
-                Semua fitur Akram dites dari sidebar atau card pada halaman ini.
+                Semua fitur dites dari sidebar atau card pada halaman ini.
               </p>
             </header>
 

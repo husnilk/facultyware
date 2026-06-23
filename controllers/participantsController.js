@@ -25,19 +25,22 @@ const index = async (req, res, next) => {
     );
 
     const totalData = countRows[0].total;
-    const totalPages = Math.ceil(totalData / limit);
+    const totalPages = Math.ceil(totalData / limit) || 1;
 
     const [participants] = await db.query(
       `
       SELECT
         er.id,
+        er.id AS registration_id,
         er.registration_number,
         er.ticket_number,
         er.attendance_status,
         er.registered_at,
         er.certificate_number,
+        u.id AS user_id,
         u.name AS participant_name,
         u.email AS participant_email,
+        e.id AS event_id,
         e.title AS event_title,
         e.start_date,
         e.end_date,
@@ -78,6 +81,7 @@ const detail = async (req, res, next) => {
       `
       SELECT
         er.id,
+        er.id AS registration_id,
         er.registration_number,
         er.ticket_number,
         er.attendance_status,
@@ -86,8 +90,10 @@ const detail = async (req, res, next) => {
         er.certificate_number,
         er.file_path,
         er.generated_at,
+        u.id AS user_id,
         u.name AS participant_name,
         u.email AS participant_email,
+        e.id AS event_id,
         e.title AS event_title,
         e.description AS event_description,
         e.event_type,
@@ -104,9 +110,13 @@ const detail = async (req, res, next) => {
       JOIN users u ON er.user_id = u.id
       JOIN events e ON er.event_id = e.id
       LEFT JOIN event_attendances ea ON ea.event_registration_id = er.id
-      WHERE er.id = ?
+      WHERE 
+        er.id = ?
+        OR er.registration_number = ?
+        OR er.ticket_number = ?
+      LIMIT 1
       `,
-      [id]
+      [id, id, id]
     );
 
     if (rows.length === 0) {
@@ -139,16 +149,38 @@ const updateStatus = async (req, res, next) => {
       });
     }
 
+    const [rows] = await db.query(
+      `
+      SELECT id
+      FROM event_registrations
+      WHERE 
+        id = ?
+        OR registration_number = ?
+        OR ticket_number = ?
+      LIMIT 1
+      `,
+      [id, id, id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).render("error", {
+        message: "Data peserta tidak ditemukan",
+        error: { status: 404, stack: "" },
+      });
+    }
+
+    const registrationId = rows[0].id;
+
     await db.query(
       `
       UPDATE event_registrations
       SET attendance_status = ?, updated_at = NOW()
       WHERE id = ?
       `,
-      [attendance_status, id]
+      [attendance_status, registrationId]
     );
 
-    res.redirect(`/participants/${id}`);
+    res.redirect(`/participants/${registrationId}`);
   } catch (err) {
     next(err);
   }

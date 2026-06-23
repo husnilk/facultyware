@@ -1,0 +1,29 @@
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var currentPath = window.location.pathname;
+      var links = document.querySelectorAll(".sidebar-link");
+
+      links.forEach(function (link) {
+        var route = link.getAttribute("data-route");
+
+        if (!route) {
+          return;
+        }
+
+        if (route === "/home" && currentPath === "/home") {
+          link.classList.add("active");
+          return;
+        }
+
+        if (route !== "/home" && currentPath.indexOf(route) === 0) {
+          link.classList.add("active");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

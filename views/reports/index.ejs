@@ -1,154 +1,245 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title><%= title %></title>
-  <!DOCTYPE html>
-<html>
-<head>
-  <title><%= title %></title>
-  <link rel="icon" href="/assets/favicon.svg">   <!-- baris 5, tambah disini -->
-  <link rel="stylesheet" href="/assets/basecoat.min.css">
-  <link rel="stylesheet" href="/assets/styles.css">
-  <link rel="stylesheet" href="/assets/basecoat.min.css">
-  <link rel="stylesheet" href="/assets/styles.css">
+<%
+  const pageTitle = typeof title !== "undefined" ? title : "Laporan Kegiatan";
+  const safeReports = typeof reports !== "undefined" && Array.isArray(reports) ? reports : [];
+  const safeSearch = typeof search !== "undefined" ? search : "";
 
-  <style>
-    * {
-      letter-spacing: normal;
+  const displayValue = (value, fallback = "-") => {
+    return value || fallback;
+  };
+
+  const formatDate = (value) => {
+    if (!value) return "-";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
     }
 
-    body {
-      margin: 0;
-      background-color: #f7f7f7;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      color: #111;
-    }
+    return date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
+  };
+%>
 
-    .container {
-      width: 820px;
-      margin: 70px auto;
-      background-color: #fff;
-      padding: 28px 32px;
-      border-radius: 8px;
-    }
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0 0 12px 0;
-    }
+    <title><%= pageTitle %> - Facultyware</title>
 
-    .top-action {
-      margin-bottom: 20px;
-    }
+    <link rel="icon" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
 
-    .search-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 22px;
-    }
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
-    input {
-      flex: 1;
-      height: 34px;
-      padding: 6px 10px;
-      border: 1px solid #999;
-    }
+    <script>
+      (() => {
+        try {
+          if (
+            localStorage.getItem("themeMode") === "dark" ||
+            (!localStorage.getItem("themeMode") &&
+              matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
 
-    button {
-      height: 34px;
-      padding: 6px 18px;
-      border: 1px solid #999;
-      background-color: #eee;
-      cursor: pointer;
-    }
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+          }
+        } catch (event) {
+          console.error("Could not apply theme variant", event);
+        }
+      })();
+    </script>
+  </head>
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 18px;
-    }
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <header class="flex justify-between items-center pb-6 border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xl tracking-tight">Facultyware</span>
+          <span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Hana</span>
+        </div>
 
-    th, td {
-      padding: 9px 6px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
+        <nav class="flex gap-4 items-center">
+          <a href="/home" class="text-sm font-medium hover:underline">Dashboard</a>
+          <a href="/participants" class="text-sm font-medium hover:underline">Peserta</a>
+          <a href="/certificates" class="text-sm font-medium hover:underline">Sertifikat</a>
+          <a href="/reports" class="text-sm font-medium hover:underline">Laporan</a>
+          <a href="/logout" class="text-sm font-medium hover:underline">Logout</a>
+        </nav>
+      </header>
 
-    th {
-      border-bottom: 1px solid #ddd;
-      font-weight: 700;
-    }
+      <main class="space-y-6">
+        <div>
+          <a href="/participants" class="text-sm font-medium hover:underline">
+            ← Kembali ke Peserta
+          </a>
+        </div>
 
-    .empty {
-      text-align: center;
-      padding: 18px;
-    }
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">Laporan Kegiatan</h1>
+            <p class="text-muted-foreground text-sm mt-2">
+              Daftar laporan kegiatan yang telah diunggah oleh admin.
+            </p>
+          </div>
 
-    a {
-      color: #4b2e83;
-      text-decoration: underline;
-    }
-  </style>
-</head>
+          <span class="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full w-fit">
+            <%= safeReports.length %> Laporan
+          </span>
+        </div>
 
-<body>
-  <div class="container">
-    <div class="top-action">
-      <a href="/participants">← Kembali ke Peserta</a>
+        <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md">
+          <div class="p-6 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold tracking-tight">Cari Laporan</h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                Cari berdasarkan judul laporan, event, atau jenis dokumen.
+              </p>
+            </div>
+
+            <a
+              href="/reports/upload"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors w-fit"
+            >
+              Upload Laporan
+            </a>
+          </div>
+
+          <form method="GET" action="/reports" class="p-6">
+            <div class="flex flex-col md:flex-row gap-3">
+              <input
+                type="text"
+                name="search"
+                value="<%= safeSearch %>"
+                placeholder="Cari judul laporan, event, atau jenis dokumen"
+                class="flex-1 h-10 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+
+              <button
+                type="submit"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
+              >
+                Cari
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md overflow-hidden">
+          <div class="p-6 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold tracking-tight">Data Laporan</h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                Dokumen laporan kegiatan yang sudah tersimpan pada sistem.
+              </p>
+            </div>
+
+            <a
+              href="/reports/upload"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-border bg-background h-10 px-4 py-2 hover:bg-accent transition-colors w-fit"
+            >
+              Tambah Laporan
+            </a>
+          </div>
+
+          <% if (safeReports.length > 0) { %>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="border-b border-border bg-muted/50">
+                  <tr>
+                    <th class="text-left font-semibold px-4 py-3">No</th>
+                    <th class="text-left font-semibold px-4 py-3">Judul Laporan</th>
+                    <th class="text-left font-semibold px-4 py-3">Event</th>
+                    <th class="text-left font-semibold px-4 py-3">Jenis</th>
+                    <th class="text-left font-semibold px-4 py-3">Tanggal Upload</th>
+                    <th class="text-left font-semibold px-4 py-3">File</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% safeReports.forEach((report, index) => { %>
+                    <tr class="border-b border-border last:border-0">
+                      <td class="px-4 py-3 text-muted-foreground">
+                        <%= index + 1 %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <div class="font-medium">
+                          <%= displayValue(report.title) %>
+                        </div>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <%= displayValue(report.event_title) %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-xs font-semibold">
+                          <%= displayValue(report.document_type) %>
+                        </span>
+                      </td>
+
+                      <td class="px-4 py-3 text-muted-foreground">
+                        <%= formatDate(report.uploaded_at) %>
+                      </td>
+
+                      <td class="px-4 py-3">
+                        <% if (report.file_path) { %>
+                          <a
+                            href="<%= report.file_path %>"
+                            target="_blank"
+                            class="inline-flex items-center justify-center rounded-md text-xs font-medium bg-primary text-primary-foreground h-8 px-3 hover:bg-primary/90 transition-colors"
+                          >
+                            Lihat File
+                          </a>
+                        <% } else { %>
+                          <span class="text-xs text-muted-foreground">
+                            File tidak tersedia
+                          </span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="p-6">
+              <div class="w-full rounded-lg border border-dashed border-border bg-muted/20 px-6 py-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+                  <div class="text-left">
+                    <h3 class="text-lg font-semibold mb-2">Belum ada laporan kegiatan</h3>
+                    <p class="text-muted-foreground text-sm">
+                      Laporan yang diunggah akan tampil di halaman ini.
+                    </p>
+                  </div>
+
+                  <a
+                    href="/reports/upload"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-5 py-2 hover:bg-primary/90 transition-colors w-fit whitespace-nowrap"
+                  >
+                    Upload Laporan
+                  </a>
+                </div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </main>
     </div>
-
-    <h1>Laporan Kegiatan</h1>
-    <p>Daftar laporan kegiatan yang telah diunggah oleh admin.</p>
-
-    <p>
-      <a href="/reports/upload">Upload Laporan Kegiatan</a>
-    </p>
-
-    <form method="GET" action="/reports" class="search-row">
-      <input
-        type="text"
-        name="search"
-        value="<%= search %>"
-        placeholder="Cari judul laporan, event, atau jenis dokumen"
-      >
-      <button type="submit">Cari</button>
-    </form>
-
-    <table>
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Judul Laporan</th>
-          <th>Event</th>
-          <th>Jenis</th>
-          <th>Tanggal Upload</th>
-          <th>File</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <% if (reports.length === 0) { %>
-          <tr>
-            <td colspan="6" class="empty">Belum ada laporan kegiatan.</td>
-          </tr>
-        <% } %>
-
-        <% reports.forEach((report, index) => { %>
-          <tr>
-            <td><%= index + 1 %></td>
-            <td><%= report.title %></td>
-            <td><%= report.event_title %></td>
-            <td><%= report.document_type %></td>
-            <td><%= report.uploaded_at %></td>
-            <td>
-              <a href="<%= report.file_path %>" target="_blank">Lihat File</a>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-</body>
+  </body>
 </html>
