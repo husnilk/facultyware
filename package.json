@@ -22,6 +22,25 @@
     "pdfkit": "0.18.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@types/node": "^26.0.0",
     "nodemon": "^3.1.14"
-  }
+  },
+  "main": "app.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zude3/facultyware.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zude3/facultyware/issues"
+  },
+  "homepage": "https://github.com/zude3/facultyware#readme",
+  "description": ""
 }

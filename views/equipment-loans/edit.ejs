@@ -1,10 +1,27 @@
 <!doctype html>
 <html lang="id">
   <head>
+    <script>
+      document.querySelector('form').addEventListener('submit', function(e) {
+        const startInput = document.getElementById('start_date') || document.querySelector('[name="start_date"]');
+        const endInput = document.getElementById('end_date') || document.querySelector('[name="end_date"]');
+        
+        if (startInput && endInput) {
+          const start = new Date(startInput.value);
+          const end = new Date(endInput.value);
+          
+          if (end < start) {
+            e.preventDefault(); // Mencegah form dikirim ke server
+            alert('Validasi Gagal: Tanggal Selesai tidak boleh sebelum Tanggal Mulai.');
+          }
+        }
+      });
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><%= title %> - SIMPEL</title>
     <link rel="stylesheet" href="/assets/styles.css" />
+    
   </head>
   
   <body class="bg-muted *:data-[slot=card]:has-[[data-slot=chart]]:shadow-none">
