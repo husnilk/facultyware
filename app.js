@@ -25,6 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Session configuration
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -39,6 +40,12 @@ const sessionStore = new MySQLStore({
     }
   }
   
+});
+
+sessionStore.onReady().then(() => {
+  console.log('MySQL session store ready');
+}).catch(err => {
+  console.error('MySQL session store error:', err.message);
 });
 
 app.use(session({
