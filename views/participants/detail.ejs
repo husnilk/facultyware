@@ -1,0 +1,273 @@
+<%
+  const pageTitle = typeof title !== "undefined" ? title : "Detail Peserta";
+  const safeParticipant = typeof participant !== "undefined" && participant ? participant : {};
+
+  const displayValue = (value, fallback = "-") => {
+    return value || fallback;
+  };
+
+  const formatDate = (value) => {
+    if (!value) return "-";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
+  };
+
+  const isEligibleCertificate = () => {
+    const attendanceStatus = String(safeParticipant.attendance_status || "").toLowerCase();
+    const checkinStatus = String(safeParticipant.checkin_status || "").toLowerCase();
+
+    return attendanceStatus === "attended" || checkinStatus === "present";
+  };
+
+  const getStatusBadgeClass = (status) => {
+    const value = String(status || "").toLowerCase();
+
+    if (value === "attended" || value === "present" || value === "registered") {
+      return "border-green-200 bg-green-50 text-green-700";
+    }
+
+    if (value === "no_show" || value === "cancelled") {
+      return "border-red-200 bg-red-50 text-red-700";
+    }
+
+    return "border-yellow-200 bg-yellow-50 text-yellow-700";
+  };
+%>
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title><%= pageTitle %> - Facultyware</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <script>
+      (() => {
+        try {
+          if (
+            localStorage.getItem("themeMode") === "dark" ||
+            (!localStorage.getItem("themeMode") &&
+              matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+          }
+        } catch (event) {
+          console.error("Could not apply theme variant", event);
+        }
+      })();
+    </script>
+  </head>
+
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <header class="flex justify-between items-center pb-6 border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xl tracking-tight">Facultyware</span>
+          <span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Hana</span>
+        </div>
+
+        <nav class="flex gap-4 items-center">
+          <a href="/home" class="text-sm font-medium hover:underline">Dashboard</a>
+          <a href="/participants" class="text-sm font-medium hover:underline">Peserta</a>
+          <a href="/certificates" class="text-sm font-medium hover:underline">Sertifikat</a>
+          <a href="/reports" class="text-sm font-medium hover:underline">Laporan</a>
+          <a href="/logout" class="text-sm font-medium hover:underline">Logout</a>
+        </nav>
+      </header>
+
+      <main class="space-y-6">
+        <div>
+          <a href="/participants" class="text-sm font-medium hover:underline">
+            ← Kembali ke Daftar Peserta
+          </a>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">Detail Peserta</h1>
+            <p class="text-muted-foreground text-sm mt-2">
+              Informasi lengkap peserta yang terdaftar pada event.
+            </p>
+          </div>
+
+          <span class="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full w-fit">
+            ID Peserta: <%= displayValue(safeParticipant.id) %>
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div data-slot="card" class="lg:col-span-2 rounded-xl border border-border bg-card text-card-foreground shadow-md overflow-hidden">
+            <div class="p-6 border-b border-border">
+              <h2 class="text-xl font-bold tracking-tight">Informasi Peserta</h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                Data identitas, tiket, event, dan status kehadiran peserta.
+              </p>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <tbody>
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Nama Peserta</th>
+                    <td class="px-4 py-3"><%= displayValue(safeParticipant.participant_name) %></td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Email</th>
+                    <td class="px-4 py-3 text-muted-foreground"><%= displayValue(safeParticipant.participant_email) %></td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Nomor Registrasi</th>
+                    <td class="px-4 py-3"><%= displayValue(safeParticipant.registration_number) %></td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Nomor Tiket</th>
+                    <td class="px-4 py-3"><%= displayValue(safeParticipant.ticket_number) %></td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Event</th>
+                    <td class="px-4 py-3"><%= displayValue(safeParticipant.event_title) %></td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Tipe Event</th>
+                    <td class="px-4 py-3">
+                      <%= displayValue(safeParticipant.event_type) %>
+                      -
+                      <%= displayValue(safeParticipant.delivery_mode) %>
+                    </td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Tanggal Event</th>
+                    <td class="px-4 py-3">
+                      <%= formatDate(safeParticipant.start_date) %>
+                      sampai
+                      <%= formatDate(safeParticipant.end_date) %>
+                    </td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Lokasi</th>
+                    <td class="px-4 py-3"><%= displayValue(safeParticipant.venue) %></td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Status Pendaftaran</th>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold <%= getStatusBadgeClass(safeParticipant.attendance_status) %>">
+                        <%= displayValue(safeParticipant.attendance_status) %>
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr class="border-b border-border">
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Status Kehadiran</th>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold <%= getStatusBadgeClass(safeParticipant.checkin_status) %>">
+                        <%= displayValue(safeParticipant.checkin_status, "Belum check-in") %>
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <th class="text-left font-semibold px-4 py-3 w-56 bg-muted/30">Nomor Sertifikat</th>
+                    <td class="px-4 py-3"><%= displayValue(safeParticipant.certificate_number) %></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md">
+              <div class="p-6 border-b border-border">
+                <h2 class="text-xl font-bold tracking-tight">Verifikasi Status</h2>
+                <p class="text-sm text-muted-foreground mt-1">
+                  Ubah status pendaftaran peserta.
+                </p>
+              </div>
+
+              <form method="POST" action="/participants/<%= safeParticipant.id %>/status" class="p-6 space-y-4">
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Status Pendaftaran</label>
+
+                  <select
+                    name="attendance_status"
+                    required
+                    class="w-full h-10 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="registered" <%= safeParticipant.attendance_status === "registered" ? "selected" : "" %>>Registered</option>
+                    <option value="attended" <%= safeParticipant.attendance_status === "attended" ? "selected" : "" %>>Attended</option>
+                    <option value="no_show" <%= safeParticipant.attendance_status === "no_show" ? "selected" : "" %>>No Show</option>
+                    <option value="cancelled" <%= safeParticipant.attendance_status === "cancelled" ? "selected" : "" %>>Cancelled</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors w-full"
+                >
+                  Simpan Status
+                </button>
+              </form>
+            </div>
+
+            <div data-slot="card" class="rounded-xl border border-border bg-card text-card-foreground shadow-md">
+              <div class="p-6 border-b border-border">
+                <h2 class="text-xl font-bold tracking-tight">Sertifikat</h2>
+                <p class="text-sm text-muted-foreground mt-1">
+                  Akses sertifikat jika peserta sudah memenuhi syarat.
+                </p>
+              </div>
+
+              <div class="p-6">
+                <% if (isEligibleCertificate()) { %>
+                  <a
+                    href="/certificates/<%= safeParticipant.id %>"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors w-full"
+                  >
+                    Generate / Cetak Sertifikat
+                  </a>
+                <% } else { %>
+                  <div class="rounded-md border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
+                    Peserta belum memenuhi syarat untuk mendapatkan sertifikat.
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,329 @@
+<%
+  const pageTitle = typeof title !== "undefined" ? title : "Cetak Sertifikat";
+  const safeParticipant = typeof participant !== "undefined" && participant ? participant : {};
+
+  const displayValue = (value, fallback = "-") => {
+    return value || fallback;
+  };
+
+  const formatDate = (value) => {
+    if (!value) return "-";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
+  };
+%>
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title><%= pageTitle %> - Facultyware</title>
+
+    <link rel="icon" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <script>
+      (() => {
+        try {
+          if (
+            localStorage.getItem("themeMode") === "dark" ||
+            (!localStorage.getItem("themeMode") &&
+              matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+          }
+        } catch (event) {
+          console.error("Could not apply theme variant", event);
+        }
+      })();
+    </script>
+
+    <style>
+      .certificate-paper {
+        background: #ffffff;
+        color: #111111;
+        border: 8px double #111111;
+        padding: 56px;
+        text-align: center;
+        min-height: 540px;
+        box-sizing: border-box;
+      }
+
+      .certificate-title {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        margin-bottom: 34px;
+      }
+
+      .certificate-name {
+        font-size: 34px;
+        font-weight: 800;
+        text-decoration: underline;
+        margin: 26px 0;
+      }
+
+      .certificate-event {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 22px 0;
+      }
+
+      .certificate-text {
+        font-size: 16px;
+        line-height: 1.8;
+        margin: 10px 0;
+      }
+
+      .certificate-number {
+        margin-top: 34px;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .certificate-footer {
+        margin-top: 46px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+
+      @media print {
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+
+        html,
+        body {
+          width: 297mm !important;
+          height: 210mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+          color: #111111 !important;
+        }
+
+        body {
+          padding: 0 !important;
+        }
+
+        .print-container {
+          width: 297mm !important;
+          height: 210mm !important;
+          max-width: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+        }
+
+        main {
+          width: 297mm !important;
+          height: 210mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+        }
+
+        .certificate-wrapper {
+          width: 297mm !important;
+          height: 210mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+        }
+
+        .certificate-area {
+          width: 297mm !important;
+          height: 210mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #ffffff !important;
+          overflow: hidden !important;
+        }
+
+        .certificate-paper {
+          width: 277mm !important;
+          height: 190mm !important;
+          min-height: 0 !important;
+          margin: 10mm !important;
+          padding: 22mm 24mm !important;
+          box-sizing: border-box !important;
+          border: 6px double #111111 !important;
+          overflow: hidden !important;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+          align-items: center !important;
+        }
+
+        .certificate-title {
+          font-size: 30pt !important;
+          margin: 0 0 16mm 0 !important;
+          letter-spacing: 2px !important;
+        }
+
+        .certificate-name {
+          font-size: 24pt !important;
+          margin: 8mm 0 !important;
+        }
+
+        .certificate-event {
+          font-size: 17pt !important;
+          margin: 7mm 0 !important;
+        }
+
+        .certificate-text {
+          font-size: 11pt !important;
+          line-height: 1.5 !important;
+          margin: 2.5mm 0 !important;
+        }
+
+        .certificate-number {
+          font-size: 10.5pt !important;
+          margin-top: 9mm !important;
+        }
+
+        .certificate-footer {
+          font-size: 10.5pt !important;
+          margin-top: 14mm !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="max-w-6xl mx-auto space-y-6 print-container">
+      <header class="no-print flex justify-between items-center pb-6 border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xl tracking-tight">Facultyware</span>
+          <span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Hana</span>
+        </div>
+
+        <nav class="flex gap-4 items-center">
+          <a href="/home" class="text-sm font-medium hover:underline">Dashboard</a>
+          <a href="/participants" class="text-sm font-medium hover:underline">Peserta</a>
+          <a href="/certificates" class="text-sm font-medium hover:underline">Sertifikat</a>
+          <a href="/reports" class="text-sm font-medium hover:underline">Laporan</a>
+          <a href="/logout" class="text-sm font-medium hover:underline">Logout</a>
+        </nav>
+      </header>
+
+      <main class="space-y-6">
+        <div class="no-print flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <a href="/certificates" class="text-sm font-medium hover:underline">
+              ← Kembali ke Sertifikat
+            </a>
+
+            <h1 class="text-3xl font-bold tracking-tight mt-4">Cetak Sertifikat</h1>
+            <p class="text-muted-foreground text-sm mt-2">
+              Preview sertifikat peserta sebelum dicetak atau disimpan sebagai PDF.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onclick="window.print()"
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors w-fit"
+          >
+            Print / Simpan PDF
+          </button>
+        </div>
+
+        <div data-slot="card" class="certificate-wrapper rounded-xl border border-border bg-card text-card-foreground shadow-md overflow-hidden">
+          <div class="no-print p-6 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold tracking-tight">Preview Sertifikat</h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                Sertifikat untuk <%= displayValue(safeParticipant.participant_name, "peserta") %>.
+              </p>
+            </div>
+
+            <span class="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full w-fit">
+              No: <%= displayValue(safeParticipant.certificate_number, "Belum tersedia") %>
+            </span>
+          </div>
+
+          <div class="certificate-area p-4 md:p-8 bg-muted/30">
+            <div class="certificate-paper">
+              <div class="certificate-title">SERTIFIKAT</div>
+
+              <p class="certificate-text">Diberikan kepada:</p>
+
+              <div class="certificate-name">
+                <%= displayValue(safeParticipant.participant_name) %>
+              </div>
+
+              <p class="certificate-text">Atas partisipasinya dalam kegiatan:</p>
+
+              <div class="certificate-event">
+                <%= displayValue(safeParticipant.event_title) %>
+              </div>
+
+              <p class="certificate-text">
+                Yang dilaksanakan pada tanggal
+                <strong><%= formatDate(safeParticipant.start_date) %></strong>
+                sampai
+                <strong><%= formatDate(safeParticipant.end_date) %></strong>
+              </p>
+
+              <p class="certificate-text">
+                Lokasi: <%= displayValue(safeParticipant.venue) %>
+              </p>
+
+              <p class="certificate-number">
+                Nomor Sertifikat:
+                <%= displayValue(safeParticipant.certificate_number, "Belum tersedia") %>
+              </p>
+
+              <div class="certificate-footer">
+                Facultyware Event Management
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

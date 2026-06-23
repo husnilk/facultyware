@@ -1,0 +1,279 @@
+<%- include("partials/header", { title: "Dashboard - FTI Event Management System" }) %>
+
+<style>
+  .page-hero.hero-centered,
+  .hero-panel,
+  .modern-hero {
+    text-align: center;
+  }
+
+  .hero-content,
+  .hero-copy {
+    width: 100%;
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-hero.hero-centered h1,
+  .hero-title,
+  .modern-title {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-description,
+  .hero-desc,
+  .modern-desc {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-actions,
+  .modern-actions {
+    justify-content: center;
+  }
+</style>
+
+<section class="page-hero hero-centered">
+  <div class="hero-content">
+    <div class="eyebrow">
+      <span class="eyebrow-dot"></span>
+      Dashboard Terintegrasi
+    </div>
+
+    <h1>FTI Event Management System</h1>
+
+    <p class="hero-description">
+      Selamat datang, <strong><%= typeof user !== "undefined" && user ? user : "Admin" %></strong>.
+      Dashboard ini mengintegrasikan seluruh proses manajemen event mulai dari pembuatan event,
+      registrasi peserta, reminder, check-in, sertifikat, hingga laporan kegiatan.
+    </p>
+
+    <div class="hero-actions">
+      <a href="/admin/events" class="btn">Kelola Event</a>
+      <a href="/registrations" class="btn btn-outline">Lihat Registrasi</a>
+      <a href="/reports" class="btn btn-outline">Laporan</a>
+    </div>
+  </div>
+</section>
+
+<section class="grid-4 mt-4">
+  <a href="/admin/events" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">EV</div>
+      <div class="pro-number">01</div>
+    </div>
+    <h3>Manajemen Event</h3>
+    <p>
+      Mengelola data event, publikasi kegiatan, serta informasi dasar yang digunakan oleh seluruh modul.
+    </p>
+  </a>
+
+  <a href="/registrations" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">RG</div>
+      <div class="pro-number">02</div>
+    </div>
+    <h3>Registrasi Peserta</h3>
+    <p>
+      Menampilkan daftar event yang tersedia, proses pendaftaran peserta, dan alur e-ticket.
+    </p>
+  </a>
+
+  <a href="/reminders" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">RM</div>
+      <div class="pro-number">03</div>
+    </div>
+    <h3>Reminder Event</h3>
+    <p>
+      Mengirim pengingat kepada peserta agar informasi kegiatan dapat diterima tepat waktu.
+    </p>
+  </a>
+
+  <a href="/checkins" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">CI</div>
+      <div class="pro-number">04</div>
+    </div>
+    <h3>Check-in Peserta</h3>
+    <p>
+      Melakukan verifikasi tiket dan mencatat kehadiran peserta saat event berlangsung.
+    </p>
+  </a>
+</section>
+
+<div class="section-heading">
+  <div>
+    <h2>Monitoring Kegiatan</h2>
+    <p>Fitur pendukung untuk memantau peserta, kehadiran, sertifikat, dan laporan event.</p>
+  </div>
+  <div class="section-meta">Integrated Modules</div>
+</div>
+
+<section class="grid-4">
+  <a href="/attendances" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">AT</div>
+      <div class="pro-number">05</div>
+    </div>
+    <h3>Data Kehadiran</h3>
+    <p>
+      Menampilkan daftar peserta yang sudah hadir berdasarkan hasil proses check-in.
+    </p>
+  </a>
+
+  <a href="/attendances/recap" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">RP</div>
+      <div class="pro-number">06</div>
+    </div>
+    <h3>Rekap Attendance</h3>
+    <p>
+      Melihat ringkasan jumlah peserta, status kehadiran, dan data evaluasi kegiatan.
+    </p>
+  </a>
+
+  <a href="/participants" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">PS</div>
+      <div class="pro-number">07</div>
+    </div>
+    <h3>Data Peserta</h3>
+    <p>
+      Mengelola dan memantau peserta yang terdaftar dalam kegiatan atau event.
+    </p>
+  </a>
+
+  <a href="/certificates" class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">CR</div>
+      <div class="pro-number">08</div>
+    </div>
+    <h3>Sertifikat</h3>
+    <p>
+      Menampilkan peserta yang memenuhi syarat untuk memperoleh sertifikat kegiatan.
+    </p>
+  </a>
+</section>
+
+<div class="section-heading">
+  <div>
+    <h2>Alur Sistem</h2>
+    <p>Ringkasan proses utama yang menunjukkan keterhubungan antarfitur dalam sistem.</p>
+  </div>
+  <div class="section-meta">End-to-End Flow</div>
+</div>
+
+<section class="grid-3">
+  <div class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">01</div>
+      <span class="badge">Input</span>
+    </div>
+    <h3>Event Dibuat dan Dipublikasikan</h3>
+    <p>
+      Admin membuat event melalui modul manajemen event. Setelah dipublikasikan, event akan muncul
+      pada halaman registrasi peserta.
+    </p>
+  </div>
+
+  <div class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">02</div>
+      <span class="badge">Process</span>
+    </div>
+    <h3>Peserta Registrasi dan Menerima Tiket</h3>
+    <p>
+      Peserta memilih event, melakukan registrasi, lalu sistem menghasilkan tiket yang dapat
+      digunakan saat proses check-in.
+    </p>
+  </div>
+
+  <div class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">03</div>
+      <span class="badge">Output</span>
+    </div>
+    <h3>Kehadiran, Sertifikat, dan Laporan</h3>
+    <p>
+      Setelah peserta melakukan check-in, data kehadiran dapat direkap dan digunakan sebagai dasar
+      pengelolaan sertifikat serta laporan event.
+    </p>
+  </div>
+</section>
+
+<div class="section-heading">
+  <div>
+    <h2>Akses Cepat</h2>
+    <p>Navigasi cepat menuju halaman yang paling sering digunakan saat demonstrasi sistem.</p>
+  </div>
+  <div class="section-meta">Quick Access</div>
+</div>
+
+<section class="grid-5">
+  <a href="/admin/events" class="quick-link">Manajemen Event</a>
+  <a href="/registrations" class="quick-link">Registrasi</a>
+  <a href="/reminders" class="quick-link">Reminder</a>
+  <a href="/checkins" class="quick-link">Check-in</a>
+  <a href="/reports/upload" class="quick-link">Upload Laporan</a>
+</section>
+
+<div class="section-heading">
+  <div>
+    <h2>Endpoint Pengujian</h2>
+    <p>Endpoint ini dapat digunakan saat demonstrasi API atau validasi data sistem.</p>
+  </div>
+  <div class="section-meta">API Preview</div>
+</div>
+
+<section class="grid-3">
+  <div class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">API</div>
+      <span class="badge">Akram</span>
+    </div>
+    <h3>Reminder & Attendance API</h3>
+    <p>
+      Digunakan untuk melihat data reminder, kehadiran, rekap attendance, dan validasi check-in.
+    </p>
+    <div class="flex gap-2 mt-4">
+      <a href="/api/akram/reminders" class="btn btn-outline">Reminder</a>
+      <a href="/api/akram/attendances" class="btn btn-outline">Attendance</a>
+    </div>
+  </div>
+
+  <div class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">API</div>
+      <span class="badge">Ghufran</span>
+    </div>
+    <h3>Event & Ticket API</h3>
+    <p>
+      Digunakan untuk menampilkan event, proses registrasi, dan detail tiket peserta.
+    </p>
+    <div class="flex gap-2 mt-4">
+      <a href="/api/ghufran/events" class="btn btn-outline">Events</a>
+    </div>
+  </div>
+
+  <div class="pro-card">
+    <div class="pro-card-header">
+      <div class="pro-icon">API</div>
+      <span class="badge">Hana</span>
+    </div>
+    <h3>Participants & Reports API</h3>
+    <p>
+      Digunakan untuk memantau peserta, sertifikat, dan laporan kegiatan.
+    </p>
+    <div class="flex gap-2 mt-4">
+      <a href="/api/hana/participants" class="btn btn-outline">Participants</a>
+      <a href="/api/hana/reports" class="btn btn-outline">Reports</a>
+    </div>
+  </div>
+</section>
+
+<%- include("partials/footer") %>
