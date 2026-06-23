@@ -30,7 +30,7 @@ const sessionStore = new MySQLStore({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
 
-  createDatabaseTable: false, // Melarang Express mengotak-atik tabel di database
+  createDatabaseTable: true,
   schema: {
     tableName: 'sessions', // Ubah menjadi 'sssion' jika memang namanya persis seperti itu
     columnNames: {
