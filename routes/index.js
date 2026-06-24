@@ -4,7 +4,7 @@ const indexController = require("../controllers/indexController");
 const { isAuthenticated } = require("../middlewares/auth");
 
 /* GET home page. */
-router.get("/", indexController.index);
+router.get("/", indexController.loginPage);
 
 router.get("/home", isAuthenticated, indexController.home);
 
@@ -13,5 +13,6 @@ router.get("/login", indexController.loginPage);
 router.post("/login", indexController.login);
 
 router.get("/logout", indexController.logout);
+router.post("/logout", indexController.logout);
 
 module.exports = router;
