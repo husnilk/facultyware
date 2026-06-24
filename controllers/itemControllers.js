@@ -146,9 +146,17 @@ exports.importItems = async (req, res, next) => {
             const data = XLSX.utils.sheet_to_json(sheet);
 
             for (const item of data) {
+                const itemCode = item.code || item['Kode Item'];
+                const itemName = item.name || item['Nama Barang'];
+                const itemUnit = item.unit || item['Satuan'];
+                const itemMinQty = item.minimal_quantity || item['Min. Stok'];
+                const itemDesc = item.description || item['Deskripsi'] || '-';
+
+                if (!itemCode || !itemName) continue;
+
                 await db.query(
                     'INSERT INTO items (code, name, unit, minimal_quantity, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
-                    [item.code, item.name, item.unit, item.minimal_quantity, item.description]
+                    [itemCode, itemName, itemUnit, itemMinQty, itemDesc]
                 );
             }
 
