@@ -1,0 +1,122 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
+  <!-- Stats Card: Total Travels -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Total Permohonan</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-muted-foreground"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <div class="text-2xl font-bold"><%= stats.total || 0 %></div>
+    <p class="text-xs text-muted-foreground">Seluruh perjalanan dinas</p>
+  </div>
+
+  <!-- Stats Card: Approved -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Disetujui</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <div class="text-2xl font-bold"><%= stats.approved || 0 %></div>
+    <p class="text-xs text-muted-foreground">Siap dijalankan / aktif</p>
+  </div>
+
+  <!-- Stats Card: Pending -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Menunggu Approval</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-amber-500"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="text-2xl font-bold"><%= stats.pending || 0 %></div>
+    <p class="text-xs text-muted-foreground">Menunggu persetujuan pimpinan</p>
+  </div>
+
+  <!-- Stats Card: Total Expenses -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Total Reimburse</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-muted-foreground"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+    </div>
+    <div class="text-2xl font-bold">Rp <%= Number(expenseStats.total_amount || 0).toLocaleString('id-ID') %></div>
+    <p class="text-xs text-muted-foreground">Dari <%= expenseStats.total_count || 0 %> klaim biaya</p>
+  </div>
+</div>
+
+<div class="grid gap-6 md:grid-cols-3 mb-6">
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6 col-span-2">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-lg">Perjalanan Dinas Terbaru</h3>
+      <a href="/pegawai/travels" class="text-xs text-primary underline">Lihat Semua</a>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="border-b">
+            <th class="py-2">No. Surat</th>
+            <th class="py-2">Tujuan</th>
+            <th class="py-2">Keperluan</th>
+            <th class="py-2">Tanggal</th>
+            <th class="py-2">Status</th>
+            <th class="py-2 text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (recentTravels.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted-foreground">Belum ada data perjalanan dinas.</td>
+            </tr>
+          <% } else { %>
+            <% recentTravels.forEach(t => { %>
+              <tr class="border-b hover:bg-muted/40 transition-colors">
+                <td class="py-3 font-medium"><%= t.request_number %></td>
+                <td class="py-3"><%= t.destination %></td>
+                <td class="py-3 truncate max-w-[150px]"><%= t.purpose %></td>
+                <td class="py-3 text-xs">
+                  <%= new Date(t.start_date).toLocaleDateString('id-ID') %> - <%= new Date(t.end_date).toLocaleDateString('id-ID') %>
+                </td>
+                <td class="py-3">
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-<%= t.status %>">
+                    <%= t.status %>
+                  </span>
+                </td>
+                <td class="py-3 text-right">
+                  <a href="/pegawai/travels/detail/<%= t.id %>" class="btn-outline btn-xs">Detail</a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <h3 class="font-semibold text-lg mb-4">Statistik Status</h3>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Draft</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-draft"><%= stats.draft || 0 %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Pending Approval</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-pending"><%= stats.pending || 0 %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Disetujui (Approved)</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-approved"><%= stats.approved || 0 %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Ditolak (Rejected)</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-rejected"><%= stats.rejected || 0 %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Selesai (Completed)</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-completed"><%= stats.completed || 0 %></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

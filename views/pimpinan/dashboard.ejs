@@ -1,0 +1,110 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
+  <!-- Stats Card: Total Travels -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Total Perjalanan Dinas</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-muted-foreground"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <div class="text-2xl font-bold"><%= stats.total || 0 %></div>
+    <p class="text-xs text-muted-foreground">Seluruh perjalanan dosen/pegawai</p>
+  </div>
+
+  <!-- Stats Card: Pending Approvals -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Pending Approval</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-amber-500"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="text-2xl font-bold"><%= stats.pending || 0 %></div>
+    <p class="text-xs text-muted-foreground">Menunggu persetujuan Anda</p>
+  </div>
+
+  <!-- Stats Card: Completed -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Laporan Selesai</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div class="text-2xl font-bold"><%= stats.completed || 0 %></div>
+    <p class="text-xs text-muted-foreground">Laporan hasil perjalanan diunggah</p>
+  </div>
+
+  <!-- Stats Card: Reimbursements Pending -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 class="text-sm font-medium tracking-tight">Klaim Reimburse Pending</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="h-4 w-4 text-rose-500"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+    </div>
+    <div class="text-2xl font-bold">Rp <%= Number(expenseStats.total_amount || 0).toLocaleString('id-ID') %></div>
+    <p class="text-xs text-muted-foreground">Dari <%= expenseStats.total_count || 0 %> klaim pending</p>
+  </div>
+</div>
+
+<div class="grid gap-6 md:grid-cols-3 mb-6">
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6 col-span-2">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-lg">Permohonan Menunggu Approval (Pending)</h3>
+      <a href="/pimpinan/travels" class="text-xs text-primary underline">Lihat Semua</a>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="border-b text-muted-foreground text-xs uppercase font-medium">
+            <th class="py-2">No. Surat</th>
+            <th class="py-2">Pegawai</th>
+            <th class="py-2">Tujuan</th>
+            <th class="py-2">Keperluan</th>
+            <th class="py-2 text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (pendingTravels.length === 0) { %>
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted-foreground text-xs">Tidak ada permohonan pending yang perlu disetujui.</td>
+            </tr>
+          <% } else { %>
+            <% pendingTravels.forEach(t => { %>
+              <tr class="border-b hover:bg-muted/40 transition-colors">
+                <td class="py-3 font-semibold text-foreground"><%= t.request_number %></td>
+                <td class="py-3 font-medium text-foreground"><%= t.submitter_name || t.submitter_username %></td>
+                <td class="py-3"><%= t.destination %></td>
+                <td class="py-3 truncate max-w-[150px]"><%= t.purpose %></td>
+                <td class="py-3 text-right">
+                  <a href="/pimpinan/travels/detail/<%= t.id %>" class="btn-primary btn-xs">Proses</a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+    <h3 class="font-semibold text-lg mb-4">Statistik Perjalanan Dinas</h3>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Menunggu Persetujuan</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-pending"><%= stats.pending || 0 %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Disetujui (Approved)</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-approved"><%= stats.approved || 0 %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Ditolak (Rejected)</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-rejected"><%= stats.rejected || 0 %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Laporan Selesai (Completed)</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-completed"><%= stats.completed || 0 %></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

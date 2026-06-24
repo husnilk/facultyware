@@ -1,16 +1,27 @@
 require('dotenv').config();
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var session = require('express-session');
-var MySQLStore = require('express-mysql-session')(session);
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
+const fs = require('fs');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const indexRouter = require('./routes/index');
+const authRouter = require('./routes/auth');
+const pegawaiRouter = require('./routes/pegawai');
+const pimpinanRouter = require('./routes/pimpinan');
+const apiRouter = require('./routes/api');
+
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
-var app = express();
+const app = express();
+
+// Ensure upload directories exist
+const uploadDocs = path.join(__dirname, 'public/uploads/documents');
+const uploadReceipts = path.join(__dirname, 'public/uploads/receipts');
+if (!fs.existsSync(uploadDocs)) fs.mkdirSync(uploadDocs, { recursive: true });
+if (!fs.existsSync(uploadReceipts)) fs.mkdirSync(uploadReceipts, { recursive: true });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,6 +39,7 @@ const sessionStore = new MySQLStore({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
 });
 
 app.use(session({
@@ -41,8 +53,32 @@ app.use(session({
   }
 }));
 
+// Session message/user variables globally exposed to EJS
+app.use((req, res, next) => {
+  res.locals.success = req.session.success || null;
+  res.locals.error = req.session.error || null;
+  res.locals.warning = req.session.warning || null;
+  
+  delete req.session.success;
+  delete req.session.error;
+  delete req.session.warning;
+
+  res.locals.user = req.session.userId ? {
+    id: req.session.userId,
+    username: req.session.username,
+    role: req.session.role,
+    employeeId: req.session.employeeId,
+    name: req.session.name
+  } : null;
+  
+  next();
+});
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/', authRouter);
+app.use('/pegawai', pegawaiRouter);
+app.use('/pimpinan', pimpinanRouter);
+app.use('/api', apiRouter);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);

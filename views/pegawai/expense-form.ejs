@@ -1,0 +1,82 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-xl font-bold tracking-tight text-foreground"><%= expense ? 'Edit' : 'Tambah' %> Pengajuan Reimburse</h2>
+    <p class="text-sm text-muted-foreground">Klaim biaya pengeluaran perjalanan dinas dengan mengunggah bukti nota kwitansi.</p>
+  </div>
+  <a href="/pegawai/expenses" class="btn-outline btn-sm flex items-center gap-1">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    <span>Kembali</span>
+  </a>
+</div>
+
+<div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6 max-w-xl mx-auto">
+  <form action="<%= expense ? '/pegawai/expenses/edit/' + expense.id : '/pegawai/expenses/create' %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+    
+    <!-- Travel Request Dropdown -->
+    <div role="group" class="flex flex-col gap-2">
+      <label for="official_travel_id" class="text-sm font-medium">Perjalanan Dinas Terkait <span class="text-destructive">*</span></label>
+      <% if (expense) { %>
+        <!-- Locked in edit mode -->
+        <input type="hidden" name="official_travel_id" value="<%= expense.official_travel_id %>" />
+        <input type="text" disabled value="<%= expense.request_number %> - <%= expense.travel_purpose %>" class="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm text-muted-foreground cursor-not-allowed" />
+      <% } else { %>
+        <select id="official_travel_id" name="official_travel_id" required class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+          <option value="" disabled selected>-- Pilih Perjalanan Dinas --</option>
+          <% travels.forEach(t => { %>
+            <option value="<%= t.id %>"><%= t.request_number %> - <%= t.destination %> (<%= t.purpose.substring(0, 30) %>...)</option>
+          <% }) %>
+        </select>
+        <p class="text-[10px] text-muted-foreground">Hanya perjalanan dinas berstatus Approved atau Completed yang terdaftar.</p>
+      <% } %>
+    </div>
+
+    <!-- Cost Component Dropdown -->
+    <div role="group" class="flex flex-col gap-2">
+      <label for="travel_cost_component_id" class="text-sm font-medium">Komponen Biaya <span class="text-destructive">*</span></label>
+      <select id="travel_cost_component_id" name="travel_cost_component_id" required class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+        <option value="" disabled selected>-- Pilih Komponen Biaya --</option>
+        <% costComponents.forEach(cc => { %>
+          <option value="<%= cc.id %>" <%= expense && expense.travel_cost_component_id === cc.id ? 'selected' : '' %>><%= cc.name %> (<%= cc.code %>) - <%= cc.description %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <!-- Amount / Jumlah -->
+    <div role="group" class="flex flex-col gap-2">
+      <label for="amount" class="text-sm font-medium">Jumlah Biaya (Rupiah) <span class="text-destructive">*</span></label>
+      <input type="number" id="amount" name="amount" min="1" value="<%= expense ? expense.amount : '' %>" required placeholder="Contoh: 500000" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" />
+    </div>
+
+    <!-- Description -->
+    <div role="group" class="flex flex-col gap-2">
+      <label for="description" class="text-sm font-medium">Keterangan Biaya</label>
+      <textarea id="description" name="description" rows="3" class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" placeholder="Contoh: Tiket Kereta Api GoShow, Penginapan 2 Malam..."><%= expense ? expense.description : '' %></textarea>
+    </div>
+
+    <!-- Receipt / Bukti Nota -->
+    <div role="group" class="flex flex-col gap-2">
+      <label for="receipt" class="text-sm font-medium">Bukti Kwitansi / Nota <span class="text-destructive"><%= expense ? '' : '*' %></span></label>
+      <input type="file" id="receipt" name="receipt" accept=".jpg,.jpeg,.png,.pdf" <%= expense ? '' : 'required' %> class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm file:border-0 file:bg-transparent file:text-xs file:font-medium text-foreground outline-none" />
+      <% if (expense && expense.receipt_file) { %>
+        <p class="text-xs text-muted-foreground mt-1">Nota saat ini: <a href="<%= expense.receipt_file %>" target="_blank" class="text-primary underline">Lihat Bukti Nota</a></p>
+      <% } %>
+      <p class="text-[10px] text-muted-foreground">Format yang diizinkan: JPG, JPEG, PNG, PDF.</p>
+    </div>
+
+    <!-- Submit buttons -->
+    <div class="flex items-center gap-2 pt-4 border-t">
+      <button type="submit" class="btn-primary">
+        <span>Kirim Pengajuan</span>
+      </button>
+      <a href="/pegawai/expenses" class="btn-outline">
+        <span>Batal</span>
+      </a>
+    </div>
+
+  </form>
+</div>
+
+<%- include('../layouts/footer') %>
