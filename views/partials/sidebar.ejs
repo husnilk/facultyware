@@ -1,0 +1,33 @@
+<aside class="w-[260px] fixed top-0 left-0 h-screen bg-white border-r border-[#c6c6cd] p-4 z-50 flex flex-col justify-between">
+    <div>
+        <div class="mb-8 p-2">
+            <h1 class="text-xl font-bold">HR System</h1>
+            <p class="text-xs text-gray-500">Management Dashboard</p>
+        </div>
+        
+        <nav class="space-y-2">
+            <% 
+            // Fungsi pembantu untuk menentukan class aktif
+            const isActive = (path) => (typeof title !== 'undefined' && title.includes(path)) ? 'bg-[#e7f0ff] text-[#0058be]' : 'hover:bg-gray-100';
+            %>
+
+            <a href="/dashboard" class="flex items-center gap-3 p-3 rounded-lg transition <%= isActive('Dashboard') %>">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+
+            <a href="/jabatan/struktur" class="flex items-center gap-3 p-3 rounded-lg transition <%= isActive('Struktur') %>">
+                <span class="material-symbols-outlined">account_tree</span> Struktur Pegawai
+            </a>
+
+            <a href="/jabatan/penempatan" class="flex items-center gap-3 p-3 rounded-lg transition <%= isActive('Penempatan') %>">
+                <span class="material-symbols-outlined">work</span> Penentuan Jabatan
+            </a>
+        </nav>
+    </div>
+
+    <div class="p-2">
+        <a href="/logout" class="flex items-center gap-3 p-3 rounded-lg text-red-600 hover:bg-red-50 transition">
+            <span class="material-symbols-outlined">logout</span> Logout
+        </a>
+    </div>
+</aside>

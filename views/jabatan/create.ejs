@@ -1,0 +1,43 @@
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-black">Form Penempatan Jabatan Baru</h2>
+    </div>
+
+    <% if (error) { %>
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <form action="/jabatan/penempatan/create" method="POST" class="bg-white p-6 rounded-xl border border-[#c6c6cd] shadow-sm space-y-6">
+        <div>
+            <label class="block text-sm font-bold text-[#191c1e] mb-2">Nama Pegawai <span class="text-red-600">*</span></label>
+            <select name="employee_id" class="w-full px-4 py-2 bg-[#f2f4f6] border border-[#c6c6cd] rounded-lg" required>
+                <option value="">-- Pilih Pegawai --</option>
+                <% employees.forEach(emp => { %>
+                    <option value="<%= emp.id %>" <%= oldData.employee_id == emp.id ? 'selected' : '' %>><%= emp.name %></option>
+                <% }); %>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-[#191c1e] mb-2">Jabatan & Unit Kerja <span class="text-red-600">*</span></label>
+            <select name="structural_position_id" class="w-full px-4 py-2 bg-[#f2f4f6] border border-[#c6c6cd] rounded-lg" required>
+                <option value="">-- Pilih Jabatan --</option>
+                <% positions.forEach(pos => { %>
+                    <option value="<%= pos.id %>" <%= oldData.structural_position_id == pos.id ? 'selected' : '' %>><%= pos.title %> (<%= pos.unit_name %>)</option>
+                <% }); %>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-[#191c1e] mb-2">Tanggal Mulai <span class="text-red-600">*</span></label>
+            <input type="date" name="start_date" class="w-full px-4 py-2 bg-[#f2f4f6] border border-[#c6c6cd] rounded-lg" value="<%= oldData.start_date || '' %>" required>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-[#c6c6cd]">
+            <a href="/jabatan/penempatan" class="px-6 py-2 rounded-lg border border-[#c6c6cd] font-semibold text-[#45464d] hover:bg-[#f2f4f6]">Batal</a>
+            <button type="submit" class="px-6 py-2 rounded-lg bg-black text-white font-semibold">Simpan Penempatan</button>
+        </div>
+    </form>
+</div>

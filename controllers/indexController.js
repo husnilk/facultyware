@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const db = require("../lib/db");
 
 const index = (req, res) => {
-  res.render("index", { title: "Express" });
+  res.redirect("/login"); 
 };
 
 const home = (req, res) => {
@@ -11,41 +11,76 @@ const home = (req, res) => {
 
 const loginPage = (req, res) => {
   if (req.session.userId) {
-    return res.redirect("/home");
+    if (req.session.role === 'admin' || req.session.role === 'admin_kepegawaian') {
+        return res.redirect('/dashboard'); 
+    }
+    return res.redirect("/home"); 
   }
-  res.render("login", { title: "Login", error: null });
+  
+  res.render("login", { 
+      title: "Login", 
+      error: null, 
+      layout: false 
+  });
 };
 
 const login = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
 
     if (rows.length === 0) {
-      return res.render("login", {
-        title: "Login",
-        error: "Invalid username or password",
-      });
+      return res.render("login", { title: "Login", error: "Username atau password salah!", layout: false });
     }
 
     const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.render("login", {
-        title: "Login",
-        error: "Invalid username or password",
-      });
+      return res.render("login", { title: "Login", error: "Username atau password salah!", layout: false });
     }
 
-    // Set session
+    const [roleRows] = await db.query(`
+        SELECT r.name 
+        FROM roles r 
+        JOIN user_has_roles uhr ON r.id = uhr.role_id 
+        WHERE uhr.user_id = ?
+    `, [user.id]);
+    const roleName = roleRows.length > 0 ? roleRows[0].name : 'user';
+
+    const [permRows] = await db.query(`
+        SELECT p.name 
+        FROM permissions p 
+        JOIN role_has_permissions rhp ON p.id = rhp.permission_id 
+        JOIN user_has_roles uhr ON rhp.role_id = uhr.role_id 
+        WHERE uhr.user_id = ?
+    `, [user.id]);
+    
+    let userPermissions = permRows.map(row => row.name);
+
+    if (roleName === 'admin') {
+        userPermissions = userPermissions.filter(p => p !== 'view_history');
+    }
+
     req.session.userId = user.id;
     req.session.username = user.username;
+    req.session.role = roleName;
+    req.session.permissions = userPermissions; 
+    
+    req.session.save((err) => {
+        if (err) {
+            console.error("Gagal menyimpan session:", err);
+            return next(err);
+        }
 
-    res.redirect("/home");
+        if (roleName === 'admin' || roleName === 'admin_kepegawaian') {
+            return res.redirect('/dashboard'); 
+        } else {
+            return res.redirect('/home'); 
+        }
+    });
+    
   } catch (err) {
     next(err);
   }
@@ -53,9 +88,7 @@ const login = async (req, res, next) => {
 
 const logout = (req, res, next) => {
   req.session.destroy((err) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
     res.redirect("/login");
   });
 };
