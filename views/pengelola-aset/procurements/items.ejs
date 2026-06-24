@@ -1,0 +1,99 @@
+<%- include('../partials/header', { title, flash }) %>
+
+<section class="card p-6 mb-6">
+  <div class="flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Data Barang Pengadaan</h1>
+      <p class="mt-2 text-foreground">Daftar item pengadaan diambil langsung dari API.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <a class="btn-outline" href="/procurements">Kembali ke Permohonan</a>
+      <a class="btn-primary" href="/api/procurement-items" target="_blank" rel="noreferrer">Buka API JSON</a>
+    </div>
+  </div>
+</section>
+
+<section class="card p-6">
+  <p class="mb-4 rounded-md border p-3 text-foreground" id="procurement-items-status">Memuat data barang pengadaan...</p>
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>No Permohonan</th>
+          <th>Judul Permohonan</th>
+          <th>Nama Barang</th>
+          <th>Spesifikasi</th>
+          <th>Jumlah</th>
+          <th>Estimasi Harga</th>
+          <th>Status</th>
+          <th>Dibuat Oleh</th>
+        </tr>
+      </thead>
+      <tbody id="procurement-items-body">
+        <tr><td colspan="8">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const statusEl = document.getElementById('procurement-items-status');
+    const bodyEl = document.getElementById('procurement-items-body');
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatRupiah(value) {
+      return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+    }
+
+    function badgeClass(status) {
+      if (status === 'rejected') return 'badge-destructive';
+      if (status === 'approved' || status === 'completed') return 'badge-primary';
+      return 'badge-secondary';
+    }
+
+    fetch('/api/procurement-items', { headers: { Accept: 'application/json' } })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        const rows = Array.isArray(payload.data) ? payload.data : [];
+
+        if (!rows.length) {
+          statusEl.textContent = 'Belum ada data barang pengadaan.';
+          bodyEl.innerHTML = '<tr><td colspan="8">Belum ada data barang pengadaan.</td></tr>';
+          return;
+        }
+
+        statusEl.textContent = 'Menampilkan ' + rows.length + ' item barang pengadaan.';
+        bodyEl.innerHTML = rows.map(function (item) {
+          const status = escapeHtml(item.procurement_status || '');
+          return '<tr>' +
+            '<td>' + escapeHtml(item.request_number || '-') + '</td>' +
+            '<td>' + escapeHtml(item.procurement_title || '-') + '</td>' +
+            '<td>' + escapeHtml(item.name || '-') + '</td>' +
+            '<td>' + escapeHtml(item.specification || '-') + '</td>' +
+            '<td>' + escapeHtml(item.quantity || 0) + '</td>' +
+            '<td>' + escapeHtml(formatRupiah(item.estimated_price)) + '</td>' +
+            '<td><span class="' + badgeClass(item.procurement_status || '') + '">' + (status || '-') + '</span></td>' +
+            '<td>' + escapeHtml(item.created_by_name || '-') + '</td>' +
+            '</tr>';
+        }).join('');
+      })
+      .catch(function (error) {
+        statusEl.textContent = 'Gagal memuat data barang pengadaan.';
+        bodyEl.innerHTML = '<tr><td colspan="8">Gagal memuat data: ' + escapeHtml(error.message) + '</td></tr>';
+      });
+  })();
+</script>
+
+<%- include('../partials/footer') %>

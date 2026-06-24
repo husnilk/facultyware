@@ -1,0 +1,200 @@
+<%- include('../partials/header', { title: 'Dashboard Pengelola Aset', user: currentUser }) %>
+<%
+  const badgeClass = (status) => {
+    if (status === 'rejected') return 'badge-destructive';
+    if (status === 'approved' || status === 'completed') return 'badge-primary';
+    if (status === 'submitted' || status === 'draft') return 'badge-secondary';
+    return 'badge-outline';
+  };
+
+  const statusMeta = {
+    draft: { label: 'Draft', color: 'text-amber-900 dark:text-amber-100', badge: 'badge-secondary', href: '/procurements', note: 'Masih disiapkan oleh Pengelola Aset.' },
+    submitted: { label: 'Diajukan', color: 'text-blue-500', badge: 'badge-secondary', href: '/procurements', note: 'Menunggu keputusan Wakil Dekan.' },
+    approved: { label: 'Disetujui', color: 'text-green-500', badge: 'badge-primary', href: '/procurements', note: 'Siap dicatat ke daftar aset.' },
+    rejected: { label: 'Ditolak', color: 'text-red-500', badge: 'badge-destructive', href: '/procurements', note: 'Perlu ditinjau ulang bila masih dibutuhkan.' },
+    completed: { label: 'Tercatat', color: 'text-purple-500', badge: 'badge-primary', href: '/procurements/report?report_type=assets', note: 'Sudah masuk pencatatan aset.' },
+    request_submitted: { label: 'Menunggu Aset', color: 'text-amber-900 dark:text-amber-100', badge: 'badge-secondary', href: '/procurements/requests', note: 'Usulan perlu ditinjau Pengelola Aset.' },
+    request_rejected: { label: 'Ditolak Pengelola Aset', color: 'text-red-500', badge: 'badge-destructive', href: '/procurements/requests', note: 'Usulan ditolak sebelum diteruskan ke Wakil Dekan.' }
+  };
+
+  const procurementStatuses = ['draft', 'submitted', 'approved', 'rejected', 'completed'];
+  const requestStatuses = [
+    { key: 'submitted', meta: statusMeta.request_submitted },
+    { key: 'rejected', meta: statusMeta.request_rejected }
+  ];
+%>
+
+<section class="card p-6 mb-6">
+  <div class="flex items-start justify-between gap-4 flex-wrap">
+    <div class="min-w-0">
+      <span class="badge-secondary">Pengelola Aset</span>
+      <h1 class="mt-4 text-3xl font-bold tracking-tight">Dashboard Pengadaan dan Aset</h1>
+      <p class="mt-4 text-base text-foreground">Pantau usulan, proses approval, dan aset tercatat tanpa berpindah halaman.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <a href="/procurements/requests" class="btn-outline">Tinjau Usulan</a>
+      <a href="/procurements/create" class="btn-primary">Buat Permohonan</a>
+    </div>
+  </div>
+</section>
+
+<section class="grid grid-cols-2 gap-4 mb-6">
+  <div class="card p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-semibold text-blue-500">Usulan Masuk</p>
+        <p class="mt-4 text-3xl font-bold"><%= summary.requests.total %></p>
+        <p class="mt-4 text-sm text-foreground"><%= summary.requests.submitted %> menunggu ditinjau</p>
+      </div>
+      <span class="badge-secondary">Usulan</span>
+    </div>
+    <a href="/procurements/requests" class="btn-sm-outline mt-4">Buka Usulan</a>
+  </div>
+
+  <div class="card p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-semibold text-purple-500">Permohonan</p>
+        <p class="mt-4 text-3xl font-bold"><%= summary.procurements.total %></p>
+        <p class="mt-4 text-sm text-foreground"><%= summary.procurements.submitted %> sedang diajukan</p>
+      </div>
+      <span class="badge-secondary">Aktif</span>
+    </div>
+    <a href="/procurements" class="btn-sm-outline mt-4">Buka Permohonan</a>
+  </div>
+
+  <div class="card p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-semibold text-green-500">Siap Dicatat</p>
+        <p class="mt-4 text-3xl font-bold"><%= summary.procurements.approved %></p>
+        <p class="mt-4 text-sm text-foreground">Permohonan sudah disetujui</p>
+      </div>
+      <span class="badge-primary">Approved</span>
+    </div>
+    <a href="/procurements" class="btn-sm-outline mt-4">Catat Aset</a>
+  </div>
+
+  <div class="card p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-semibold text-amber-900 dark:text-amber-100">Aset Tercatat</p>
+        <p class="mt-4 text-3xl font-bold"><%= summary.assets.total %></p>
+        <p class="mt-4 text-sm text-foreground">Rp <%= Number(summary.assets.totalCost || 0).toLocaleString('id-ID') %></p>
+      </div>
+      <span class="badge-outline">Aset</span>
+    </div>
+    <a href="/procurements/report?report_type=assets" class="btn-sm-outline mt-4">Lihat Aset</a>
+  </div>
+</section>
+
+<section class="grid gap-6 lg:grid-cols-2 mb-6">
+  <details class="card p-6" open>
+    <summary class="cursor-pointer rounded-md border p-4">
+      <span class="font-semibold">Status Permohonan</span>
+      <span class="badge-outline"><%= summary.procurements.total %> total</span>
+      <span class="block mt-4 text-sm text-foreground">Buka/tutup ringkasan status pengadaan.</span>
+    </summary>
+    <div class="grid gap-3 mt-4">
+      <% procurementStatuses.forEach((key) => { const item = statusMeta[key]; %>
+        <a href="<%= item.href %>" class="block rounded-md border p-4 hover:bg-muted">
+          <span class="flex items-start justify-between gap-3">
+            <span>
+              <span class="block font-semibold <%= item.color %>"><%= item.label %></span>
+              <span class="block mt-4 text-sm text-foreground"><%= item.note %></span>
+            </span>
+            <span class="<%= item.badge %>"><%= summary.procurements[key] %></span>
+          </span>
+        </a>
+      <% }) %>
+    </div>
+  </details>
+
+  <details class="card p-6" open>
+    <summary class="cursor-pointer rounded-md border p-4">
+      <span class="font-semibold">Status Usulan</span>
+      <span class="badge-outline"><%= summary.requests.total %> total</span>
+      <span class="block mt-4 text-sm text-foreground">Buka/tutup ringkasan tindak lanjut usulan.</span>
+    </summary>
+    <div class="grid gap-3 mt-4">
+      <% requestStatuses.forEach((entry) => { const key = entry.key; const item = entry.meta; %>
+        <a href="<%= item.href %>" class="block rounded-md border p-4 hover:bg-muted">
+          <span class="flex items-start justify-between gap-3">
+            <span>
+              <span class="block font-semibold <%= item.color %>"><%= item.label %></span>
+              <span class="block mt-4 text-sm text-foreground"><%= item.note %></span>
+            </span>
+            <span class="<%= item.badge %>"><%= summary.requests[key] %></span>
+          </span>
+        </a>
+      <% }) %>
+    </div>
+  </details>
+</section>
+
+<section class="grid gap-6 lg:grid-cols-2">
+  <div class="card overflow-hidden">
+    <div class="flex items-start justify-between gap-3 border-b p-6 flex-wrap">
+      <div>
+        <h2 class="text-lg font-semibold">Permohonan Terbaru</h2>
+        <p class="mt-4 text-sm text-foreground">Lima permohonan terakhir yang masuk.</p>
+      </div>
+      <a href="/procurements" class="btn-sm-outline">Lihat Semua</a>
+    </div>
+    <% if (!summary.recentProcurements.length) { %>
+      <div class="p-6 text-center text-foreground">Belum ada permohonan pengadaan.</div>
+    <% } else { %>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nomor</th>
+              <th>Judul</th>
+              <th>Status</th>
+              <th>Tanggal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% summary.recentProcurements.forEach((item) => { %>
+              <tr>
+                <td><%= item.request_number %></td>
+                <td><a class="btn-sm-link" href="/procurements/<%= item.id %>"><%= item.title %></a></td>
+                <td><span class="<%= badgeClass(item.status) %>"><%= item.status %></span></td>
+                <td><%= item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="flex items-start justify-between gap-3 border-b p-6 flex-wrap">
+      <div>
+        <h2 class="text-lg font-semibold">Usulan Terbaru</h2>
+        <p class="mt-4 text-sm text-foreground">Usulan terakhir yang perlu dipantau.</p>
+      </div>
+      <a href="/procurements/requests" class="btn-sm-outline">Lihat Semua</a>
+    </div>
+    <% if (!summary.recentRequests.length) { %>
+      <div class="p-6 text-center text-foreground">Belum ada usulan pengadaan.</div>
+    <% } else { %>
+      <div>
+        <% summary.recentRequests.forEach((item) => { %>
+          <a href="/procurements/requests/<%= item.id %>" class="block border-b p-4 hover:bg-muted">
+            <span class="flex items-start justify-between gap-3">
+              <span>
+                <span class="block font-semibold"><%= item.title %></span>
+                <span class="block mt-4 text-sm text-foreground"><%= item.request_number %> - total jumlah <%= item.total_quantity %></span>
+              </span>
+              <span class="<%= badgeClass(item.status) %>"><%= item.status %></span>
+            </span>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

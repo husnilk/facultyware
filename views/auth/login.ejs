@@ -139,6 +139,12 @@
                     </div>
                   <% } %>
 
+                  <% if (success) { %>
+                    <div class="bg-emerald-100 text-emerald-700 text-sm p-3 rounded-md border border-emerald-200 text-center">
+                      <%= success %>
+                    </div>
+                  <% } %>
+
                   <div
                     role="group"
                     data-slot="field"
@@ -146,19 +152,23 @@
                     class="group/field flex w-full gap-3 data-[invalid=true]:text-destructive flex-col [&amp;&gt;*]:w-full [&amp;&gt;.sr-only]:w-auto"
                   >
                     <label
-                      data-slot="field-label"
-                      class="items-center text-sm font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[&gt;[data-slot=field]]:w-full has-[&gt;[data-slot=field]]:flex-col has-[&gt;[data-slot=field]]:rounded-md has-[&gt;[data-slot=field]]:border [&amp;&gt;*]:data-[slot=field]:p-4 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10"
-                      for="username"
-                      >Username</label
-                    ><input
-                      type="text"
-                      name="username"
-                      data-slot="input"
-                      class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40"
-                      id="username"
-                      placeholder="admin"
-                      required=""
-                    />
+                    data-slot="field-label"
+                    class="items-center text-sm font-medium select-none"
+                    for="email"
+                    >
+                    Email
+                  </label>
+                  
+                  <input
+                  type="email"
+                  name="email"
+                  data-slot="input"
+                  class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1"
+                  id="email"
+                  placeholder="email@facultyware.test"
+                  required
+                  value="<%= form?.email || '' %>"
+                  />
                   </div>
                   <div
                     role="group"
@@ -172,10 +182,9 @@
                         class="items-center text-sm font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[&gt;[data-slot=field]]:w-full has-[&gt;[data-slot=field]]:flex-col has-[&gt;[data-slot=field]]:rounded-md has-[&gt;[data-slot=field]]:border [&amp;&gt;*]:data-[slot=field]:p-4 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10"
                         for="password"
                         >Password</label
-                      ><a
-                        href="#"
-                        class="ml-auto text-sm underline-offset-2 hover:underline"
-                        >Forgot your password?</a
+                      ><span
+                        class="ml-auto text-sm text-muted-foreground"
+                        >Hubungi admin untuk reset password</span
                       >
                     </div>
                     <input
@@ -204,12 +213,6 @@
                     </button>
                   </div>
 
-                  <p
-                    data-slot="field-description"
-                    class="text-sm leading-normal font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&amp;]:-mt-1.5 [&amp;&gt;a]:underline [&amp;&gt;a]:underline-offset-4 [&amp;&gt;a:hover]:text-primary text-center"
-                  >
-                    Don't have an account? <a href="#">Sign up</a>
-                  </p>
                 </div>
               </form>
               <div class="relative hidden bg-muted md:block">

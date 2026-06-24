@@ -1,18 +1,21 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 var express = require('express');
-var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var authRouter = require('./routes/auth/index');
+var pengelolaAsetDashboardRouter = require('./routes/pengelola-aset/dashboard');
+var procurementsRouter = require('./routes/pengelola-aset/procurements');
+var apiProcurementsRouter = require('./routes/pengelola-aset/apiProcurements');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+const usulanRouter = require('./routes/usulan');
+const wakildekanRouter = require('./routes/wakildekan');
 
 var app = express();
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -22,32 +25,51 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
-const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+// Default pakai MemoryStore supaya tidak bentrok dengan tabel sessions Laravel
+// yang memiliki kolom payload/last_activity, bukan data/expires.
+let sessionStore;
+if (process.env.USE_MYSQL_SESSION === 'true') {
+  sessionStore = new MySQLStore({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    createDatabaseTable: false,
+    schema: {
+      tableName: process.env.EXPRESS_SESSION_TABLE || 'express_sessions',
+      columnNames: {
+        session_id: 'session_id',
+        expires: 'expires',
+        data: 'data'
+      }
+    }
+  });
+}
 
 app.use(session({
-  key: 'session_cookie_name',
-  secret: process.env.SESSION_SECRET || 'secret',
+  key: 'facultyware_session',
+  secret: process.env.SESSION_SECRET || 'facultyware-secret',
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
-  }
+  cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use((req, res, next) => {
+  res.locals.currentUser = req.session.user || null;
+  res.locals.flash = req.session.flash || null;
+  delete req.session.flash;
+  next();
+});
 
-// catch 404 and forward to error handler
+app.use('/', authRouter);
+app.use('/', pengelolaAsetDashboardRouter);
+app.use('/usulan', usulanRouter);
+app.use('/wakildekan', wakildekanRouter);
+app.use('/procurements', procurementsRouter);
+app.use('/api', apiProcurementsRouter);
+
 app.use(notFoundHandler);
-
-// error handler
 app.use(errorHandler);
 
 module.exports = app;
