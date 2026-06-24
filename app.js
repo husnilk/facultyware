@@ -8,11 +8,16 @@ var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+
+var publikasiRouter = require('./routes/publikasi');
+var approvalRouter = require('./routes/approval');
+var authorsRouter = require('./routes/authors');
+
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
 
-// view engine setup
+// View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -24,30 +29,49 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
 const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: process.env.MYSQLHOST || process.env.DB_HOST,
+  port: parseInt(process.env.MYSQLPORT || process.env.DB_PORT) || 3306,
+  user: process.env.MYSQLUSER || process.env.DB_USER,
+  password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD,
+  database: process.env.MYSQLDATABASE || process.env.DB_NAME,
+  clearExpired: true,
+  checkExpirationInterval: 900000,
+  expiration: 86400000,
 });
 
 app.use(session({
-  key: 'session_cookie_name',
-  secret: process.env.SESSION_SECRET || 'secret',
+  key: 'pengabdian_session',
+  secret: process.env.SESSION_SECRET || 'rahasia_session_pengabdian',
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
+    maxAge: 1000 * 60 * 60 * 24
   }
 }));
 
+app.use((req, res, next) => {
+  res.locals.user = req.session.userId ? {
+    id: req.session.userId,
+    name: req.session.username,
+    email: req.session.email,
+    role: req.session.role || 'dosen',
+  } : null;
+  res.locals.isAuthenticated = !!req.session.userId;
+  console.log('SESSION ROLE:', req.session.role);
+  console.log('LOCALS USER:', res.locals.user);
+  next();
+});
+
+// ─── Routes ───
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/publikasi', publikasiRouter);
+app.use('/approval', approvalRouter);
+app.use('/authors', authorsRouter);
 
-// catch 404 and forward to error handler
+// ─── Error Handlers ───
 app.use(notFoundHandler);
-
-// error handler
 app.use(errorHandler);
 
 module.exports = app;

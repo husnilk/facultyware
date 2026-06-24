@@ -1,12 +1,12 @@
 var express = require("express");
 var router = express.Router();
 const indexController = require("../controllers/indexController");
+const homeController = require('../controllers/homeController');
 const { isAuthenticated } = require("../middlewares/auth");
 
-/* GET home page. */
 router.get("/", indexController.index);
 
-router.get("/home", isAuthenticated, indexController.home);
+router.get("/home", isAuthenticated, homeController.index);
 
 router.get("/login", indexController.loginPage);
 
