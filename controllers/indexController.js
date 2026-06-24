@@ -1,21 +1,56 @@
-const bcrypt = require("bcryptjs");
-const db = require("../lib/db");
-
 const index = (req, res) => {
   res.render("index", { title: "Express" });
 };
 
-const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+// ========================================================
+// REVISI 1: FUNGSI HOME BAWA DATA STATISTIK UNTUK ADMIN
+// ========================================================
+const home = async (req, res, next) => {
+  try {
+    const user = req.session.user; // Ambil object user dari session
+
+    // Kalau yang login adalah Penanggung Jawab
+    if (user && user.role === 'penanggung_jawab') {
+      // 1. Query untuk Bar Chart (Ruangan Terfavorit)
+      const chartQuery = `
+          SELECT r.name, COUNT(rl.id) as total_pinjam
+          FROM room_loans rl
+          JOIN rooms r ON rl.room_id = r.id
+          GROUP BY r.id
+          ORDER BY total_pinjam DESC
+          LIMIT 5
+      `;
+      const [popularRooms] = await db.query(chartQuery);
+
+      // Render halaman dashboard admin dan kirim datanya biar EJS nggak error
+      return res.render("dashboard-admin", {
+        title: "Dashboard Penanggung Jawab",
+        user: user,
+        stats: {},              // Data dummy sementara
+        popularRooms: popularRooms,
+        monthlyTrends: []       // Data dummy sementara
+      });
+    }
+
+    // Kalau yang login adalah user/mahasiswa biasa
+    res.render("home", { title: "Home", user: user });
+
+  } catch (err) {
+    next(err);
+  }
 };
 
 const loginPage = (req, res) => {
-  if (req.session.userId) {
+  // Ubah pengecekan sesuai struktur session yang baru
+  if (req.session.user) {
     return res.redirect("/home");
   }
   res.render("login", { title: "Login", error: null });
 };
 
+// ========================================================
+// REVISI 2: FUNGSI LOGIN MENYIMPAN ROLE & OBJECT USER
+// ========================================================
 const login = async (req, res, next) => {
   const { username, password } = req.body;
 
@@ -41,9 +76,12 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Set session
-    req.session.userId = user.id;
-    req.session.username = user.username;
+    // SET SESSION BARU: Format ini nyambung ke bookingController.js
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      role: user.role || 'pengguna'
+    };
 
     res.redirect("/home");
   } catch (err) {

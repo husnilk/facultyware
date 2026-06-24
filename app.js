@@ -4,17 +4,20 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
-var MySQLStore = require('express-mysql-session')(session);
+var expressLayouts = require('express-ejs-layouts');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var bookingRouter = require('./routes/bookingRoutes');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
 
-// view engine setup
+// 1. SETUP VIEW ENGINE & ENGINE MASTER LAYOUT EJS
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.use(expressLayouts);
+app.set('layout', 'layout'); 
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -22,32 +25,28 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
-const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
-
+// 2. MIDDLEWARE CONFIG EXPRESS-SESSION
 app.use(session({
-  key: 'session_cookie_name',
-  secret: process.env.SESSION_SECRET || 'secret',
-  store: sessionStore,
+  secret: 'facultyware-secret-session-key-2026',
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
-  }
+  cookie: { secure: false } // Set ke true jika menggunakan HTTPS di server production
 }));
 
+// Mengatur variabel global agar otomatis terbaca di file views .ejs
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  res.locals.title = 'Facultyware';
+  next();
+});
+
+// 3. DAFTAR UTAMA ROUTING APLIKASI
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/bookings', bookingRouter); // Seluruh submenu booking diatur via bookingRouter
 
-// catch 404 and forward to error handler
+// 4. PENANGANAN ERROR GLOBAL
 app.use(notFoundHandler);
-
-// error handler
 app.use(errorHandler);
 
 module.exports = app;

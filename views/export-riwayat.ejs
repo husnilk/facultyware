@@ -1,0 +1,63 @@
+<div class="max-w-screen-lg mx-auto">
+    <header class="flex flex-col gap-2 mb-6">
+        <h1 class="text-2xl font-bold">Ekspor Riwayat Peminjaman</h1>
+        <p class="text-muted-foreground text-sm">Filter dan unduh arsip data peminjaman ruangan dalam format PDF.</p>
+    </header>
+
+    <div class="card p-4 bg-card border rounded-xl mb-6">
+        <form action="/bookings/export/riwayat" method="GET">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 uppercase tracking-wider text-muted-foreground">Status Peminjaman</label>
+                    <select name="status" class="form-select text-sm w-full border rounded-md h-9 px-2 bg-transparent">
+                        <option value="">Semua Status</option>
+                        <option value="requested" <%= status === 'requested' ? 'selected' : '' %>>Menunggu</option>
+                        <option value="approved" <%= status === 'approved' ? 'selected' : '' %>>Disetujui</option>
+                        <option value="rejected" <%= status === 'rejected' ? 'selected' : '' %>>Ditolak</option>
+                        <option value="completed" <%= status === 'completed' ? 'selected' : '' %>>Selesai</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 uppercase tracking-wider text-muted-foreground">Tanggal Mulai</label>
+                    <input type="date" name="tgl_mulai" value="<%= tgl_mulai %>" class="form-control text-sm w-full border rounded-md h-9 px-2 bg-transparent">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 uppercase tracking-wider text-muted-foreground">Tanggal Selesai</label>
+                    <input type="date" name="tgl_selesai" value="<%= tgl_selesai %>" class="form-control text-sm w-full border rounded-md h-9 px-2 bg-transparent">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark text-sm h-9 px-4 rounded-md">Filter Data</button>
+                <a href="/bookings/export/riwayat/download?status=<%= status %>&tgl_mulai=<%= tgl_mulai %>&tgl_selesai=<%= tgl_selesai %>" class="btn btn-sm btn-primary text-sm h-9 px-4 rounded-md flex items-center text-white text-decoration-none">Cetak PDF</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card border rounded-xl overflow-hidden bg-card">
+        <div class="p-3 bg-muted/50 border-b font-medium text-sm">Preview Hasil Filter (<%= bookings.length %> data ditemukan)</div>
+        <table class="w-full text-sm">
+            <thead class="bg-muted/30 border-b text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                    <th class="p-3 text-left">No.</th>
+                    <th class="p-3 text-left">Peminjam</th>
+                    <th class="p-3 text-left">Ruangan</th>
+                    <th class="p-3 text-left">Tanggal</th>
+                    <th class="p-3 text-left">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (bookings.length > 0) { bookings.forEach(function(b, idx) { %>
+                    <tr class="border-b hover:bg-muted/50">
+                        <td class="p-3"><%= idx + 1 %></td>
+                        <td class="p-3 font-medium"><%= b.borrower_name %></td>
+                        <td class="p-3"><%= b.room_name %></td>
+                        <td class="p-3 text-muted-foreground"><%= new Date(b.start_time).toLocaleDateString('id-ID') %></td>
+                        <td class="p-3 font-semibold text-xs uppercase"><%= b.status %></td>
+                    </tr>
+                <% }); } else { %>
+                    <tr><td colspan="5" class="p-4 text-center text-muted-foreground">Tidak ada data riwayat peminjaman yang cocok.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
