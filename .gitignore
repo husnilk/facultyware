@@ -59,3 +59,15 @@ typings/
 
 # next.js build output
 .next
+
+spesifikasi_app.md
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Local uploads and scratch files
+public/uploads/
+scratch/
