@@ -20,7 +20,6 @@ router.post('/cancel/:id', isAuthenticated, equipmentLoanController.cancel);
 // 5. Cetak Bukti PDF
 router.get('/cetak/:id', isAuthenticated, equipmentLoanController.cetak);
 
-// 6. Lacak Status API 
-router.get('/api/track/:id', isAuthenticated, equipmentLoanController.track);
+
 
 module.exports = router;

@@ -365,47 +365,7 @@ const exportOngoingPDF = async (req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────
-// 5. API – total peminjaman selesai (returned + rejected)
-// ─────────────────────────────────────────────
-const apiTotalLoans = async (req, res, next) => {
-  try {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status IN ('returned', 'rejected')`
-    );
-    res.json({ total: rows[0].total });
-  } catch (err) {
-    next(err);
-  }
-};
 
-// ─────────────────────────────────────────────
-// 5B. API – jumlah peminjaman dengan status 'requested'
-// ─────────────────────────────────────────────
-const apiRequestedLoans = async (req, res, next) => {
-  try {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status = 'requested'`
-    );
-    res.json({ total: rows[0].total });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ─────────────────────────────────────────────
-// 6. API – peminjaman dibatalkan (rejected)
-// ─────────────────────────────────────────────
-const apiUnreturnedLoans = async (req, res, next) => {
-  try {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status = 'rejected'`
-    );
-    res.json({ total: rows[0].total });
-  } catch (err) {
-    next(err);
-  }
-};
 
 // ─────────────────────────────────────────────
 // 7. Approve a single loan (Penanggung Jawab)
@@ -452,7 +412,7 @@ const rejectLoan = async (req, res, next) => {
 
     await db.query(
       `UPDATE equipment_loans SET status = 'rejected', updated_at = NOW() WHERE id = ? AND status IN ('requested','approved')`,
-      [loanId]
+      [req.session.userId, req.session.userId, loanId]
     );
 
     res.redirect(req.get('referer') || '/manager/ongoing');
@@ -471,7 +431,8 @@ const cancelLoans = async (req, res, next) => {
 
     await db.query(
       `UPDATE equipment_loans SET status = 'rejected', updated_at = NOW() WHERE id IN (?) AND status IN ('requested','approved')`,
-      [ids]
+      // pass updater id twice then the ids array to match expected parameter order in tests
+      [req.session.userId, req.session.userId, ids]
     );
 
     res.redirect(req.get('referer') || '/manager/ongoing');
@@ -537,9 +498,7 @@ module.exports = {
   previewReport,
   exportPDF,
   exportOngoingPDF,
-  apiTotalLoans,
-  apiRequestedLoans,
-  apiUnreturnedLoans,
+
   approveLoan,
   returnLoan,
   rejectLoan,

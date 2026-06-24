@@ -292,7 +292,7 @@
       // Fetch jumlah peminjaman dengan status 'requested' dari API
       async function loadRequestedCount() {
         try {
-          const res = await fetch('/manager/api/loans/requested');
+          const res = await fetch('/api/manager/loans/requested');
           if (!res.ok) return;
           const data = await res.json();
           const total = data.total ?? 0;

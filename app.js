@@ -8,6 +8,7 @@ var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var apiRouter = require('./routes/api');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
@@ -62,6 +63,9 @@ console.log('✓ Index router loaded');
 
 app.use('/users', usersRouter);
 console.log('✓ Users router loaded');
+
+app.use('/api', apiRouter);
+console.log('✓ API router loaded');
 
 app.use('/equipment-loans', require('./routes/equipment-loans'));
 console.log('✓ Equipment loans router loaded');

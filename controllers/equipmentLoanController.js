@@ -149,43 +149,7 @@ const cancel = async (req, res, next) => {
 };
 
 // ==========================================
-// 2. FITUR REST API TRACKING
-// ==========================================
-
-const track = async (req, res) => {
-    const idTransaksi = req.params.id;
-    const userId = req.session.userId; 
-
-    if (!idTransaksi || isNaN(idTransaksi)) {
-        return res.status(400).json({ success: false, message: "ID Transaksi tidak valid." });
-    }
-
-    try {
-        // Kueri disesuaikan dengan tabel equipment_loans
-        const query = `
-            SELECT id, start_date, end_date, status 
-            FROM equipment_loans 
-            WHERE id = ? AND employee_id = ?
-        `;
-        const [rows] = await db.query(query, [idTransaksi, userId]); // Diperbaiki dari pool.execute
-
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: `Data tidak ditemukan.` });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Data pelacakan status berhasil ditemukan.",
-            data: rows[0]
-        });
-    } catch (error) {
-        console.error("REST API Error:", error);
-        return res.status(500).json({ success: false, message: "Terjadi kegagalan server." });
-    }
-};
-
-// ==========================================
-// 3. FITUR EXPORT PDF (KOP SURAT KAMPUS)
+// 2. FITUR EXPORT PDF (KOP SURAT KAMPUS)
 // ==========================================
 
 // Fungsi pembantu untuk menggambar Kop Surat
@@ -285,4 +249,4 @@ const cetak = async (req, res) => {
     }
 };
 
-module.exports = { index, createPage, create, editPage, update, cancel, track, cetak };
+module.exports = { index, createPage, create, editPage, update, cancel, cetak };
