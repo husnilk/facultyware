@@ -1,6 +1,6 @@
 {
-  "name": "central-panel",
-  "version": "0.0.0",
+  "name": "facultyware",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
@@ -11,12 +11,18 @@
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^17.4.2",
-    "ejs": "~2.6.1",
-    "express": "~4.16.1",
+    "ejs": "^3.1.10",
+    "express": "^4.18.2",
     "express-mysql-session": "^3.0.3",
     "express-session": "^1.19.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
-    "mysql2": "^3.22.3"
+    "mysql2": "^3.22.3",
+    "pdfkit": "^0.18.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@types/node": "^26.0.0"
   }
 }
