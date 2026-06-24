@@ -1,30 +1,60 @@
-# Facultyware
+# SIMPEL (Sistem Informasi Manajemen Peminjaman Peralatan)
 
-A Node.js/Express application for managing equipment loans and manager dashboards. The app uses EJS for views, MySQL for persistence, and session storage backed by `express-mysql-session`.
+Aplikasi berbasis web yang digunakan untuk mengelola proses peminjaman peralatan di lingkungan fakultas. Sistem ini memungkinkan pengguna mengajukan peminjaman peralatan, memantau status peminjaman, mencetak surat peminjaman, serta membantu Penanggung Jawab (PJ) Peralatan dalam mengelola seluruh proses peminjaman.
 
-## Features
+## Fitur Utama
 
-- User login/logout flow
-- Equipment loan tracking and management
-- Manager dashboard for ongoing and historical loans
-- CSV and PDF export features
-- API endpoints for manager statistics and loan tracking
+### Fitur Pengguna
 
-## Prerequisites
+- Login dan Logout
+- Melihat dashboard pengajuan peminjaman
+- Menambah pengajuan peminjaman peralatan
+- Mengubah data pengajuan peminjaman
+- Membatalkan pengajuan peminjaman
+- Melihat status peminjaman
+- Mengunduh surat peminjaman dalam format PDF
+- Melacak status peminjaman melalui API
 
-- Node.js 18+ installed
-- MySQL server accessible
-- `npm` available
+### Fitur Penanggung Jawab (PJ) Peralatan
 
-## Installation
+- Melihat daftar pengajuan peminjaman
+- Menyetujui pengajuan peminjaman
+- Menolak pengajuan peminjaman
+- Mengubah status peminjaman setelah peralatan dikembalikan
+- Melihat daftar peminjaman yang sedang berlangsung
+- Melihat riwayat peminjaman
+- Mencari data riwayat peminjaman
+- Memfilter riwayat peminjaman berdasarkan status atau tanggal
+- Melihat detail data peminjaman
+- Mengekspor laporan dalam format PDF dan CSV
+- Melihat preview laporan sebelum diekspor
+
+### API
+
+- API jumlah seluruh peminjaman
+- API jumlah peminjaman yang menunggu persetujuan
+- API jumlah peminjaman yang belum dikembalikan
+- API pelacakan status peminjaman
+
+## Prasyarat
+
+Pastikan perangkat telah terinstal:
+
+- Node.js versi 18 atau lebih baru
+- MySQL Server
+- npm (Node Package Manager)
+
+## Instalasi
+
+Install seluruh dependency:
 
 ```bash
 npm install
 ```
 
-## Environment
+## Konfigurasi Environment
 
-Create a `.env` file in the project root with the following values:
+Buat file `.env` pada root project:
 
 ```env
 DB_HOST=localhost
@@ -32,68 +62,95 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=facultyware
+
 SESSION_SECRET=your_secret_key
 ```
 
-## Run the app
+Sesuaikan konfigurasi tersebut dengan database yang digunakan.
 
-Start the server:
+## Menjalankan Aplikasi
+
+Mode Production:
 
 ```bash
 npm start
 ```
 
-During development, use:
+Mode Development:
 
 ```bash
 npm run dev
 ```
 
-The app entrypoint is `bin/www`, and Express is configured in `app.js`.
+Entrypoint aplikasi berada pada `bin/www`, dan Express dikonfigurasi pada `app.js`.
 
-## Test
+## Pengujian
 
-Run the unit test suite:
+Menjalankan pengujian Playwright:
 
 ```bash
-npm test
+npx playwright test
 ```
 
-## Project structure
+Menampilkan laporan hasil pengujian:
 
-- `app.js` - Express application setup
-- `bin/www` - server startup script
-- `controllers/` - route handler logic
-- `routes/` - Express routers
-- `middlewares/` - auth, error, and ACL middleware
-- `views/` - EJS templates
-- `public/` - static assets
-- `lib/db.js` - database helper
-- `test/` - unit tests
-- `tests/e2e/` - end-to-end test specs
+```bash
+npx playwright show-report
+```
 
-## Available routes
+## Struktur Proyek
 
-### Web routes
+```text
+app.js                 -> Konfigurasi aplikasi Express
+bin/www                -> Entrypoint server
+controllers/           -> Logika bisnis aplikasi
+routes/                -> Routing aplikasi
+middlewares/           -> Middleware autentikasi dan ACL
+views/                 -> Template EJS
+public/                -> File statis (CSS, JavaScript, gambar)
+lib/db.js              -> Koneksi database
+test/                  -> Unit testing
+tests/e2e/             -> Pengujian End-to-End menggunakan Playwright
+```
 
-- `/` - landing page
-- `/login` - login page
-- `/logout` - logout
-- `/users` - user listing
-- `/equipment-loans/...` - equipment loan pages
-- `/manager/...` - manager dashboard pages
+## Rute Aplikasi
 
-### API routes
+### Web Routes
 
-- `GET /api/manager/loans/total`
-- `GET /api/manager/loans/requested`
-- `GET /api/manager/loans/unreturned`
-- `GET /api/equipment-loans/track/:id`
+| Route | Deskripsi |
+|---------|---------|
+| / | Halaman utama |
+| /login | Halaman login |
+| /logout | Logout pengguna |
+| /users | Daftar pengguna |
+| /equipment-loans | Halaman peminjaman peralatan |
+| /manager | Dashboard Penanggung Jawab Peralatan |
 
-All API routes require authentication.
+### API Routes
 
-## Notes
+| Endpoint | Fungsi |
+|-----------|---------|
+| GET /api/manager/loans/total | Mendapatkan jumlah seluruh peminjaman |
+| GET /api/manager/loans/requested | Mendapatkan jumlah peminjaman yang menunggu persetujuan |
+| GET /api/manager/loans/unreturned | Mendapatkan jumlah peminjaman yang belum dikembalikan |
+| GET /api/equipment-loans/track/:id | Melacak status peminjaman berdasarkan ID |
 
-- Sessions are stored in MySQL using `express-mysql-session`.
-- The app expects the database and session tables to be available.
-- Adjust the `.env` values to match your local or hosted database configuration.
+Seluruh endpoint API memerlukan autentikasi pengguna.
+
+## Pembagian Tugas Anggota
+
+| Nama | NIM | Tanggung Jawab |
+|------|------|------|
+| Wanda Fitriardi | 2411521004 | Dashboard Pengguna, Tambah Pengajuan Peminjaman, Edit Pengajuan Peminjaman, Batalkan Pengajuan Peminjaman, Export Surat Peminjaman PDF, API Pelacakan Status Peminjaman |
+| Fadel A. Rahman | 2411522017 | Persetujuan dan Penolakan Peminjaman, Update Status Pengembalian, Peminjaman Berlangsung, Riwayat Peminjaman, Export Data Status Peminjaman, API Jumlah Peminjaman Menunggu Persetujuan |
+| Ahmad Zuhdi Filanda | 2411522018 | Detail Data Peminjaman, Pencarian Riwayat Peminjaman, Filter Riwayat Berdasarkan Status atau Tanggal, Export Laporan Riwayat PDF, Preview Laporan, API Jumlah Seluruh Peminjaman, API Jumlah Peminjaman Belum Dikembalikan |
+
+## Catatan
+
+- Session pengguna disimpan pada MySQL menggunakan `express-mysql-session`.
+- Database dan tabel yang dibutuhkan harus tersedia sebelum aplikasi dijalankan.
+- Sesuaikan konfigurasi pada file `.env` dengan lingkungan pengembangan atau server yang digunakan.
+
+## Lisensi
+
+Proyek ini dikembangkan untuk memenuhi tugas mata kuliah Pemrograman Web Program Studi Sistem Informasi Universitas Andalas.
