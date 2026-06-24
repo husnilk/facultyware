@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+        const apply = (dark) => {
+          document.documentElement.classList.toggle("dark", dark);
+          try { localStorage.setItem("themeMode", dark ? "dark" : "light"); } catch (_) {}
+        };
+        document.addEventListener("basecoat:theme", (event) => {
+          const mode = event.detail?.mode;
+          apply(mode === "dark" ? true : mode === "light" ? false : !document.documentElement.classList.contains("dark"));
+        });
+      })();
+    </script>
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) document.documentElement.classList.add(`theme-${storedTheme}`);
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title %> — FacultyWare</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  </head>
+  <body>
+    <%- include('../partials/sidebar', { active: 'equipments' }) %>
+
+    <main id="content">
+      <%- include('../partials/topbar', { title: equipment.name }) %>
+
+      <div class="p-6 max-w-4xl space-y-6">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <a href="/equipments" class="hover:text-foreground transition-colors">Aset Peralatan</a>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="text-foreground font-medium truncate max-w-xs"><%= equipment.name %></span>
+        </nav>
+
+        <%
+          const conditionMap = {
+            good: { label: 'Baik', cls: 'badge-success' },
+            minor_damage: { label: 'Rusak Ringan', cls: 'badge-warning' },
+            major_damage: { label: 'Rusak Berat', cls: 'badge-destructive' }
+          };
+          const statusMap = {
+            available: { label: 'Tersedia', cls: '' },
+            in_use: { label: 'Digunakan', cls: 'badge-secondary' },
+            maintenance: { label: 'Dalam Perbaikan', cls: 'badge-warning' },
+            retired: { label: 'Tidak Aktif', cls: 'badge-destructive' }
+          };
+          const typeMap = { procurement: 'Pembelian', grant: 'Hibah' };
+          const cond = conditionMap[equipment.condition] || { label: equipment.condition, cls: '' };
+          const stat = statusMap[equipment.status] || { label: equipment.status, cls: '' };
+        %>
+
+        <!-- Header Card -->
+        <div class="card">
+          <div class="card-content px-4 pt-6">
+            <div class="flex gap-6 items-start">
+              <% if (equipment.photo) { %>
+              <img src="<%= equipment.photo %>" alt="<%= equipment.name %>"
+                class="h-44 w-44 rounded-xl border object-cover shrink-0 shadow-sm" />
+              <% } else { %>
+              <div class="h-44 w-44 rounded-xl border bg-muted flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+              </div>
+              <% } %>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 flex-wrap mb-1">
+                  <h1 class="text-2xl font-bold"><%= equipment.name %></h1>
+                  <span class="badge <%= cond.cls %>"><%= cond.label %></span>
+                  <span class="badge <%= stat.cls %>"><%= stat.label %></span>
+                </div>
+                <p class="text-muted-foreground font-mono text-sm mb-3 bg-muted inline-block px-2 py-0.5 rounded"><%= equipment.code %></p>
+                <% if (equipment.brand || equipment.model) { %>
+                <p class="text-sm mb-1">
+                  <% if (equipment.brand) { %><strong><%= equipment.brand %></strong><% } %>
+                  <% if (equipment.brand && equipment.model) { %> · <% } %>
+                  <% if (equipment.model) { %><span class="text-muted-foreground"><%= equipment.model %></span><% } %>
+                </p>
+                <% } %>
+                <% if (equipment.serial_number) { %>
+                <p class="text-xs text-muted-foreground font-mono mb-3">SN: <%= equipment.serial_number %></p>
+                <% } %>
+                <div class="flex gap-2 mt-4">
+                  <a href="/equipments/<%= equipment.id %>/edit" class="btn-sm-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit
+                  </a>
+                  <a href="/equipments" class="btn-sm-outline">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    Kembali
+                  </a>
+                  <form action="/equipments/<%= equipment.id %>?_method=DELETE" method="POST"
+                    onsubmit="return confirm('Hapus aset \'<%= equipment.name %>\'? Tidak dapat dibatalkan.')">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn-sm-destructive">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                      Hapus
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Informasi Perolehan -->
+          <div class="card">
+            <div class="card-header px-4">
+              <h2 class="card-title text-base">Informasi Perolehan</h2>
+            </div>
+            <div class="card-content px-4">
+              <dl class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Jenis Perolehan</dt>
+                  <dd class="font-medium"><%= typeMap[equipment.acquisition_type] || equipment.acquisition_type %></dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Tanggal Perolehan</dt>
+                  <dd class="font-medium">
+                    <%= equipment.acquisition_date
+                      ? new Date(equipment.acquisition_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+                      : '-' %>
+                  </dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Biaya Perolehan</dt>
+                  <dd class="font-medium"><%= formatRupiah(equipment.acquisition_cost) %></dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Nilai Penyusutan</dt>
+                  <dd class="font-medium"><%= formatRupiah(equipment.depreciation_value) %></dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Masa Manfaat</dt>
+                  <dd class="font-medium"><%= equipment.useful_life ? equipment.useful_life + ' tahun' : '-' %></dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          <!-- Informasi Teknis -->
+          <div class="card">
+            <div class="card-header px-4">
+              <h2 class="card-title text-base">Informasi Teknis</h2>
+            </div>
+            <div class="card-content px-4">
+              <dl class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Merek</dt>
+                  <dd class="font-medium"><%= equipment.brand || '-' %></dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Model</dt>
+                  <dd class="font-medium"><%= equipment.model || '-' %></dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">No. Seri</dt>
+                  <dd class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded"><%= equipment.serial_number || '-' %></dd>
+                </div>
+                <% if (equipment.purchase_link) { %>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Link Referensi</dt>
+                  <dd><a href="<%= equipment.purchase_link %>" target="_blank" rel="noopener" class="text-xs underline underline-offset-4 text-blue-600 dark:text-blue-400">Buka Link ↗</a></dd>
+                </div>
+                <% } %>
+                <div class="flex justify-between">
+                  <dt class="text-muted-foreground">Ditambahkan</dt>
+                  <dd class="font-medium">
+                    <%= equipment.created_at ? new Date(equipment.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-' %>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spesifikasi -->
+        <% if (equipment.specification) { %>
+        <div class="card">
+          <div class="card-header px-4">
+            <h2 class="card-title text-base">Spesifikasi</h2>
+          </div>
+          <div class="card-content px-4">
+            <p class="text-sm whitespace-pre-wrap leading-relaxed text-muted-foreground"><%= equipment.specification %></p>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </main>
+
+    <%- include('../partials/scripts') %>
+  </body>
+</html>

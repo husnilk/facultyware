@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+        const apply = (dark) => {
+          document.documentElement.classList.toggle("dark", dark);
+          try { localStorage.setItem("themeMode", dark ? "dark" : "light"); } catch (_) {}
+        };
+        document.addEventListener("basecoat:theme", (event) => {
+          const mode = event.detail?.mode;
+          apply(mode === "dark" ? true : mode === "light" ? false : !document.documentElement.classList.contains("dark"));
+        });
+      })();
+    </script>
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) document.documentElement.classList.add(`theme-${storedTheme}`);
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title %> — FacultyWare</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  </head>
+  <body>
+    <%- include('../partials/sidebar', { active: 'equipments' }) %>
+
+    <main id="content">
+      <%- include('../partials/topbar', { title: 'Edit Aset Peralatan' }) %>
+
+      <div class="p-6">
+        <nav class="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
+          <a href="/equipments" class="hover:text-foreground transition-colors">Aset Peralatan</a>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <a href="/equipments/<%= equipment.id %>" class="hover:text-foreground transition-colors"><%= equipment.name %></a>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="text-foreground font-medium">Edit</span>
+        </nav>
+
+        <form method="POST" action="/equipments/<%= equipment.id %>" enctype="multipart/form-data" class="space-y-6">
+          <input type="hidden" name="_method" value="PUT">
+
+          <!-- Informasi Aset -->
+          <div class="card">
+            <div class="card-header px-4">
+              <h1 class="card-title">Informasi Aset</h1>
+              <p class="card-description">Edit data pokok aset</p>
+            </div>
+            <div class="card-content px-4 space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label for="name" class="label">Nama Aset <span class="text-destructive">*</span></label>
+                  <input type="text" id="name" name="name" class="input <%= errors.find(e=>e.path==='name') ? 'border-destructive' : '' %>"
+                    maxlength="255" value="<%= equipment.name || '' %>" required />
+                  <% const nameErr = errors.find(e=>e.path==='name'); if (nameErr) { %><p class="text-destructive text-xs"><%= nameErr.msg %></p><% } %>
+                </div>
+                <div class="space-y-1.5">
+                  <label for="code" class="label">Kode Aset <span class="text-destructive">*</span></label>
+                  <input type="text" id="code" name="code" class="input <%= errors.find(e=>e.path==='code') ? 'border-destructive' : '' %>"
+                    maxlength="100" value="<%= equipment.code || '' %>" required />
+                  <% const codeErr = errors.find(e=>e.path==='code'); if (codeErr) { %><p class="text-destructive text-xs"><%= codeErr.msg %></p><% } %>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label for="acquisition_type" class="label">Jenis Perolehan <span class="text-destructive">*</span></label>
+                  <select id="acquisition_type" name="acquisition_type" class="input" required>
+                    <option value="procurement" <%= equipment.acquisition_type === 'procurement' ? 'selected' : '' %>>Pembelian (Procurement)</option>
+                    <option value="grant" <%= equipment.acquisition_type === 'grant' ? 'selected' : '' %>>Hibah (Grant)</option>
+                  </select>
+                </div>
+                <div class="space-y-1.5">
+                  <label for="acquisition_date" class="label">Tanggal Perolehan <span class="text-destructive">*</span></label>
+                  <input type="date" id="acquisition_date" name="acquisition_date" class="input"
+                    value="<%= equipment.acquisition_date ? new Date(equipment.acquisition_date).toISOString().split('T')[0] : '' %>" required />
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="acquisition_cost" class="label">Biaya Perolehan (Rp)</label>
+                <input type="number" id="acquisition_cost" name="acquisition_cost" class="input"
+                  placeholder="0" min="0" step="0.01" value="<%= equipment.acquisition_cost || '' %>" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label for="condition" class="label">Kondisi <span class="text-destructive">*</span></label>
+                  <select id="condition" name="condition" class="input" required>
+                    <option value="good" <%= equipment.condition === 'good' ? 'selected' : '' %>>Baik</option>
+                    <option value="minor_damage" <%= equipment.condition === 'minor_damage' ? 'selected' : '' %>>Rusak Ringan</option>
+                    <option value="major_damage" <%= equipment.condition === 'major_damage' ? 'selected' : '' %>>Rusak Berat</option>
+                  </select>
+                </div>
+                <div class="space-y-1.5">
+                  <label for="status" class="label">Status <span class="text-destructive">*</span></label>
+                  <select id="status" name="status" class="input" required>
+                    <option value="available" <%= equipment.status === 'available' ? 'selected' : '' %>>Tersedia</option>
+                    <option value="in_use" <%= equipment.status === 'in_use' ? 'selected' : '' %>>Digunakan</option>
+                    <option value="maintenance" <%= equipment.status === 'maintenance' ? 'selected' : '' %>>Dalam Perbaikan</option>
+                    <option value="retired" <%= equipment.status === 'retired' ? 'selected' : '' %>>Tidak Aktif</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="category_id" class="label">Kategori Aset <span class="text-muted-foreground text-xs">(opsional)</span></label>
+                <select id="category_id" name="category_id" class="input">
+                  <option value="">Tanpa Kategori</option>
+                  <% categories.forEach(cat => { %>
+                  <option value="<%= cat.id %>" <%= equipment.category_id == cat.id ? 'selected' : '' %>><%= cat.code %> — <%= cat.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detail Teknis -->
+          <div class="card">
+            <div class="card-header px-4">
+              <h2 class="card-title">Detail Teknis</h2>
+            </div>
+            <div class="card-content px-4 space-y-4">
+              <div class="grid grid-cols-3 gap-4">
+                <div class="space-y-1.5">
+                  <label for="brand" class="label">Merek</label>
+                  <input type="text" id="brand" name="brand" class="input" maxlength="255" value="<%= equipment.brand || '' %>" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="model" class="label">Model</label>
+                  <input type="text" id="model" name="model" class="input" maxlength="255" value="<%= equipment.model || '' %>" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="serial_number" class="label">Nomor Seri</label>
+                  <input type="text" id="serial_number" name="serial_number" class="input" maxlength="255" value="<%= equipment.serial_number || '' %>" />
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="specification" class="label">Spesifikasi</label>
+                <textarea id="specification" name="specification" class="input min-h-24 resize-y"><%= equipment.specification || '' %></textarea>
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="purchase_link" class="label">Link Pembelian / Referensi</label>
+                <input type="url" id="purchase_link" name="purchase_link" class="input" value="<%= equipment.purchase_link || '' %>" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label for="depreciation_value" class="label">Nilai Penyusutan (Rp/tahun)</label>
+                  <input type="number" id="depreciation_value" name="depreciation_value" class="input" min="0" step="0.01" value="<%= equipment.depreciation_value || '' %>" />
+                </div>
+                <div class="space-y-1.5">
+                  <label for="useful_life" class="label">Masa Manfaat (tahun)</label>
+                  <input type="number" id="useful_life" name="useful_life" class="input" min="0" value="<%= equipment.useful_life || '' %>" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Foto -->
+          <div class="card">
+            <div class="card-header px-4">
+              <h2 class="card-title">Foto Aset</h2>
+              <p class="card-description">Ganti foto · Maks. 2MB · JPG, PNG, WebP</p>
+            </div>
+            <div class="card-content px-4 space-y-3">
+              <% if (equipment.photo) { %>
+              <div>
+                <p class="text-sm text-muted-foreground mb-2">Foto saat ini:</p>
+                <img src="<%= equipment.photo %>" alt="Foto aset" class="h-36 w-auto rounded-md border object-cover" id="current-photo" />
+              </div>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" name="remove_photo" value="1" id="remove_photo"
+                  onchange="document.getElementById('current-photo').style.opacity = this.checked ? '0.3' : '1'" />
+                <span class="text-destructive">Hapus foto saat ini</span>
+              </label>
+              <% } %>
+              <div>
+                <label for="photo" class="label">Upload Foto Baru</label>
+                <input type="file" id="photo" name="photo" class="input mt-1" accept="image/jpeg,image/png,image/webp" />
+              </div>
+              <div id="photo-preview" class="hidden">
+                <img id="preview-img" src="" alt="Preview" class="h-36 w-auto rounded-md border object-cover" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-3">
+            <button type="submit" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Perbarui Aset
+            </button>
+            <a href="/equipments/<%= equipment.id %>" class="btn-outline">Batal</a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <%- include('../partials/scripts') %>
+    <script>
+      document.getElementById('photo').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.getElementById('preview-img').src = URL.createObjectURL(file);
+        document.getElementById('photo-preview').classList.remove('hidden');
+      });
+    </script>
+  </body>
+</html>

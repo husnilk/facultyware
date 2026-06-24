@@ -1,0 +1,113 @@
+### ============================================================
+### FacultyWare REST API — File Uji (pakai ekstensi "REST Client")
+### ============================================================
+###
+### CARA PAKAI:
+### 1. Install ekstensi VS Code: "REST Client" (oleh Huachao Mao)
+### 2. Jalankan server: npm run dev
+### 3. Klik tulisan "Send Request" yang muncul DI ATAS tiap request
+### 4. WAJIB jalankan "0. LOGIN" dulu — cookie session disimpan otomatis
+###
+### Tip: response JSON muncul di panel sebelah kanan.
+### ============================================================
+
+@baseUrl = http://localhost:3000
+
+
+### ========== 0. LOGIN (JALANKAN INI DULU) ==========
+# Akun lain: viewer@facultyware.com / password
+POST {{baseUrl}}/login
+Content-Type: application/x-www-form-urlencoded
+
+email=admin@facultyware.com&password=password
+
+
+### ========== STATISTIK ==========
+GET {{baseUrl}}/api/stats
+
+
+### ========== KATEGORI: list semua ==========
+GET {{baseUrl}}/api/equipment-categories
+
+
+### ========== KATEGORI: detail (id) ==========
+GET {{baseUrl}}/api/equipment-categories/1
+
+
+### ========== KATEGORI: buat baru (POST) ==========
+POST {{baseUrl}}/api/equipment-categories
+Content-Type: application/json
+
+{
+  "code": "KAT-01",
+  "name": "Komputer",
+  "description": "Peralatan komputer dan aksesoris"
+}
+
+
+### ========== KATEGORI: update (PUT) ==========
+PUT {{baseUrl}}/api/equipment-categories/1
+Content-Type: application/json
+
+{
+  "code": "KAT-01",
+  "name": "Komputer (Diperbarui)",
+  "description": "Deskripsi baru"
+}
+
+
+### ========== KATEGORI: hapus (DELETE) ==========
+DELETE {{baseUrl}}/api/equipment-categories/1
+
+
+### ========== ASET: list semua (+ search/filter) ==========
+# Isi nilai setelah '=' untuk filter, atau biarkan kosong
+GET {{baseUrl}}/api/equipments?q=&condition=&status=
+
+
+### ========== ASET: detail (id) ==========
+GET {{baseUrl}}/api/equipments/1
+
+
+### ========== ASET: buat baru (POST) ==========
+POST {{baseUrl}}/api/equipments
+Content-Type: application/json
+
+{
+  "name": "Laptop Dell XPS 13",
+  "code": "IT-2026-001",
+  "acquisition_type": "procurement",
+  "acquisition_date": "2026-01-15",
+  "acquisition_cost": 18500000,
+  "condition": "good",
+  "status": "available",
+  "brand": "Dell",
+  "model": "XPS 13 9310",
+  "serial_number": "SN12345678",
+  "specification": "Intel i7, RAM 16GB, SSD 512GB",
+  "category_id": null
+}
+
+
+### ========== ASET: update (PUT) ==========
+PUT {{baseUrl}}/api/equipments/1
+Content-Type: application/json
+
+{
+  "name": "Laptop Dell XPS 13 (Update)",
+  "code": "IT-2026-001",
+  "acquisition_type": "procurement",
+  "acquisition_date": "2026-01-15",
+  "acquisition_cost": 18500000,
+  "condition": "minor_damage",
+  "status": "maintenance",
+  "brand": "Dell",
+  "model": "XPS 13 9310",
+  "serial_number": "SN12345678",
+  "specification": "Intel i7, RAM 16GB, SSD 512GB",
+  "category_id": null
+}
+
+
+### ========== ASET: hapus (DELETE) ==========
+DELETE {{baseUrl}}/api/equipments/1

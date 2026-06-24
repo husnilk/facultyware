@@ -1,0 +1,70 @@
+<style>
+  select.input option { color: CanvasText; background-color: Canvas; }
+  .badge-success { display: inline-flex; align-items: center; border-radius: 9999px; border: 1px solid transparent; padding: 0.125rem 0.5rem; font-size: 0.75rem; font-weight: 500; white-space: nowrap; background: #16a34a; color: white; }
+  .badge-warning { display: inline-flex; align-items: center; border-radius: 9999px; border: 1px solid transparent; padding: 0.125rem 0.5rem; font-size: 0.75rem; font-weight: 500; white-space: nowrap; background: #d97706; color: white; }
+</style>
+<script>
+  (() => {
+    const sidebar = document.getElementById("sidebar");
+    if (!sidebar) return;
+
+    // Apakah viewport saat ini mode mobile? (breakpoint Basecoat: 48rem = 768px)
+    const isMobile = () => window.matchMedia("(max-width: 47.999rem)").matches;
+    const setHidden = (hidden) => sidebar.setAttribute("aria-hidden", hidden ? "true" : "false");
+
+    // State awal: mobile → tertutup, desktop → terbuka.
+    setHidden(isMobile());
+
+    // Tandai sebagai terinisialisasi agar CSS mobile aktif.
+    // Tanpa atribut ini, `.sidebar` di-`display:none` pada layar < 768px
+    // sehingga sidebar hilang dan tidak bisa ditrigger.
+    sidebar.setAttribute("data-sidebar-initialized", "");
+
+    // Toggle dari tombol di topbar (event kustom basecoat:sidebar)
+    document.addEventListener("basecoat:sidebar", () => {
+      const hidden = sidebar.getAttribute("aria-hidden") === "true";
+      setHidden(!hidden);
+    });
+
+    // Klik backdrop (area gelap di luar panel nav) menutup sidebar di mobile
+    sidebar.addEventListener("click", (e) => {
+      if (e.target === sidebar && isMobile()) setHidden(true);
+    });
+
+    // Klik link navigasi menutup sidebar di mobile
+    sidebar.querySelectorAll("nav a").forEach((a) => {
+      a.addEventListener("click", () => {
+        if (isMobile()) setHidden(true);
+      });
+    });
+
+    // Tekan Escape menutup sidebar di mobile
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isMobile()) setHidden(true);
+    });
+
+    // Saat berganti antara mobile/desktop, sesuaikan state default
+    let wasMobile = isMobile();
+    window.addEventListener("resize", () => {
+      const now = isMobile();
+      if (now !== wasMobile) {
+        setHidden(now);
+        wasMobile = now;
+      }
+    });
+
+    // Tandai link navigasi yang sedang aktif
+    const currentPath = window.location.pathname.replace(/\/$/, "");
+    sidebar.querySelectorAll("a").forEach((item) => {
+      const href = item.getAttribute("href");
+      if (!href) return;
+      try {
+        const url = new URL(href, window.location.origin);
+        const itemPath = url.pathname.replace(/\/$/, "");
+        if (itemPath === currentPath) {
+          item.setAttribute("aria-current", "page");
+        }
+      } catch (_) {}
+    });
+  })();
+</script>

@@ -1,0 +1,239 @@
+{
+  "info": {
+    "name": "FacultyWare REST API",
+    "description": "Koleksi endpoint REST API FacultyWare (Kategori Aset & Aset Peralatan).\n\nCARA PAKAI:\n1. Jalankan server: npm run dev\n2. Jalankan request '0. Login' DULU (auth berbasis session cookie).\n3. Setelah login sukses, request lain bisa dijalankan karena cookie tersimpan otomatis.\n\nBase URL diatur lewat variabel {{baseUrl}} = http://localhost:3000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Login (jalankan ini DULU)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "email", "value": "admin@facultyware.com", "type": "text" },
+            { "key": "password", "value": "password", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["login"]
+        },
+        "description": "Login akun admin. Postman menyimpan cookie session otomatis untuk request berikutnya.\n\nAkun lain:\n- viewer@facultyware.com / password"
+      },
+      "response": []
+    },
+    {
+      "name": "Statistik",
+      "item": [
+        {
+          "name": "GET /api/stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats"]
+            },
+            "description": "Statistik ringkas: total aset, per kondisi, per status, per kategori."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Kategori Aset",
+      "item": [
+        {
+          "name": "GET semua kategori",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipment-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipment-categories"]
+            },
+            "description": "List semua kategori + jumlah aset per kategori."
+          },
+          "response": []
+        },
+        {
+          "name": "GET detail kategori (id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipment-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipment-categories", "1"]
+            },
+            "description": "Detail satu kategori. Ganti angka 1 dengan id yang ada."
+          },
+          "response": []
+        },
+        {
+          "name": "POST buat kategori",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"KAT-01\",\n  \"name\": \"Komputer\",\n  \"description\": \"Peralatan komputer dan aksesoris\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/equipment-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipment-categories"]
+            },
+            "description": "Buat kategori baru. Wajib: code, name. Opsional: description. Sukses → HTTP 201."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT update kategori (id)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"KAT-01\",\n  \"name\": \"Komputer (Diperbarui)\",\n  \"description\": \"Deskripsi baru\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/equipment-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipment-categories", "1"]
+            },
+            "description": "Update kategori. Ganti angka 1 dengan id yang ada."
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE kategori (id)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipment-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipment-categories", "1"]
+            },
+            "description": "Hapus kategori. Ganti angka 1 dengan id yang ada."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Aset Peralatan",
+      "item": [
+        {
+          "name": "GET semua aset (+ search/filter)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipments?q=&condition=&status=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipments"],
+              "query": [
+                { "key": "q", "value": "", "description": "kata kunci: nama/kode/merek/spesifikasi" },
+                { "key": "condition", "value": "", "description": "good | minor_damage | major_damage" },
+                { "key": "status", "value": "", "description": "available | in_use | maintenance | retired" }
+              ]
+            },
+            "description": "List aset. Isi query param untuk search/filter, atau kosongkan untuk semua."
+          },
+          "response": []
+        },
+        {
+          "name": "GET detail aset (id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipments/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipments", "1"]
+            },
+            "description": "Detail satu aset. Ganti angka 1 dengan id yang ada."
+          },
+          "response": []
+        },
+        {
+          "name": "POST buat aset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Dell XPS 13\",\n  \"code\": \"IT-2026-001\",\n  \"acquisition_type\": \"procurement\",\n  \"acquisition_date\": \"2026-01-15\",\n  \"acquisition_cost\": 18500000,\n  \"condition\": \"good\",\n  \"status\": \"available\",\n  \"brand\": \"Dell\",\n  \"model\": \"XPS 13 9310\",\n  \"serial_number\": \"SN12345678\",\n  \"specification\": \"Intel i7, RAM 16GB, SSD 512GB\",\n  \"category_id\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/equipments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipments"]
+            },
+            "description": "Buat aset baru (pakai transaction). Wajib: name, code, acquisition_type, acquisition_date, condition, status. Sukses → HTTP 201."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT update aset (id)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Dell XPS 13 (Update)\",\n  \"code\": \"IT-2026-001\",\n  \"acquisition_type\": \"procurement\",\n  \"acquisition_date\": \"2026-01-15\",\n  \"acquisition_cost\": 18500000,\n  \"condition\": \"minor_damage\",\n  \"status\": \"maintenance\",\n  \"brand\": \"Dell\",\n  \"model\": \"XPS 13 9310\",\n  \"serial_number\": \"SN12345678\",\n  \"specification\": \"Intel i7, RAM 16GB, SSD 512GB\",\n  \"category_id\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/equipments/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipments", "1"]
+            },
+            "description": "Update aset. Ganti angka 1 dengan id yang ada."
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE aset (id)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipments/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "equipments", "1"]
+            },
+            "description": "Hapus aset + foto dari disk. Ganti angka 1 dengan id yang ada."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -59,3 +59,39 @@ typings/
 
 # next.js build output
 .next
+
+# ==============================
+# FacultyWare — Project Specific
+# ==============================
+
+# Dokumentasi internal AI (jangan push ke repo)
+CLAUDE.md
+GEMINI.md
+
+# Script migrasi lokal (sudah tidak dipakai, hanya referensi)
+scripts/migrate_categories.js
+
+# File foto upload oleh user (jangan push)
+# CATATAN DEPLOY: filesystem Railway bersifat ephemeral — foto upload akan hilang saat
+# redeploy. Untuk produksi gunakan object storage (mis. S3) atau volume persisten Railway.
+public/uploads/equipment/*
+# Tapi tetap track folder-nya agar ada saat clone
+!public/uploads/equipment/.gitkeep
+
+# ==============================
+# Output & artefak testing (TIDAK diperlukan untuk deploy)
+# ==============================
+playwright-report/
+test-results/
+/playwright/.cache/
+/blob-report/
+/playwright/.auth/
+
+# ==============================
+# Editor & OS (lokal, tidak diperlukan untuk deploy)
+# ==============================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

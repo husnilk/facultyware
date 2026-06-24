@@ -2,11 +2,44 @@ const bcrypt = require("bcryptjs");
 const db = require("../lib/db");
 
 const index = (req, res) => {
-  res.render("index", { title: "Express" });
+  res.redirect("/login");
 };
 
-const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+const home = async (req, res, next) => {
+  try {
+    // Statistik total
+    const [[{ total }]] = await db.query(`SELECT COUNT(*) AS total FROM assets WHERE type = 'equipment'`);
+
+    // Kondisi
+    const [[{ good }]] = await db.query(`SELECT COUNT(*) AS good FROM assets WHERE type = 'equipment' AND \`condition\` = 'good'`);
+    const [[{ damaged }]] = await db.query(`SELECT COUNT(*) AS damaged FROM assets WHERE type = 'equipment' AND \`condition\` IN ('minor_damage', 'major_damage')`);
+
+    // Status
+    const [[{ available }]] = await db.query(`SELECT COUNT(*) AS available FROM assets WHERE type = 'equipment' AND status = 'available'`);
+    const [[{ in_use }]] = await db.query(`SELECT COUNT(*) AS in_use FROM assets WHERE type = 'equipment' AND status = 'in_use'`);
+    const [[{ maintenance }]] = await db.query(`SELECT COUNT(*) AS maintenance FROM assets WHERE type = 'equipment' AND status = 'maintenance'`);
+    const [[{ retired }]] = await db.query(`SELECT COUNT(*) AS retired FROM assets WHERE type = 'equipment' AND status = 'retired'`);
+
+    // 5 aset terbaru
+    const [recentEquipments] = await db.query(`
+      SELECT a.id, a.name, a.code, a.condition, a.status, a.created_at,
+        e.brand, e.model
+      FROM assets a
+      JOIN equipments e ON e.asset_id = a.id
+      WHERE a.type = 'equipment'
+      ORDER BY a.created_at DESC
+      LIMIT 5
+    `);
+
+    res.render('home', {
+      title: 'Dashboard',
+      user: req.session.email,
+      stats: { total, good, damaged, available, in_use, maintenance, retired },
+      recentEquipments,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 const loginPage = (req, res) => {
@@ -17,17 +50,17 @@ const loginPage = (req, res) => {
 };
 
 const login = async (req, res, next) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
+      email,
     ]);
 
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau password salah",
       });
     }
 
@@ -37,14 +70,17 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau password salah",
       });
     }
 
     // Set session
     req.session.userId = user.id;
-    req.session.username = user.username;
+    req.session.email = user.email;
+    req.session.name = user.name;
 
+    // res.redirect sudah dibungkus middleware agar menyimpan sesi dulu
+    // (lihat app.js) — mencegah race condition dengan store async.
     res.redirect("/home");
   } catch (err) {
     next(err);
