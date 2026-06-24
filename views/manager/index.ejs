@@ -263,8 +263,8 @@
     <script>
       // Stat cards
       Promise.all([
-        fetch('/manager/api/loans/total').then(r => r.json()),
-        fetch('/manager/api/loans/unreturned').then(r => r.json())
+        fetch('/api/manager/loans/total').then(r => r.json()),
+        fetch('/api/manager/loans/unreturned').then(r => r.json())
       ]).then(([total, unreturned]) => {
         document.getElementById('stat-total').textContent = total.total;
         document.getElementById('stat-unreturned').textContent = unreturned.total;

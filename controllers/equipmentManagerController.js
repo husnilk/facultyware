@@ -365,47 +365,7 @@ const exportOngoingPDF = async (req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────
-// 5. API – total peminjaman selesai (returned + rejected)
-// ─────────────────────────────────────────────
-const apiTotalLoans = async (req, res, next) => {
-  try {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status IN ('returned', 'rejected')`
-    );
-    res.json({ total: rows[0].total });
-  } catch (err) {
-    next(err);
-  }
-};
 
-// ─────────────────────────────────────────────
-// 5B. API – jumlah peminjaman dengan status 'requested'
-// ─────────────────────────────────────────────
-const apiRequestedLoans = async (req, res, next) => {
-  try {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status = 'requested'`
-    );
-    res.json({ total: rows[0].total });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ─────────────────────────────────────────────
-// 6. API – peminjaman dibatalkan (rejected)
-// ─────────────────────────────────────────────
-const apiUnreturnedLoans = async (req, res, next) => {
-  try {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_loans WHERE status = 'rejected'`
-    );
-    res.json({ total: rows[0].total });
-  } catch (err) {
-    next(err);
-  }
-};
 
 // ─────────────────────────────────────────────
 // 7. Approve a single loan (Penanggung Jawab)
@@ -537,9 +497,7 @@ module.exports = {
   previewReport,
   exportPDF,
   exportOngoingPDF,
-  apiTotalLoans,
-  apiRequestedLoans,
-  apiUnreturnedLoans,
+
   approveLoan,
   returnLoan,
   rejectLoan,

@@ -39,14 +39,6 @@ router.post('/loan/:id/reject', ...canManage, ctrl.rejectLoan);
 // Bulk cancel selected loans
 router.post('/loans/cancel', ...canManage, ctrl.cancelLoans);
 
-// ── API endpoints ──────────────────────────────
-// Total semua peminjaman
-router.get('/api/loans/total', isAuthenticated, ctrl.apiTotalLoans);
 
-// Total peminjaman dengan status 'requested'
-router.get('/api/loans/requested', isAuthenticated, ctrl.apiRequestedLoans);
-
-// Total peminjaman belum dikembalikan
-router.get('/api/loans/unreturned', isAuthenticated, ctrl.apiUnreturnedLoans);
 
 module.exports = router;
