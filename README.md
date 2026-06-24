@@ -10,7 +10,6 @@ Aplikasi berbasis web yang digunakan untuk mengelola proses peminjaman peralatan
 - Menambah pengajuan peminjaman peralatan
 - Mengubah data pengajuan peminjaman
 - Membatalkan pengajuan peminjaman
-- Melihat status peminjaman
 - Mengunduh surat peminjaman dalam format PDF
 - Melacak status peminjaman melalui API
 
