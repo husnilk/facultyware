@@ -1,0 +1,51 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h2 class="text-xl font-bold tracking-tight text-foreground">Laporan Hasil Perjalanan Dinas</h2>
+    <p class="text-sm text-muted-foreground">Kumpulan berkas dan laporan hasil perjalanan dinas yang telah diselesaikan.</p>
+  </div>
+</div>
+
+<!-- Table Card -->
+<div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-muted/40 border-b text-muted-foreground text-xs uppercase font-medium">
+        <tr>
+          <th class="px-6 py-3">No. Permohonan</th>
+          <th class="px-6 py-3">Pegawai</th>
+          <th class="px-6 py-3">Tujuan</th>
+          <th class="px-6 py-3">Tanggal Pelaksanaan</th>
+          <th class="px-6 py-3">Hasil Singkat (Outcome)</th>
+          <th class="px-6 py-3">Tindak Lanjut</th>
+          <th class="px-6 py-3 text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (travels.length === 0) { %>
+          <tr>
+            <td colspan="7" class="text-center py-8 text-muted-foreground">Belum ada laporan perjalanan dinas yang selesai (Completed).</td>
+          </tr>
+        <% } else { %>
+          <% travels.forEach(t => { %>
+            <tr class="border-b hover:bg-muted/30 transition-colors">
+              <td class="px-6 py-4 font-semibold text-foreground"><%= t.request_number %></td>
+              <td class="px-6 py-4 font-medium text-foreground"><%= t.submitter_name || t.submitter_username %></td>
+              <td class="px-6 py-4"><%= t.destination %></td>
+              <td class="px-6 py-4 text-xs"><%= new Date(t.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) %> - <%= new Date(t.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) %></td>
+              <td class="px-6 py-4 text-xs truncate max-w-[200px]"><%= t.travel_outcome %></td>
+              <td class="px-6 py-4 text-xs truncate max-w-[200px]"><%= t.outcome_followup || '-' %></td>
+              <td class="px-6 py-4 text-right whitespace-nowrap">
+                <a href="/pimpinan/travels/detail/<%= t.id %>" class="btn-outline btn-xs">Lihat Detail Laporan</a>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

@@ -1,0 +1,370 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  <div>
+    <h2 class="text-xl font-bold tracking-tight text-foreground">Detail Perjalanan Dinas</h2>
+    <p class="text-sm text-muted-foreground">Kelola semua rincian perjalanan, jadwal, berkas, dan laporan di sini.</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="/pegawai/travels" class="btn-outline btn-sm flex items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span>Kembali</span>
+    </a>
+    <a href="/pegawai/travels/print/<%= travel.id %>" class="btn-secondary btn-sm flex items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+      <span>Cetak PDF Surat Tugas</span>
+    </a>
+    <% if (travel.status === 'draft') { %>
+      <a href="/pegawai/travels/submit/<%= travel.id %>" onclick="return confirm('Kirim permohonan ini untuk disetujui pimpinan?')" class="btn-primary btn-sm flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span>Ajukan Permohonan</span>
+      </a>
+    <% } %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+  
+  <!-- Left Side: Travel Info Details -->
+  <div class="lg:col-span-2 space-y-6">
+    
+    <!-- Core Details -->
+    <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+      <div class="flex items-center justify-between border-b pb-4 mb-4">
+        <h3 class="font-semibold text-lg">Informasi Perjalanan</h3>
+        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold badge-<%= travel.status %>">
+          <%= travel.status.toUpperCase() %>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-muted-foreground">Nomor Surat Tugas</p>
+          <p class="text-sm font-semibold text-foreground"><%= travel.request_number %></p>
+        </div>
+        <div>
+          <p class="text-xs text-muted-foreground">Tujuan / Destinasi</p>
+          <p class="text-sm font-semibold text-foreground"><%= travel.destination %></p>
+        </div>
+        <div>
+          <p class="text-xs text-muted-foreground">Tanggal Pelaksanaan</p>
+          <p class="text-sm text-foreground">
+            <%= new Date(travel.start_date).toLocaleDateString('id-ID', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}) %> s/d<br/>
+            <%= new Date(travel.end_date).toLocaleDateString('id-ID', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}) %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-muted-foreground">Surat Undangan</p>
+          <% if (travel.invitation_file) { %>
+            <a href="<%= travel.invitation_file %>" target="_blank" class="text-sm text-primary underline font-medium">Buka File Surat Undangan</a>
+          <% } else { %>
+            <p class="text-sm text-muted-foreground">-</p>
+          <% } %>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-xs text-muted-foreground">Keperluan / Maksud Tugas</p>
+          <p class="text-sm text-foreground whitespace-pre-line"><%= travel.purpose %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Itineraries Sub-Module -->
+    <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+      <h3 class="font-semibold text-lg mb-4 border-b pb-2">Jadwal Perjalanan (Itinerary)</h3>
+      
+      <div class="overflow-x-auto mb-4">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-muted/40 text-xs text-muted-foreground uppercase font-medium">
+            <tr class="border-b">
+              <th class="py-2 px-3">Tanggal</th>
+              <th class="py-2 px-3">Lokasi</th>
+              <th class="py-2 px-3">Aktivitas</th>
+              <th class="py-2 px-3">Keterangan</th>
+              <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+                <th class="py-2 px-3 text-right">Aksi</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (itineraries.length === 0) { %>
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted-foreground text-xs">Belum ada rincian jadwal kegiatan.</td>
+              </tr>
+            <% } else { %>
+              <% itineraries.forEach(i => { %>
+                <tr class="border-b hover:bg-muted/20">
+                  <td class="py-3 px-3 text-xs whitespace-nowrap"><%= new Date(i.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) %></td>
+                  <td class="py-3 px-3"><%= i.location %></td>
+                  <td class="py-3 px-3 font-medium"><%= i.activity %></td>
+                  <td class="py-3 px-3 text-xs"><%= i.description || '-' %></td>
+                  <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+                    <td class="py-3 px-3 text-right">
+                      <a href="/pegawai/itineraries/delete/<%= i.id %>" onclick="return confirm('Hapus jadwal ini?')" class="btn-destructive btn-xs">Hapus</a>
+                    </td>
+                  <% } %>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+        <!-- Add Itinerary Form -->
+        <form action="/pegawai/itineraries/save" method="POST" class="bg-muted/30 p-4 rounded-lg space-y-4">
+          <input type="hidden" name="official_travel_id" value="<%= travel.id %>" />
+          <h4 class="text-xs font-semibold uppercase text-muted-foreground">Tambah Jadwal</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium">Tanggal</label>
+              <input type="date" name="date" required class="flex h-8 rounded border border-input bg-background px-2 text-xs" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium">Lokasi</label>
+              <input type="text" name="location" placeholder="Lokasi" required class="flex h-8 rounded border border-input bg-background px-2 text-xs" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium">Aktivitas</label>
+              <input type="text" name="activity" placeholder="Kegiatan" required class="flex h-8 rounded border border-input bg-background px-2 text-xs" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium">Deskripsi Kegiatan</label>
+            <input type="text" name="description" placeholder="Penjelasan (opsional)" class="flex h-8 rounded border border-input bg-background px-2 text-xs" />
+          </div>
+          <button type="submit" class="btn-secondary btn-sm">Tambah Jadwal</button>
+        </form>
+      <% } %>
+    </div>
+
+    <!-- Members Sub-Module -->
+    <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+      <h3 class="font-semibold text-lg mb-4 border-b pb-2">Anggota Perjalanan & Laporan Ringkas</h3>
+
+      <div class="overflow-x-auto mb-4">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-muted/40 text-xs text-muted-foreground uppercase font-medium">
+            <tr class="border-b">
+              <th class="py-2 px-3">Nama Anggota</th>
+              <th class="py-2 px-3">Peran / Role</th>
+              <th class="py-2 px-3">Laporan Ringkas</th>
+              <th class="py-2 px-3">Tanggal Laporan</th>
+              <th class="py-2 px-3">Lampiran</th>
+              <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+                <th class="py-2 px-3 text-right">Aksi</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (members.length === 0) { %>
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted-foreground text-xs">Belum ada anggota perjalanan.</td>
+              </tr>
+            <% } else { %>
+              <% members.forEach(m => { %>
+                <tr class="border-b hover:bg-muted/20">
+                  <td class="py-3 px-3 font-medium"><%= m.name %></td>
+                  <td class="py-3 px-3 text-xs"><%= m.role %></td>
+                  <td class="py-3 px-3 text-xs truncate max-w-[150px]"><%= m.summary || '-' %></td>
+                  <td class="py-3 px-3 text-xs"><%= m.report_date ? new Date(m.report_date).toLocaleDateString('id-ID') : '-' %></td>
+                  <td class="py-3 px-3 text-xs">
+                    <% if (m.attachment) { %>
+                      <a href="<%= m.attachment %>" target="_blank" class="text-primary underline">Lihat</a>
+                    <% } else { %>
+                      -
+                    <% } %>
+                  </td>
+                  <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+                    <td class="py-3 px-3 text-right">
+                      <a href="/pegawai/members/delete/<%= m.id %>" onclick="return confirm('Hapus anggota ini?')" class="btn-destructive btn-xs">Hapus</a>
+                    </td>
+                  <% } %>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+        <!-- Add Member Form -->
+        <form action="/pegawai/members/save" method="POST" enctype="multipart/form-data" class="bg-muted/30 p-4 rounded-lg space-y-4">
+          <input type="hidden" name="official_travel_id" value="<%= travel.id %>" />
+          <h4 class="text-xs font-semibold uppercase text-muted-foreground">Tambah Anggota & Laporan Ringkas</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium">Pegawai</label>
+              <select name="employee_id" required class="flex h-8 rounded border border-input bg-background px-2 text-xs">
+                <% availableEmployees.forEach(e => { %>
+                  <option value="<%= e.id %>"><%= e.name %> (NIP: <%= e.employee_number || '-' %>)</option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium">Peran / Role</label>
+              <input type="text" name="role" placeholder="Contoh: Ketua Delegasi / Anggota" required class="flex h-8 rounded border border-input bg-background px-2 text-xs" />
+            </div>
+          </div>
+          
+          <div class="bg-card p-3 rounded border border-input/50 space-y-3">
+            <h5 class="text-[11px] font-semibold uppercase text-muted-foreground">Laporan Ringkas Anggota (Opsional)</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium">Tanggal Lapor</label>
+                <input type="date" name="report_date" class="flex h-8 rounded border border-input bg-background px-2 text-xs" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium">File Lampiran</label>
+                <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png" class="flex h-8 text-xs file:border-0 file:bg-transparent file:text-xs text-foreground" />
+              </div>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium">Ringkasan Kegiatan Anggota</label>
+              <textarea name="summary" rows="2" class="flex w-full rounded border border-input bg-background px-2 py-1 text-xs" placeholder="Penjelasan tugas yang diselesaikan..."></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-secondary btn-sm">Tambah Anggota</button>
+        </form>
+      <% } %>
+    </div>
+
+    <!-- Expenses / Claims list -->
+    <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+      <div class="flex items-center justify-between border-b pb-2 mb-4">
+        <h3 class="font-semibold text-lg">Biaya & Klaim Reimburse</h3>
+        <% if (travel.status === 'approved' || travel.status === 'completed') { %>
+          <a href="/pegawai/expenses/create?travel_id=<%= travel.id %>" class="btn-secondary btn-xs">Tambah Klaim Biaya</a>
+        <% } %>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-muted/40 text-xs text-muted-foreground uppercase font-medium">
+            <tr class="border-b">
+              <th class="py-2 px-3">Komponen Biaya</th>
+              <th class="py-2 px-3">Jumlah</th>
+              <th class="py-2 px-3">Keterangan</th>
+              <th class="py-2 px-3">Bukti Nota</th>
+              <th class="py-2 px-3">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (expenses.length === 0) { %>
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted-foreground text-xs">Belum ada pengajuan reimburse untuk perjalanan ini.</td>
+              </tr>
+            <% } else { %>
+              <% expenses.forEach(e => { %>
+                <tr class="border-b hover:bg-muted/20">
+                  <td class="py-3 px-3 font-medium"><%= e.component_name %> (<%= e.component_code %>)</td>
+                  <td class="py-3 px-3">Rp <%= Number(e.amount).toLocaleString('id-ID') %></td>
+                  <td class="py-3 px-3 text-xs"><%= e.description || '-' %></td>
+                  <td class="py-3 px-3 text-xs">
+                    <% if (e.receipt_file) { %>
+                      <a href="<%= e.receipt_file %>" target="_blank" class="text-primary underline">Lihat Nota</a>
+                    <% } else { %>
+                      -
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-3">
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-<%= e.status %>">
+                      <%= e.status %>
+                    </span>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Side: Documents & Outcomes -->
+  <div class="space-y-6">
+    
+    <!-- Upload Documents Sub-Module -->
+    <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+      <h3 class="font-semibold text-lg mb-4 border-b pb-2">Dokumen Perjalanan</h3>
+      
+      <!-- Doc List -->
+      <ul class="space-y-3 mb-4">
+        <% if (documents.length === 0) { %>
+          <li class="text-xs text-muted-foreground text-center py-2">Belum ada berkas terunggah.</li>
+        <% } else { %>
+          <% documents.forEach(d => { %>
+            <li class="flex items-center justify-between p-2 rounded-md bg-muted/30 border border-input/30 text-xs">
+              <div class="overflow-hidden mr-2">
+                <p class="font-semibold truncate text-foreground"><%= d.title %></p>
+                <a href="<%= d.file_path %>" target="_blank" class="text-[10px] text-primary underline">Download Berkas</a>
+              </div>
+              <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+                <a href="/pegawai/documents/delete/<%= d.id %>" onclick="return confirm('Hapus dokumen ini?')" class="btn-destructive btn-xs p-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </a>
+              <% } %>
+            </li>
+          <% }) %>
+        <% } %>
+      </ul>
+
+      <% if (travel.status === 'draft' || travel.status === 'pending') { %>
+        <!-- Doc Form -->
+        <form action="/pegawai/documents/upload" method="POST" enctype="multipart/form-data" class="bg-muted/30 p-3 rounded-lg space-y-3">
+          <input type="hidden" name="official_travel_id" value="<%= travel.id %>" />
+          <h4 class="text-xs font-semibold uppercase text-muted-foreground">Unggah Dokumen</h4>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium">Nama Dokumen</label>
+            <input type="text" name="title" placeholder="Contoh: Tiket, Agenda Kegiatan" required class="flex h-8 rounded border border-input bg-background px-2 text-xs" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium">Pilih File</label>
+            <input type="file" name="file" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="flex text-xs file:border-0 file:bg-transparent file:text-xs text-foreground" />
+          </div>
+          <button type="submit" class="btn-secondary btn-sm w-full">Upload Berkas</button>
+        </form>
+      <% } %>
+    </div>
+
+    <!-- Outcome Report Sub-Module -->
+    <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6">
+      <h3 class="font-semibold text-lg mb-4 border-b pb-2">Laporan Hasil Perjalanan</h3>
+      
+      <% if (travel.status === 'approved') { %>
+        <!-- Form to fill outcome -->
+        <form action="/pegawai/travels/outcome/<%= travel.id %>" method="POST" class="space-y-4">
+          <div class="flex flex-col gap-1">
+            <label for="travel_outcome" class="text-xs font-medium">Hasil Perjalanan (Outcome) <span class="text-destructive">*</span></label>
+            <textarea id="travel_outcome" name="travel_outcome" rows="4" required class="flex w-full rounded border border-input bg-background px-2 py-1 text-xs" placeholder="Uraikan hasil pelaksanaan tugas dinas..."></textarea>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label for="outcome_followup" class="text-xs font-medium">Rencana Tindak Lanjut <span class="text-destructive">*</span></label>
+            <textarea id="outcome_followup" name="outcome_followup" rows="3" required class="flex w-full rounded border border-input bg-background px-2 py-1 text-xs" placeholder="Rencana tindak lanjut setelah perjalanan dinas selesai..."></textarea>
+          </div>
+          <button type="submit" class="btn-primary btn-sm w-full">Simpan & Selesaikan Laporan</button>
+        </form>
+      <% } else if (travel.status === 'completed') { %>
+        <!-- Output outcome -->
+        <div class="space-y-4">
+          <div>
+            <p class="text-xs text-muted-foreground font-semibold">Hasil Perjalanan (Outcome):</p>
+            <p class="text-xs text-foreground bg-muted/40 p-2 rounded border border-input/30 whitespace-pre-line mt-1"><%= travel.travel_outcome %></p>
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground font-semibold">Rencana Tindak Lanjut:</p>
+            <p class="text-xs text-foreground bg-muted/40 p-2 rounded border border-input/30 whitespace-pre-line mt-1"><%= travel.outcome_followup %></p>
+          </div>
+        </div>
+      <% } else { %>
+        <p class="text-xs text-muted-foreground text-center py-4">Laporan hanya dapat diisi jika permohonan telah disetujui (Approved) oleh Pimpinan.</p>
+      <% } %>
+    </div>
+
+  </div>
+
+</div>
+
+<%- include('../layouts/footer') %>

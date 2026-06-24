@@ -1,0 +1,102 @@
+Tables in tb_b5:
+employees, official_travel, official_travel_approvals, permissions, role_has_permissions, roles, sessions, user_has_roles, users
+
+========================================
+Table: employees
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+id | int(11) | NO | PRI | null | auto_increment
+name | varchar(255) | NO |  | null | 
+user_id | int(11) | YES | UNI | null | 
+created_at | timestamp | NO |  | current_timestamp() | 
+updated_at | timestamp | NO |  | current_timestamp() | on update current_timestamp()
+
+========================================
+Table: official_travel
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+id | int(11) | NO | PRI | null | auto_increment
+request_number | varchar(255) | NO | UNI | null | 
+purpose | text | NO |  | null | 
+destination | varchar(255) | NO |  | null | 
+start_date | date | NO |  | null | 
+end_date | date | NO |  | null | 
+invitation_file | varchar(255) | YES |  | null | 
+status | enum('draft','pending','approved','rejected','completed') | YES |  | draft | 
+submitted_by | int(11) | YES | MUL | null | 
+submitted_at | datetime | YES |  | null | 
+approved_by | varchar(255) | YES |  | null | 
+approved_at | datetime | YES |  | null | 
+travel_outcome | text | YES |  | null | 
+outcome_followup | text | YES |  | null | 
+submitted_by_id | int(11) | YES | MUL | null | 
+approved_by_id | int(11) | YES | MUL | null | 
+created_at | timestamp | NO |  | current_timestamp() | 
+updated_at | timestamp | NO |  | current_timestamp() | on update current_timestamp()
+
+========================================
+Table: official_travel_approvals
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+id | int(11) | NO | PRI | null | auto_increment
+official_travel_id | int(11) | NO | MUL | null | 
+approver_id | int(11) | YES |  | null | 
+status | varchar(50) | NO |  | null | 
+notes | text | YES |  | null | 
+action_date | datetime | YES |  | null | 
+employee_id | int(11) | YES |  | null | 
+
+========================================
+Table: permissions
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+id | int(11) | NO | PRI | null | auto_increment
+name | varchar(255) | NO | UNI | null | 
+
+========================================
+Table: role_has_permissions
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+role_id | int(11) | NO | PRI | null | 
+permission_id | int(11) | NO | PRI | null | 
+
+========================================
+Table: roles
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+id | int(11) | NO | PRI | null | auto_increment
+name | varchar(255) | NO | UNI | null | 
+
+========================================
+Table: sessions
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+session_id | varchar(128) | NO | PRI | null | 
+expires | int(11) unsigned | NO |  | null | 
+data | mediumtext | YES |  | null | 
+
+========================================
+Table: user_has_roles
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+user_id | int(11) | NO | PRI | null | 
+role_id | int(11) | NO | PRI | null | 
+
+========================================
+Table: users
+========================================
+Field | Type | Null | Key | Default | Extra
+----------------------------------------
+id | int(11) | NO | PRI | null | auto_increment
+username | varchar(255) | NO | UNI | null | 
+password | varchar(255) | NO |  | null | 
+created_at | timestamp | NO |  | current_timestamp() | 
+

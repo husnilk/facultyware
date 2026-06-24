@@ -1,0 +1,78 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h2 class="text-xl font-bold tracking-tight text-foreground">Daftar Reimburse / Biaya</h2>
+    <p class="text-sm text-muted-foreground">Klaim dan pantau status reimbursement pengeluaran perjalanan dinas Anda.</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="/pegawai/expenses/create" class="btn-primary flex items-center gap-1.5">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+      <span>Klaim Reimburse</span>
+    </a>
+    <a href="/pegawai/export/expenses" class="btn-outline flex items-center gap-1.5">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+      <span>Export Excel</span>
+    </a>
+  </div>
+</div>
+
+<div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-muted/40 border-b text-muted-foreground text-xs uppercase font-medium">
+        <tr>
+          <th class="px-6 py-3">No. Permohonan</th>
+          <th class="px-6 py-3">Komponen Biaya</th>
+          <th class="px-6 py-3">Jumlah</th>
+          <th class="px-6 py-3">Keterangan</th>
+          <th class="px-6 py-3">Bukti Nota</th>
+          <th class="px-6 py-3">Status</th>
+          <th class="px-6 py-3 text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (expenses.length === 0) { %>
+          <tr>
+            <td colspan="7" class="text-center py-8 text-muted-foreground">Belum ada pengajuan reimburse biaya. Silakan klaim reimburse baru.</td>
+          </tr>
+        <% } else { %>
+          <% expenses.forEach(e => { %>
+            <tr class="border-b hover:bg-muted/30 transition-colors">
+              <td class="px-6 py-4 font-semibold text-foreground"><%= e.request_number %></td>
+              <td class="px-6 py-4">
+                <span class="font-medium text-foreground"><%= e.component_name %></span>
+                <span class="text-xs text-muted-foreground block">(<%= e.component_code %>)</span>
+              </td>
+              <td class="px-6 py-4 font-bold text-foreground">Rp <%= Number(e.amount).toLocaleString('id-ID') %></td>
+              <td class="px-6 py-4 truncate max-w-[200px] text-xs"><%= e.description || '-' %></td>
+              <td class="px-6 py-4 text-xs">
+                <% if (e.receipt_file) { %>
+                  <a href="<%= e.receipt_file %>" target="_blank" class="text-primary underline font-medium">Lihat Bukti Nota</a>
+                <% } else { %>
+                  <span class="text-muted-foreground">-</span>
+                <% } %>
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-<%= e.status %>">
+                  <%= e.status %>
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                <% if (e.status === 'submitted') { %>
+                  <a href="/pegawai/expenses/edit/<%= e.id %>" class="btn-outline btn-xs text-blue-600 dark:text-blue-400">Edit</a>
+                  <a href="/pegawai/expenses/delete/<%= e.id %>" onclick="return confirm('Apakah Anda yakin ingin menghapus klaim reimburse ini?')" class="btn-destructive btn-xs">Hapus</a>
+                <% } else { %>
+                  <span class="text-xs text-muted-foreground">Sudah Diproses</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

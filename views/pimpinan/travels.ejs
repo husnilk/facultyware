@@ -1,0 +1,63 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h2 class="text-xl font-bold tracking-tight text-foreground">Daftar Semua Perjalanan Dinas</h2>
+    <p class="text-sm text-muted-foreground">Lihat dan verifikasi permohonan perjalanan dinas dosen dan pegawai.</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="/pimpinan/export/travels" class="btn-outline flex items-center gap-1.5">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+      <span>Export Semua Excel</span>
+    </a>
+  </div>
+</div>
+
+<!-- Table Card -->
+<div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-muted/40 border-b text-muted-foreground text-xs uppercase font-medium">
+        <tr>
+          <th class="px-6 py-3">No. Permohonan</th>
+          <th class="px-6 py-3">Pengaju</th>
+          <th class="px-6 py-3">Tujuan</th>
+          <th class="px-6 py-3">Maksud Perjalanan</th>
+          <th class="px-6 py-3">Tanggal Pelaksanaan</th>
+          <th class="px-6 py-3">Status</th>
+          <th class="px-6 py-3 text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (travels.length === 0) { %>
+          <tr>
+            <td colspan="7" class="text-center py-8 text-muted-foreground">Belum ada data perjalanan dinas yang diajukan.</td>
+          </tr>
+        <% } else { %>
+          <% travels.forEach(t => { %>
+            <tr class="border-b hover:bg-muted/30 transition-colors">
+              <td class="px-6 py-4 font-semibold text-foreground"><%= t.request_number %></td>
+              <td class="px-6 py-4 font-medium text-foreground"><%= t.submitter_name || t.submitter_username %></td>
+              <td class="px-6 py-4"><%= t.destination %></td>
+              <td class="px-6 py-4 truncate max-w-[200px]"><%= t.purpose %></td>
+              <td class="px-6 py-4 text-xs"><%= new Date(t.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) %> - <%= new Date(t.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) %></td>
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold badge-<%= t.status %>">
+                  <%= t.status %>
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right whitespace-nowrap">
+                <a href="/pimpinan/travels/detail/<%= t.id %>" class="btn-outline btn-xs <%= t.status === 'pending' ? 'btn-primary text-white border-primary hover:bg-primary/90' : '' %>">
+                  <%= t.status === 'pending' ? 'Proses Approval' : 'Detail' %>
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>
