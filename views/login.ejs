@@ -53,12 +53,12 @@
     <meta http-equiv="Content-Language" content="en" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Basecoat</title>
+    <title>Login</title>
     <meta
       name="description"
-      content="A components library built with Tailwind CSS that works with any web stack."
+      content="Sistem Informasi FacultyWare — FTI"
     />
-    <meta name="title" content="Basecoat" />
+    <meta name="title" content="Login" />
     <meta
       name="keywords"
       content="components,component library,component system,UI,UI kit,shadcn,shadcn/ui,Tailwind CSS,Tailwind,CSS,HTML,Jinja,Nunjucks,JS,JavaScript,vanilla JS,vanilla JavaScript"
@@ -121,7 +121,7 @@
             class="flex flex-col gap-6 rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden p-0"
           >
             <div data-slot="card-content" class="grid p-0 md:grid-cols-2">
-              <form class="p-6 md:p-8" action="/login" method="POST">
+              <form class="p-6 md:p-8" action="/login" method="POST" id="loginForm" novalidate>
                 <div
                   data-slot="field-group"
                   class="group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 [&amp;&gt;[data-slot=field-group]]:gap-4"
@@ -172,10 +172,6 @@
                         class="items-center text-sm font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[&gt;[data-slot=field]]:w-full has-[&gt;[data-slot=field]]:flex-col has-[&gt;[data-slot=field]]:rounded-md has-[&gt;[data-slot=field]]:border [&amp;&gt;*]:data-[slot=field]:p-4 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10"
                         for="password"
                         >Password</label
-                      ><a
-                        href="#"
-                        class="ml-auto text-sm underline-offset-2 hover:underline"
-                        >Forgot your password?</a
                       >
                     </div>
                     <input
@@ -204,14 +200,38 @@
                     </button>
                   </div>
 
-                  <p
-                    data-slot="field-description"
-                    class="text-sm leading-normal font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&amp;]:-mt-1.5 [&amp;&gt;a]:underline [&amp;&gt;a]:underline-offset-4 [&amp;&gt;a:hover]:text-primary text-center"
-                  >
-                    Don't have an account? <a href="#">Sign up</a>
-                  </p>
+
                 </div>
               </form>
+              <script>
+                document.getElementById('loginForm').addEventListener('submit', function(e) {
+                  const username = document.getElementById('username');
+                  const password = document.getElementById('password');
+                  let errors = [];
+
+                  document.querySelectorAll('.client-error').forEach(el => el.remove());
+
+                  if (!username.value.trim()) {
+                    errors.push({ field: username, msg: 'Username tidak boleh kosong' });
+                  }
+                  if (!password.value.trim()) {
+                    errors.push({ field: password, msg: 'Password tidak boleh kosong' });
+                  } else if (password.value.length < 6) {
+                    errors.push({ field: password, msg: 'Password minimal 6 karakter' });
+                  }
+
+                  if (errors.length > 0) {
+                    e.preventDefault();
+                    errors.forEach(function(err) {
+                      const msg = document.createElement('p');
+                      msg.className = 'client-error text-xs text-destructive mt-1';
+                      msg.textContent = err.msg;
+                      err.field.classList.add('border-destructive');
+                      err.field.parentNode.appendChild(msg);
+                    });
+                  }
+                });
+              </script>
               <div class="relative hidden bg-muted md:block">
                 <img
                   src="/assets/images/placeholder.svg"
