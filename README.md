@@ -4,35 +4,34 @@ Aplikasi berbasis web yang digunakan untuk mengelola proses peminjaman peralatan
 
 ## Fitur Utama
 
-### Fitur Pengguna
+### Pengguna
 
 - Melihat dashboard pengajuan peminjaman
-- Menambah pengajuan peminjaman peralatan
-- Mengubah data pengajuan peminjaman
+- Menambah pengajuan peminjaman
+- Mengedit data pengajuan peminjaman
 - Membatalkan pengajuan peminjaman
-- Mengunduh surat peminjaman dalam format PDF
+- Mengexport surat peminjaman dalam format PDF
 - Melacak status peminjaman melalui API
 
-### Fitur Penanggung Jawab (PJ) Peralatan
+### Penanggung Jawab Peralatan
 
-- Melihat daftar pengajuan peminjaman
-- Menyetujui pengajuan peminjaman
-- Menolak pengajuan peminjaman
+- Menyetujui dan menolak peminjaman peralatan
 - Mengubah status peminjaman setelah peralatan dikembalikan
-- Melihat daftar peminjaman yang sedang berlangsung
+- Melihat peminjaman yang sedang berlangsung
 - Melihat riwayat peminjaman
-- Mencari data riwayat peminjaman
-- Memfilter riwayat peminjaman berdasarkan status atau tanggal
 - Melihat detail data peminjaman
-- Mengekspor laporan dalam format PDF dan CSV
-- Melihat preview laporan sebelum diekspor
+- Mencari riwayat peminjaman
+- Memfilter riwayat peminjaman berdasarkan status atau tanggal
+- Mengexport data status peminjaman
+- Mengexport laporan riwayat peminjaman dalam format PDF
+- Melihat preview laporan sebelum diexport
 
 ### API
 
-- API jumlah seluruh peminjaman
-- API jumlah peminjaman yang menunggu persetujuan
-- API jumlah peminjaman yang belum dikembalikan
 - API pelacakan status peminjaman
+- API jumlah peminjaman yang menunggu persetujuan
+- API jumlah seluruh peminjaman
+- API jumlah peminjaman yang belum dikembalikan
 
 ## Prasyarat
 
