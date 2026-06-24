@@ -1,0 +1,248 @@
+<%- include('../../partials/header', {
+  title:       'Laporan Kerusakan Aset Saya',
+  currentPath: '/laporan',
+  userRole:    typeof userRole !== 'undefined' ? userRole : '',
+  userName:    typeof userName !== 'undefined' ? userName : '',
+  flash:       typeof flash !== 'undefined' ? flash : null
+}) %>
+
+<%
+  const _laporan = typeof laporan !== 'undefined' ? laporan : [];
+  const _search  = typeof search !== 'undefined' ? search : '';
+  const _status  = typeof status !== 'undefined' ? status : '';
+  const _page    = typeof page !== 'undefined' ? page : 1;
+  const _total   = typeof total !== 'undefined' ? total : 0;
+  const _totalPages = typeof totalPages !== 'undefined' ? totalPages : 1;
+  const STATUS_INFO_LOCAL = typeof STATUS_INFO !== 'undefined' ? STATUS_INFO : {};
+
+  function statusBadge(status) {
+    const info = STATUS_INFO_LOCAL[status] || { text: status, bg: '#f5f5f5', color: '#666', border: '#ddd' };
+    return `<span style="display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:500;background:${info.bg};color:${info.color};border:1px solid ${info.border};">${info.text}</span>`;
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function trunc(s, n) {
+    if (!s) return '';
+    return s.length > n ? s.substring(0, n) + '…' : s;
+  }
+%>
+
+<!-- Page Header -->
+<div style="margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-start;">
+  <div>
+    <h1 style="font-size:28px;font-weight:700;margin-bottom:4px;">Laporan Kerusakan Aset</h1>
+    <p style="font-size:14px;color:var(--muted-foreground);margin:0;">Kelola semua laporan kerusakan aset Anda</p>
+  </div>
+  <a 
+    href="/laporan/buat" 
+    class="btn"
+    style="display:inline-flex;align-items:center;gap:8px;background:#15803d;border-color:#15803d;color:white;text-decoration:none;font-size:13px;"
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Buat Laporan
+  </a>
+</div>
+
+<!-- Statistics -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin-bottom:28px;">
+  <!-- Total Laporan -->
+  <div class="card" style="padding:20px;border:none;box-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);">
+    <div style="font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:6px;">Total Laporan</div>
+    <div style="font-size:28px;font-weight:700;color:var(--foreground);line-height:1.1;"><%= _total %></div>
+  </div>
+
+  <!-- Laporan Baru -->
+  <div class="card" style="padding:20px;border:none;box-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);">
+    <div style="font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:6px;">Dilaporkan</div>
+    <div style="font-size:28px;font-weight:700;line-height:1.1;color:#a16207;">
+      <%= _laporan.filter(l => l.status === 'reported').length %>
+    </div>
+  </div>
+
+  <!-- Dalam Proses -->
+  <div class="card" style="padding:20px;border:none;box-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);">
+    <div style="font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:6px;">Diproses</div>
+    <div style="font-size:28px;font-weight:700;line-height:1.1;color:#1d4ed8;">
+      <%= _laporan.filter(l => l.status === 'in_progress').length %>
+    </div>
+  </div>
+
+  <!-- Selesai -->
+  <div class="card" style="padding:20px;border:none;box-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);">
+    <div style="font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:6px;">Selesai</div>
+    <div style="font-size:28px;font-weight:700;line-height:1.1;color:#15803d;">
+      <%= _laporan.filter(l => l.status === 'resolved').length %>
+    </div>
+  </div>
+</div>
+
+<!-- Filter & Search Section -->
+<div class="card" style="padding:16px;margin-bottom:24px;border:none;box-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);">
+  <form method="GET" action="/laporan" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+    <!-- Search -->
+    <div style="flex:1;min-width:200px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:5px;">Cari Laporan</label>
+      <input 
+        type="text" 
+        name="search" 
+        placeholder="Cari berdasarkan nama aset atau deskripsi..." 
+        value="<%= _search %>"
+        class="input"
+        style="height:36px;font-size:13px;width:100%;box-sizing:border-box;"
+      />
+    </div>
+
+    <!-- Status Filter -->
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:5px;">Status</label>
+      <select 
+        name="status" 
+        class="input"
+        style="height:36px;font-size:13px;width:100%;box-sizing:border-box;"
+      >
+        <option value="">-- Semua Status --</option>
+        <option value="reported" <%= _status === 'reported' ? 'selected' : '' %>>Dilaporkan</option>
+        <option value="in_progress" <%= _status === 'in_progress' ? 'selected' : '' %>>Diproses</option>
+        <option value="resolved" <%= _status === 'resolved' ? 'selected' : '' %>>Selesai</option>
+      </select>
+    </div>
+
+    <!-- Submit -->
+    <button 
+      type="submit" 
+      class="btn"
+      style="height:36px;font-size:13px;padding:0 16px;background:#1d4ed8;border-color:#1d4ed8;color:white;"
+    >
+      Cari
+    </button>
+
+    <!-- Reset -->
+    <% if (_search || _status) { %>
+      <a 
+        href="/laporan" 
+        class="btn-outline"
+        style="height:36px;font-size:13px;padding:0 14px;display:inline-flex;align-items:center;text-decoration:none;"
+      >
+        Reset
+      </a>
+    <% } %>
+  </form>
+</div>
+
+<!-- Laporan Table/List -->
+<% if (_laporan.length === 0) { %>
+  <div class="card" style="padding:48px;text-align:center;color:var(--muted-foreground);border:none;box-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3;margin-bottom:16px;display:inline-block;">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+    <p style="font-size:16px;color:var(--muted-foreground);margin:0;">
+      <% if (_search || _status) { %>
+        Tidak ada laporan yang sesuai dengan kriteria pencarian.
+      <% } else { %>
+        Anda belum membuat laporan kerusakan aset.
+        <a href="/laporan/buat" style="color:#1d4ed8;text-decoration:none;font-weight:500;">Buat laporan sekarang</a>
+      <% } %>
+    </p>
+  </div>
+<% } else { %>
+  <!-- Responsive Table -->
+  <div class="card" style="overflow:hidden;padding:0;border:none;box-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);">
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13.5px;">
+        <thead>
+          <tr style="background:var(--muted-background);border-bottom:1px solid var(--border);">
+            <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:var(--muted-foreground);">No</th>
+            <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:var(--muted-foreground);">Peralatan</th>
+            <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:var(--muted-foreground);">Deskripsi</th>
+            <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:var(--muted-foreground);">Status</th>
+            <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:var(--muted-foreground);">Tanggal</th>
+            <th style="padding:12px 16px;text-align:center;font-size:13px;font-weight:600;color:var(--muted-foreground);">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% _laporan.forEach(function(lap, idx) { %>
+            <tr style="border-bottom:1px solid var(--border);hover:background:var(--muted-background);">
+              <td style="padding:12px 16px;font-size:13px;color:var(--foreground);"><%= ((_page - 1) * 10) + idx + 1 %></td>
+              <td style="padding:12px 16px;font-size:13px;color:var(--foreground);">
+                <div style="font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <%= lap.equipment_name %>
+                  <% if (lap.status === 'reported' && lap.last_activity === 'Laporan dibuat') { %>
+                    <span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;background:#ef4444;color:#fff;letter-spacing:.5px;">BARU</span>
+                  <% } else if (lap.status === 'in_progress' && lap.last_activity === 'Perbaikan dilakukan') { %>
+                    <span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;background:#7c3aed;color:#fff;letter-spacing:.5px;">UPDATE</span>
+                  <% } else if (lap.status === 'resolved') { %>
+                    <span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;background:#15803d;color:#fff;letter-spacing:.5px;">SELESAI</span>
+                  <% } %>
+                </div>
+                <div style="font-size:12px;color:var(--muted-foreground);">(<%= lap.equipment_code %>)</div>
+              </td>
+              <td style="padding:12px 16px;font-size:13px;color:var(--foreground);">
+                <%= trunc(lap.issue_description, 40) %>
+              </td>
+              <td style="padding:12px 16px;font-size:13px;">
+                <%- statusBadge(lap.status) %>
+              </td>
+              <td style="padding:12px 16px;font-size:13px;color:var(--foreground);">
+                <%= formatDate(lap.reported_at) %>
+              </td>
+              <td style="padding:12px 14px;text-align:center;white-space:nowrap;">
+                <a 
+                  href="/laporan/<%= lap.id %>" 
+                  class="btn-outline"
+                  style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;font-size:12px;text-decoration:none;"
+                >
+                  Lihat
+                </a>
+                <a
+                  href="/laporan/<%= lap.id %>/pdf"
+                  target="_blank"
+                  class="btn"
+                  style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;font-size:12px;background:#1d4ed8;border-color:#1d4ed8;color:white;text-decoration:none;margin-left:6px;"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  PDF
+                </a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <% if (_totalPages > 1) { %>
+    <div style="padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:13px;color:var(--muted-foreground);">
+        Menampilkan <%= (_page - 1) * 10 + 1 %>-<%= Math.min(_page * 10, _total) %> dari <%= _total %>
+      </span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <% if (_page > 1) { %>
+          <a href="/laporan?page=1<%= _search ? '&search=' + encodeURIComponent(_search) : '' %><%= _status ? '&status=' + _status : '' %>" class="btn-outline" style="height:32px;padding:0 12px;font-size:12px;text-decoration:none;">First</a>
+          <a href="/laporan?page=<%= _page - 1 %><%= _search ? '&search=' + encodeURIComponent(_search) : '' %><%= _status ? '&status=' + _status : '' %>" class="btn-outline" style="height:32px;padding:0 12px;font-size:12px;text-decoration:none;">Prev</a>
+        <% } %>
+
+        <% for (let i = Math.max(1, _page - 2); i <= Math.min(_totalPages, _page + 2); i++) { %>
+          <% if (i === _page) { %>
+            <span class="btn" style="height:32px;padding:0 12px;font-size:12px;background:#1d4ed8;border-color:#1d4ed8;color:white;"><%= i %></span>
+          <% } else { %>
+            <a href="/laporan?page=<%= i %><%= _search ? '&search=' + encodeURIComponent(_search) : '' %><%= _status ? '&status=' + _status : '' %>" class="btn-outline" style="height:32px;padding:0 12px;font-size:12px;text-decoration:none;"><%= i %></a>
+          <% } %>
+        <% } %>
+
+        <% if (_page < _totalPages) { %>
+          <a href="/laporan?page=<%= _page + 1 %><%= _search ? '&search=' + encodeURIComponent(_search) : '' %><%= _status ? '&status=' + _status : '' %>" class="btn-outline" style="height:32px;padding:0 12px;font-size:12px;text-decoration:none;">Next</a>
+          <a href="/laporan?page=<%= _totalPages %><%= _search ? '&search=' + encodeURIComponent(_search) : '' %><%= _status ? '&status=' + _status : '' %>" class="btn-outline" style="height:32px;padding:0 12px;font-size:12px;text-decoration:none;">Last</a>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+<% } %>
+
+<%- include('../../partials/footer') %>
