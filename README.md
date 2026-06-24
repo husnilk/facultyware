@@ -6,7 +6,6 @@ Aplikasi berbasis web yang digunakan untuk mengelola proses peminjaman peralatan
 
 ### Fitur Pengguna
 
-- Login dan Logout
 - Melihat dashboard pengajuan peminjaman
 - Menambah pengajuan peminjaman peralatan
 - Mengubah data pengajuan peminjaman
