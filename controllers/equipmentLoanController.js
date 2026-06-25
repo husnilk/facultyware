@@ -18,7 +18,7 @@ const index = async (req, res, next) => {
       JOIN equipments eq ON el.equipment_id = eq.id
       JOIN assets a ON eq.asset_id = a.id
       WHERE el.employee_id = ?
-      ORDER BY el.created_at DESC
+      ORDER BY el.created_at DESC, el.id DESC
     `, [userId]);
 
     res.render('equipment-loans/index', { 
@@ -52,31 +52,30 @@ const createPage = async (req, res, next) => {
 const create = async (req, res, next) => {
   const { equipment_id, start_date, end_date } = req.body;
   const userId = req.session.userId;
-  // ── TAMBAHKAN VALIDASI TANGGAL DI SINI ──
+
   const tglMulai = new Date(start_date);
   const tglSelesai = new Date(end_date);
-
   if (tglSelesai < tglMulai) {
-    return res.status(400).send("Gagal Update: Tanggal Selesai tidak boleh sebelum Tanggal Mulai. Silakan kembali dan perbaiki tanggal.");
+    return res.status(400).send("Gagal: Tanggal Selesai tidak boleh sebelum Tanggal Mulai.");
   }
+
   try {
     const [peminjamanAktif] = await db.query(`
       SELECT id FROM equipment_loans 
-      WHERE employee_id = ? 
-        AND equipment_id = ? 
-        AND status IN ('requested', 'approved')
+      WHERE employee_id = ? AND equipment_id = ? AND status IN ('requested', 'approved')
     `, [userId, equipment_id]);
 
-    // Jika ditemukan ada data yang statusnya masih requested/approved
     if (peminjamanAktif.length > 0) {
-      return res.status(400).send("Gagal: Anda tidak dapat meminjam alat ini karena Anda masih memiliki pengajuan atau peminjaman aktif untuk alat yang sama yang belum dikembalikan.");
+      return res.status(400).send("Gagal: Masih ada peminjaman aktif untuk alat yang sama.");
     }
 
     await db.query(`
-      INSERT INTO equipment_loans (equipment_id, employee_id, start_date, end_date, status, approved_by_id) 
-      VALUES (?, ?, ?, ?, 'requested', 1)
+      INSERT INTO equipment_loans 
+        (equipment_id, employee_id, start_date, end_date, status, approved_by_id, created_at, updated_at) 
+      VALUES (?, ?, ?, ?, 'requested', 1, NOW(), NOW())
     `, [equipment_id, userId, start_date, end_date]);
-    
+    //                                     ↑ tambahkan NOW(), NOW() di sini
+
     res.redirect('/equipment-loans');
   } catch (err) {
     next(err);
@@ -122,7 +121,7 @@ const update = async (req, res, next) => {
   try {
     await db.query(`
       UPDATE equipment_loans 
-      SET equipment_id = ?, start_date = ?, end_date = ? 
+      SET equipment_id = ?, start_date = ?, end_date = ?, updated_at = NOW() 
       WHERE id = ? AND employee_id = ? AND status = 'requested'
     `, [equipment_id, start_date, end_date, loanId, userId]);
     
