@@ -35,8 +35,6 @@
 
         <%- include("../partials/navbar") %>
 
-        <!-- HEADER -->
-
         <div class="page-header">
 
             <div>
@@ -70,8 +68,6 @@
             </a>
 
         </div>
-
-        <!-- FORM -->
 
         <div class="glass-card">
 
@@ -113,37 +109,30 @@
                     </label>
 
                     <select
-                        name="type">
+                        name="type"
+                        required>
 
                         <option
-                            value="text"
-                            <%= question.type=="text"?"selected":"" %>>
+                            value="short_answer"
+                            <%= question.type === 'short_answer' ? 'selected' : '' %>>
 
-                            Text
+                            Short Answer
 
                         </option>
 
                         <option
-                            value="radio"
-                            <%= question.type=="radio"?"selected":"" %>>
+                            value="single_choice"
+                            <%= question.type === 'single_choice' ? 'selected' : '' %>>
 
-                            Radio Button
-
-                        </option>
-
-                        <option
-                            value="checkbox"
-                            <%= question.type=="checkbox"?"selected":"" %>>
-
-                            Checkbox
+                            Single Choice
 
                         </option>
 
                         <option
-                            value="textarea"
-                            <%= question.type=="textarea"?"selected":"" %>>
+                            value="multiple_choice"
+                            <%= question.type === 'multiple_choice' ? 'selected' : '' %>>
 
-                            Text Area
+                            Multiple Choice
 
                         </option>
 
@@ -152,6 +141,7 @@
                 </div>
 
                 <button
+                    type="submit"
                     class="hero-btn">
 
                     💾 Update Question
