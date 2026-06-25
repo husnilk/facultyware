@@ -9,10 +9,10 @@ test('Halaman Edit Opsi', async ({ page }) => {
 
     await page.click('button[type="submit"]');
 
-    await page.goto('http://localhost:3000/option');
+    await page.goto('http://localhost:3000/option/question/1');
 
-    await page.locator('a:has-text("Edit")').first().click();
+    await page.locator('a[title="Edit Option"]').first().click();
 
-    await expect(page.locator('body')).toContainText('Edit Opsi');
+    await expect(page.locator('h1')).toContainText('Edit');
 
 });

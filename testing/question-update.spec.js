@@ -4,15 +4,15 @@ test('Halaman Edit Pertanyaan', async ({ page }) => {
 
     await page.goto('http://localhost:3000/login');
 
-    await page.fill('input[name="email"]','hanifalhaj@gmail.com');
-    await page.fill('input[name="password"]','hanif123');
+    await page.fill('input[name="email"]', 'hanifalhaj@gmail.com');
+    await page.fill('input[name="password"]', 'hanif123');
 
     await page.click('button[type="submit"]');
 
-    await page.goto('http://localhost:3000/question');
+    await page.goto('http://localhost:3000/question/survey/1');
 
-    await page.locator('a:has-text("Edit")').first().click();
+    await page.locator('a[title="Edit Question"]').first().click();
 
-    await expect(page.locator('body')).toContainText('Edit Pertanyaan');
+    await expect(page.locator('h1')).toContainText('Edit');
 
 });

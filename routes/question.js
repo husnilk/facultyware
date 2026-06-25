@@ -14,15 +14,39 @@ router.get(
     questionController.bySurvey
 );
 
-// Form tambah pertanyaan
-router.get("/create", isAuthenticated, questionController.createForm);
-router.post("/create", isAuthenticated, questionController.store);
+// Form tambah pertanyaan untuk survey tertentu
+router.get(
+    "/create/:surveyId",
+    isAuthenticated,
+    questionController.createForm
+);
 
-// Form edit pertanyaan
-router.get("/edit/:id", isAuthenticated, questionController.editForm);
-router.post("/edit/:id", isAuthenticated, questionController.update);
+// Simpan pertanyaan baru
+router.post(
+    "/create/:surveyId",
+    isAuthenticated,
+    questionController.store
+);
 
-// Hapus pertanyaan
-router.post("/delete/:id", isAuthenticated, questionController.destroy);
+// Form edit
+router.get(
+    "/edit/:id",
+    isAuthenticated,
+    questionController.editForm
+);
+
+// Update
+router.post(
+    "/edit/:id",
+    isAuthenticated,
+    questionController.update
+);
+
+// Hapus
+router.post(
+    "/delete/:id",
+    isAuthenticated,
+    questionController.destroy
+);
 
 module.exports = router;

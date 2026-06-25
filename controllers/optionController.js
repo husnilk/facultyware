@@ -1,61 +1,26 @@
 const db = require("../lib/db");
 
-const index = async (req, res, next) => {
+// =========================================
+// LIST SEMUA OPTION
+// =========================================
+const all = async (req, res, next) => {
 
     try {
 
-        const search = req.query.search || "";
-        const page = parseInt(req.query.page) || 1;
-
-        const limit = 5;
-        const offset = (page - 1) * limit;
-
-        const [countRows] = await db.query(
-            `
-            SELECT COUNT(*) AS total
-            FROM survey_question_options
-            JOIN survey_questions
-                ON survey_question_options.survey_question_id = survey_questions.id
-            WHERE survey_questions.question_text LIKE ?
-               OR survey_question_options.option_text LIKE ?
-            `,
-            [
-                `%${search}%`,
-                `%${search}%`
-            ]
-        );
-
-        const totalData = countRows[0].total;
-        const totalPage = Math.ceil(totalData / limit);
-
-        const [options] = await db.query(
-            `
+        const [options] = await db.query(`
             SELECT
                 survey_question_options.*,
                 survey_questions.question_text
             FROM survey_question_options
             JOIN survey_questions
-                ON survey_question_options.survey_question_id = survey_questions.id
-            WHERE survey_questions.question_text LIKE ?
-               OR survey_question_options.option_text LIKE ?
+                ON survey_questions.id = survey_question_options.survey_question_id
             ORDER BY survey_question_options.id DESC
-            LIMIT ?
-            OFFSET ?
-            `,
-            [
-                `%${search}%`,
-                `%${search}%`,
-                limit,
-                offset
-            ]
-        );
+        `);
 
-        res.render("option/index", {
-            title: "Opsi Jawaban",
-            options,
-            search,
-            page,
-            totalPage
+        res.render("option/all", {
+            title: "Option",
+            user: req.session.name,
+            options
         });
 
     } catch (err) {
@@ -64,52 +29,91 @@ const index = async (req, res, next) => {
 
 };
 
-const createForm = async (req, res, next) => {
+// =========================================
+// LIST OPTION BERDASARKAN QUESTION
+// =========================================
+const index = async (req, res, next) => {
 
     try {
 
-        const [questions] = await db.query(
-            "SELECT * FROM survey_questions ORDER BY id ASC"
+        const questionId = req.params.id;
+
+        const [questionRows] = await db.query(
+            "SELECT * FROM survey_questions WHERE id=?",
+            [questionId]
         );
 
-        res.render("option/create", {
-            title: "Tambah Opsi Jawaban",
-            questions,
-            error: null
+        if (questionRows.length === 0) {
+            return res.redirect("/question");
+        }
+
+        const [options] = await db.query(`
+            SELECT *
+            FROM survey_question_options
+            WHERE survey_question_id=?
+            ORDER BY weight ASC,id ASC
+        `,[questionId]);
+
+        res.render("option/index",{
+            title:"Option",
+            user:req.session.name,
+            question:questionRows[0],
+            options
         });
 
-    } catch (err) {
+    } catch(err){
         next(err);
     }
 
 };
 
-const store = async (req, res, next) => {
+// =========================================
+// CREATE
+// =========================================
+const createForm = async (req,res,next)=>{
 
-    const {
-        survey_question_id,
-        option_text,
-        weight
-    } = req.body;
+    try{
 
-    if (!survey_question_id || !option_text || !weight) {
+        const questionId=req.params.questionId;
 
-        const [questions] = await db.query(
-            "SELECT * FROM survey_questions ORDER BY id ASC"
+        const [rows]=await db.query(
+            "SELECT * FROM survey_questions WHERE id=?",
+            [questionId]
         );
 
-        return res.render("option/create", {
-            title: "Tambah Opsi Jawaban",
-            questions,
-            error: "Semua field wajib diisi."
+        if(rows.length===0){
+            return res.redirect("/question");
+        }
+
+        res.render("option/create",{
+            title:"Tambah Option",
+            user:req.session.name,
+            question:rows[0],
+            error:null
         });
 
+    }catch(err){
+        next(err);
     }
 
-    try {
+};
 
-        await db.query(
-            `INSERT INTO survey_question_options
+// =========================================
+// STORE
+// =========================================
+const store = async (req,res,next)=>{
+
+    try{
+
+        const questionId=req.params.questionId;
+
+        const{
+            option_text,
+            weight
+        }=req.body;
+
+        await db.query(`
+            INSERT INTO survey_question_options
             (
                 survey_question_id,
                 option_text,
@@ -118,120 +122,127 @@ const store = async (req, res, next) => {
                 updated_at
             )
             VALUES
-            (?,?,?,NOW(),NOW())`,
-            [
-                survey_question_id,
-                option_text,
-                weight
-            ]
-        );
+            (?,?,?,NOW(),NOW())
+        `,[
+            questionId,
+            option_text,
+            weight
+        ]);
 
-        res.redirect("/option");
+        res.redirect("/option/question/"+questionId);
 
-    } catch (err) {
+    }catch(err){
         next(err);
     }
 
 };
 
-const editForm = async (req, res, next) => {
+// =========================================
+// EDIT
+// =========================================
+const editForm = async (req,res,next)=>{
 
-    try {
+    try{
 
-        const [rows] = await db.query(
+        const [rows]=await db.query(
             "SELECT * FROM survey_question_options WHERE id=?",
             [req.params.id]
         );
 
-        const [questions] = await db.query(
-            "SELECT * FROM survey_questions"
-        );
+        if(rows.length===0){
+            return res.redirect("/option");
+        }
 
-        res.render("option/edit", {
-            title: "Edit Opsi",
-            option: rows[0],
-            questions,
-            error: null
+        res.render("option/edit",{
+            title:"Edit Option",
+            user:req.session.name,
+            option:rows[0],
+            error:null
         });
 
-    } catch (err) {
+    }catch(err){
         next(err);
     }
 
 };
 
-const update = async (req, res, next) => {
+// =========================================
+// UPDATE
+// =========================================
+const update = async (req,res,next)=>{
 
-    const {
-        survey_question_id,
-        option_text,
-        weight
-    } = req.body;
+    try{
 
-    if (!survey_question_id || !option_text || !weight) {
+        const{
+            option_text,
+            weight
+        }=req.body;
 
-        const [rows] = await db.query(
-            "SELECT * FROM survey_question_options WHERE id=?",
+        const [rows]=await db.query(
+            "SELECT survey_question_id FROM survey_question_options WHERE id=?",
             [req.params.id]
         );
 
-        const [questions] = await db.query(
-            "SELECT * FROM survey_questions"
-        );
+        if(rows.length===0){
+            return res.redirect("/option");
+        }
 
-        return res.render("option/edit", {
-            title: "Edit Opsi",
-            option: rows[0],
-            questions,
-            error: "Semua field wajib diisi."
-        });
+        const questionId=rows[0].survey_question_id;
 
-    }
-
-    try {
-
-        await db.query(
-            `UPDATE survey_question_options
+        await db.query(`
+            UPDATE survey_question_options
             SET
-                survey_question_id=?,
                 option_text=?,
                 weight=?,
                 updated_at=NOW()
-            WHERE id=?`,
-            [
-                survey_question_id,
-                option_text,
-                weight,
-                req.params.id
-            ]
-        );
+            WHERE id=?
+        `,[
+            option_text,
+            weight,
+            req.params.id
+        ]);
 
-        res.redirect("/option");
+        res.redirect("/option/question/"+questionId);
 
-    } catch (err) {
+    }catch(err){
         next(err);
     }
 
 };
 
-const destroy = async (req, res, next) => {
+// =========================================
+// DELETE
+// =========================================
+const destroy = async (req,res,next)=>{
 
-    try {
+    try{
+
+        const [rows]=await db.query(
+            "SELECT survey_question_id FROM survey_question_options WHERE id=?",
+            [req.params.id]
+        );
+
+        if(rows.length===0){
+            return res.redirect("/option");
+        }
+
+        const questionId=rows[0].survey_question_id;
 
         await db.query(
             "DELETE FROM survey_question_options WHERE id=?",
             [req.params.id]
         );
 
-        res.redirect("/option");
+        res.redirect("/option/question/"+questionId);
 
-    } catch (err) {
+    }catch(err){
         next(err);
     }
 
 };
 
-module.exports = {
+module.exports={
+    all,
     index,
     createForm,
     store,

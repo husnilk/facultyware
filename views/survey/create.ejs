@@ -3,88 +3,163 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <title>Tambah Survey</title>
+<title><%= title %></title>
 
-    <link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
 <body>
 
-<div class="container mx-auto p-10">
+<video autoplay muted loop playsinline class="dashboard-video">
 
-    <h1 class="text-3xl font-bold mb-6">
+<source src="/assets/videos/dashboard.mp4" type="video/mp4">
 
-        Tambah Survey
+</video>
 
-    </h1>
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
 
-    <form action="/survey/create" method="POST">
+<div class="wrapper">
 
-        <div class="mb-4">
+<%- include("../partials/sidebar") %>
 
-            <label>Judul Survey</label>
+<div class="content">
 
-            <input
-                type="text"
-                name="title"
-                class="border w-full p-2"
-                required>
+<%- include("../partials/navbar") %>
 
-        </div>
+<div class="page-header">
 
-        <div class="mb-4">
+<div>
 
-            <label>Deskripsi</label>
+<span class="hero-badge">
 
-            <textarea
-                name="description"
-                class="border w-full p-2"
-                rows="5"
-                required></textarea>
+Create Survey
 
-        </div>
+</span>
 
-        <div class="mb-4">
+<h1>
 
-            <label>Tanggal Mulai</label>
+Create New Survey
 
-            <input
-                type="date"
-                name="start_date"
-                class="border w-full p-2"
-                required>
+</h1>
 
-        </div>
+<p>
 
-        <div class="mb-4">
+Fill the form below to create a new survey.
 
-            <label>Tanggal Selesai</label>
+</p>
 
-            <input
-                type="date"
-                name="end_date"
-                class="border w-full p-2"
-                required>
+</div>
 
-        </div>
+<a href="/survey" class="hero-btn-outline">
 
-        <button  type="submit"
-    class="btn">
+← Back
 
-    Simpan
+</a>
 
-        </button>
+</div>
 
-        <a href="/survey" class="btn">
+<div class="glass-card form-card">
 
-            Kembali
+<form action="/survey/store" method="POST">
 
-        </a>
+<div class="form-group">
 
-    </form>
+<label>
+
+Survey Title
+
+</label>
+
+<input
+type="text"
+name="title"
+placeholder="Example : Lecturer Satisfaction Survey"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Description
+
+</label>
+
+<textarea
+name="description"
+rows="5"
+placeholder="Write survey description..."
+required></textarea>
+
+</div>
+
+<div class="date-grid">
+
+<div class="form-group">
+
+<label>
+
+Start Date
+
+</label>
+
+<input
+type="date"
+name="start_date"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+End Date
+
+</label>
+
+<input
+type="date"
+name="end_date"
+required>
+
+</div>
+
+</div>
+
+<div class="form-action">
+
+<button
+type="submit"
+class="hero-btn">
+
+💾 Save Survey
+
+</button>
+
+<a
+href="/survey"
+class="hero-btn-outline">
+
+Cancel
+
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
 
 </div>
 

@@ -2,16 +2,22 @@ const express = require("express");
 const router = express.Router();
 
 const optionController = require("../controllers/optionController");
-const { isAuthenticated } = require("../middlewares/auth");
 
-router.get("/", isAuthenticated, optionController.index);
+// Semua option
+router.get("/", optionController.all);
 
-router.get("/create", isAuthenticated, optionController.createForm);
-router.post("/create", isAuthenticated, optionController.store);
+// Option berdasarkan question
+router.get("/question/:id", optionController.index);
 
-router.get("/edit/:id", isAuthenticated, optionController.editForm);
-router.post("/edit/:id", isAuthenticated, optionController.update);
+// Create
+router.get("/create/:questionId", optionController.createForm);
+router.post("/create/:questionId", optionController.store);
 
-router.post("/delete/:id", isAuthenticated, optionController.destroy);
+// Edit
+router.get("/edit/:id", optionController.editForm);
+router.post("/edit/:id", optionController.update);
+
+// Delete
+router.post("/delete/:id", optionController.destroy);
 
 module.exports = router;

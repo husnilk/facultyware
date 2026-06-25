@@ -12,7 +12,7 @@ test('Tombol Hapus Assignment tampil', async ({ page }) => {
     await page.goto('http://localhost:3000/assignment');
 
     await expect(
-        page.locator('button:has-text("Hapus")').first()
+      page.locator(".action.delete").first()
     ).toBeVisible();
 
 });

@@ -11,6 +11,8 @@ test('Pagination Survey tampil', async ({ page }) => {
 
     await page.goto('http://localhost:3000/survey');
 
-    await expect(page.locator('body')).toContainText('Halaman');
+    await expect(
+        page.locator('.pagination')
+    ).toBeVisible();
 
 });

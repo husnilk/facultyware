@@ -4,13 +4,13 @@ test('Menampilkan daftar survey', async ({ page }) => {
 
     await page.goto('http://localhost:3000/login');
 
-    await page.fill('input[name="email"]','hanifalhaj@gmail.com');
-    await page.fill('input[name="password"]','hanif123');
+    await page.fill('input[name="email"]', 'hanifalhaj@gmail.com');
+    await page.fill('input[name="password"]', 'hanif123');
 
-    await page.click('button[type="submit"]');
+    await page.locator('button[type="submit"]').click();
 
     await page.goto('http://localhost:3000/survey');
 
-    await expect(page.locator('body')).toContainText('Data Survey');
+    await expect(page.locator('h1')).toContainText('Survey');
 
 });

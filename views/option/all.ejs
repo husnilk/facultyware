@@ -26,6 +26,7 @@
 <div class="wrapper">
 
     <%- include("../partials/sidebar") %>
+
     <div class="content">
 
         <%- include("../partials/navbar") %>
@@ -39,24 +40,12 @@
                 </span>
 
                 <h1>
-                    Answer Options
+                    All Answer Options
                 </h1>
 
                 <p>
-                    <%= question.question_text %>
+                    Manage all answer options in the system.
                 </p>
-
-            </div>
-
-            <div class="header-action">
-
-                <a href="/option/create/<%= question.id %>" class="hero-btn">
-                    ➕ Add Option
-                </a>
-
-                <a href="javascript:history.back()" class="hero-btn-outline">
-                    ← Back
-                </a>
 
             </div>
 
@@ -69,8 +58,11 @@
                 <div class="stat-icon">📝</div>
 
                 <div>
+
                     <p>Total Option</p>
+
                     <h2><%= options.length %></h2>
+
                 </div>
 
             </div>
@@ -82,25 +74,39 @@
             <table class="modern-table">
 
                 <thead>
+
                     <tr>
+
                         <th>No</th>
+                        <th>Question</th>
                         <th>Option</th>
                         <th>Weight</th>
-                        <th width="170">Action</th>
+                        <th width="180">Action</th>
+
                     </tr>
+
                 </thead>
 
                 <tbody>
 
-                <% if(options.length === 0){ %>
+                <% if(options.length===0){ %>
 
                     <tr>
-                        <td colspan="4" class="empty">
+
+                        <td colspan="5" class="empty">
+
                             <div class="empty-box">
+
                                 <h2>📭 No Option</h2>
-                                <p>No answer option has been created.</p>
+
+                                <p>
+                                    No answer option found.
+                                </p>
+
                             </div>
+
                         </td>
+
                     </tr>
 
                 <% } %>
@@ -109,36 +115,41 @@
 
                     <tr>
 
-                        <td><%= index + 1 %></td>
+                        <td>
+                            <%= index+1 %>
+                        </td>
 
-                        <td><%= option.option_text %></td>
+                        <td>
+                            <%= option.question_text %>
+                        </td>
 
-                        <td><%= option.weight %></td>
+                        <td>
+                            <%= option.option_text %>
+                        </td>
+
+                        <td>
+                            <%= option.weight %>
+                        </td>
 
                         <td>
 
                             <div class="action-group">
 
-                                <!-- FIX TEST ID -->
                                 <a
                                     href="/option/edit/<%= option.id %>"
-                                    class="action edit"
-                                    title="Edit Option">
+                                    class="action edit">
 
                                     ✏️
 
                                 </a>
 
-                                <!-- FIX TEST ID -->
                                 <form
                                     action="/option/delete/<%= option.id %>"
                                     method="POST"
                                     style="display:inline;">
 
                                     <button
-                                        type="submit"
                                         class="action delete"
-                                        title="Delete Option"
                                         onclick="return confirm('Delete this option?')">
 
                                         🗑️
@@ -166,4 +177,5 @@
 </div>
 
 </body>
+
 </html>

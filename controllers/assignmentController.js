@@ -1,5 +1,8 @@
 const db = require("../lib/db");
 
+// =========================================
+// LIST ASSIGNMENT
+// =========================================
 const index = async (req, res, next) => {
 
     try {
@@ -57,6 +60,7 @@ const index = async (req, res, next) => {
 
         res.render("assignment/index", {
             title: "Assignment",
+            user: req.session.name,
             assignments,
             search,
             page,
@@ -64,10 +68,16 @@ const index = async (req, res, next) => {
         });
 
     } catch (err) {
+
         next(err);
+
     }
 
 };
+
+// =========================================
+// FORM CREATE
+// =========================================
 
 const createForm = async (req, res, next) => {
 
@@ -82,17 +92,24 @@ const createForm = async (req, res, next) => {
         );
 
         res.render("assignment/create", {
-            title: "Tambah Assignment",
+            title: "Create Assignment",
+            user: req.session.name,
             surveys,
             questions,
             error: null
         });
 
     } catch (err) {
+
         next(err);
+
     }
 
 };
+
+// =========================================
+// STORE
+// =========================================
 
 const store = async (req, res, next) => {
 
@@ -102,26 +119,27 @@ const store = async (req, res, next) => {
         order
     } = req.body;
 
-    if (!survey_id || !survey_question_id || !order) {
-
-        const [surveys] = await db.query(
-            "SELECT * FROM surveys ORDER BY title ASC"
-        );
-
-        const [questions] = await db.query(
-            "SELECT * FROM survey_questions ORDER BY question_text ASC"
-        );
-
-        return res.render("assignment/create", {
-            title: "Tambah Assignment",
-            surveys,
-            questions,
-            error: "Semua field wajib diisi."
-        });
-
-    }
-
     try {
+
+        if (!survey_id || !survey_question_id || !order) {
+
+            const [surveys] = await db.query(
+                "SELECT * FROM surveys ORDER BY title ASC"
+            );
+
+            const [questions] = await db.query(
+                "SELECT * FROM survey_questions ORDER BY question_text ASC"
+            );
+
+            return res.render("assignment/create", {
+                title: "Create Assignment",
+                user: req.session.name,
+                surveys,
+                questions,
+                error: "Semua field wajib diisi."
+            });
+
+        }
 
         await db.query(
             `
@@ -146,10 +164,16 @@ const store = async (req, res, next) => {
         res.redirect("/assignment");
 
     } catch (err) {
+
         next(err);
+
     }
 
 };
+
+// =========================================
+// FORM EDIT
+// =========================================
 
 const editForm = async (req, res, next) => {
 
@@ -159,6 +183,12 @@ const editForm = async (req, res, next) => {
             "SELECT * FROM survey_question_assignments WHERE id=?",
             [req.params.id]
         );
+
+        if (rows.length === 0) {
+
+            return res.redirect("/assignment");
+
+        }
 
         const [surveys] = await db.query(
             "SELECT * FROM surveys ORDER BY title ASC"
@@ -170,6 +200,7 @@ const editForm = async (req, res, next) => {
 
         res.render("assignment/edit", {
             title: "Edit Assignment",
+            user: req.session.name,
             assignment: rows[0],
             surveys,
             questions,
@@ -177,10 +208,16 @@ const editForm = async (req, res, next) => {
         });
 
     } catch (err) {
+
         next(err);
+
     }
 
 };
+
+// =========================================
+// UPDATE
+// =========================================
 
 const update = async (req, res, next) => {
 
@@ -190,32 +227,39 @@ const update = async (req, res, next) => {
         order
     } = req.body;
 
-    if (!survey_id || !survey_question_id || !order) {
+    try {
 
         const [rows] = await db.query(
             "SELECT * FROM survey_question_assignments WHERE id=?",
             [req.params.id]
         );
 
-        const [surveys] = await db.query(
-            "SELECT * FROM surveys ORDER BY title ASC"
-        );
+        if (rows.length === 0) {
 
-        const [questions] = await db.query(
-            "SELECT * FROM survey_questions ORDER BY question_text ASC"
-        );
+            return res.redirect("/assignment");
 
-        return res.render("assignment/edit", {
-            title: "Edit Assignment",
-            assignment: rows[0],
-            surveys,
-            questions,
-            error: "Semua field wajib diisi."
-        });
+        }
 
-    }
+        if (!survey_id || !survey_question_id || !order) {
 
-    try {
+            const [surveys] = await db.query(
+                "SELECT * FROM surveys ORDER BY title ASC"
+            );
+
+            const [questions] = await db.query(
+                "SELECT * FROM survey_questions ORDER BY question_text ASC"
+            );
+
+            return res.render("assignment/edit", {
+                title: "Edit Assignment",
+                user: req.session.name,
+                assignment: rows[0],
+                surveys,
+                questions,
+                error: "Semua field wajib diisi."
+            });
+
+        }
 
         await db.query(
             `
@@ -238,10 +282,16 @@ const update = async (req, res, next) => {
         res.redirect("/assignment");
 
     } catch (err) {
+
         next(err);
+
     }
 
 };
+
+// =========================================
+// DELETE
+// =========================================
 
 const destroy = async (req, res, next) => {
 
@@ -255,7 +305,9 @@ const destroy = async (req, res, next) => {
         res.redirect("/assignment");
 
     } catch (err) {
+
         next(err);
+
     }
 
 };

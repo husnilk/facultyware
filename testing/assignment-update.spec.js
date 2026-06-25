@@ -11,7 +11,7 @@ test('Halaman Edit Assignment', async ({ page }) => {
 
     await page.goto('http://localhost:3000/assignment');
 
-    await page.locator('a:has-text("Edit")').first().click();
+    await page.locator(".action.edit").first().click();
 
     await expect(page.locator('body')).toContainText('Edit Assignment');
 

@@ -1,54 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title><%= title %></title>
 
     <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="/assets/dashboard.css">
+
 </head>
-<body class="bg-muted">
 
-<div class="container mx-auto p-10">
+<body>
 
-    <div class="card p-6">
+<!-- VIDEO BACKGROUND -->
 
-        <h1 class="text-3xl font-bold">
-            Facultyware
-        </h1>
+<video
+    autoplay
+    muted
+    loop
+    playsinline
+    class="dashboard-video">
 
-        <p class="mt-2">
-            Selamat datang,
-            <b><%= user %></b>
-        </p>
+    <source
+        src="/assets/videos/dashboard.mp4"
+        type="video/mp4">
 
-        <hr class="my-5">
+</video>
 
-        <h2 class="text-xl font-semibold">
-            Menu Survey
+<div class="dashboard-bg"></div>
+
+<div class="dashboard-blur"></div>
+
+<div class="wrapper">
+
+    <%- include("partials/sidebar") %>
+
+    <div class="content">
+
+        <%- include("partials/navbar") %>
+
+        <!-- HERO -->
+
+        <div class="hero">
+
+            <div>
+
+                <span class="hero-badge">
+
+                    Facultyware v2.0
+
+                </span>
+
+                <h1 class="hero-title">
+
+                    <span id="greeting"></span>,
+
+                    <%= user %> 👋
+
+                </h1>
+
+                <p class="hero-description">
+
+                    Manage surveys, questions, assignments,
+                    answer options and reports
+                    from one beautiful dashboard.
+
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a href="/survey" class="hero-btn">
+
+                        Open Survey
+
+                    </a>
+
+                    <a href="/question" class="hero-btn-outline">
+
+                        Questions
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <img
+                src="/assets/images/logo.png"
+                class="hero-logo"
+                alt="Facultyware">
+
+        </div>
+
+        <!-- STATISTICS -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📋</div>
+
+                <div>
+
+                    <p>Total Survey</p>
+
+                    <h2><%= totalSurvey %></h2>
+
+                </div>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-icon">❓</div>
+
+                <div>
+
+                    <p>Total Question</p>
+
+                    <h2><%= totalQuestion %></h2>
+
+                </div>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📝</div>
+
+                <div>
+
+                    <p>Total Option</p>
+
+                    <h2><%= totalOption %></h2>
+
+                </div>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-icon">🔗</div>
+
+                <div>
+
+                    <p>Total Assignment</p>
+
+                    <h2><%= totalAssignment %></h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- QUICK ACCESS -->
+
+        <h2 class="section-title">
+
+            Quick Access
+
         </h2>
 
-        <div class="mt-5 flex flex-wrap gap-3">
+        <div class="quick-grid">
 
-            <!-- Data Survey -->
-            <a href="/survey" class="btn">
-                Kelola Survey
+            <a href="/survey">
+
+                <div class="quick-card">
+
+                    <h2>📋 Survey</h2>
+
+                    <p>Manage all surveys</p>
+
+                </div>
+
             </a>
 
-            <!-- Pertanyaan Survey -->
-            <a href="/question" class="btn">
-                Kelola Pertanyaan
+            <a href="/question">
+
+                <div class="quick-card">
+
+                    <h2>❓ Question</h2>
+
+                    <p>Manage all questions</p>
+
+                </div>
+
             </a>
-            <a href="/option" class="btn">
-    Opsi Jawaban
-</a>
-<a href="/assignment" class="btn">
-    Assignment Survey
-</a>
-            <!-- Logout -->
-            <a href="/logout" class="btn-outline">
-                Logout
+
+            <a href="/option">
+
+                <div class="quick-card">
+
+                    <h2>📝 Options</h2>
+
+                    <p>Manage answer options</p>
+
+                </div>
+
             </a>
+
+            <a href="/assignment">
+
+                <div class="quick-card">
+
+                    <h2>🔗 Assignment</h2>
+
+                    <p>Assign questions into survey</p>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <!-- BOTTOM -->
+
+        <div class="dashboard-bottom">
+
+            <div class="activity-card">
+
+                <h2>Recent Activity</h2>
+
+                <ul class="activity-list">
+
+                    <li>
+
+                        <span class="activity-dot"></span>
+
+                        Survey berhasil dibuat
+
+                    </li>
+
+                    <li>
+
+                        <span class="activity-dot"></span>
+
+                        Question berhasil ditambahkan
+
+                    </li>
+
+                    <li>
+
+                        <span class="activity-dot"></span>
+
+                        Option berhasil diperbarui
+
+                    </li>
+
+                    <li>
+
+                        <span class="activity-dot"></span>
+
+                        Assignment berhasil dibuat
+
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <div class="activity-card">
+
+                <h2>System Analytics</h2>
+
+                <div class="progress-item">
+
+                    <span>Survey</span>
+
+                    <div class="progress">
+
+                        <div class="progress-fill survey"></div>
+
+                    </div>
+
+                </div>
+
+                <div class="progress-item">
+
+                    <span>Question</span>
+
+                    <div class="progress">
+
+                        <div class="progress-fill question"></div>
+
+                    </div>
+
+                </div>
+
+                <div class="progress-item">
+
+                    <span>Option</span>
+
+                    <div class="progress">
+
+                        <div class="progress-fill option"></div>
+
+                    </div>
+
+                </div>
+
+                <div class="progress-item">
+
+                    <span>Assignment</span>
+
+                    <div class="progress">
+
+                        <div class="progress-fill assignment"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -56,5 +325,66 @@
 
 </div>
 
+<script>
+
+function updateClock(){
+
+    const now = new Date();
+
+    const clock = document.getElementById("clock");
+    const date = document.getElementById("date");
+    const greeting = document.getElementById("greeting");
+
+    if(clock){
+
+        clock.innerHTML = now.toLocaleTimeString("id-ID");
+
+    }
+
+    if(date){
+
+        date.innerHTML = now.toLocaleDateString("id-ID",{
+
+            weekday:"long",
+
+            day:"numeric",
+
+            month:"long",
+
+            year:"numeric"
+
+        });
+
+    }
+
+    if(greeting){
+
+        const hour = now.getHours();
+
+        let text = "Good Evening";
+
+        if(hour < 12){
+
+            text = "Good Morning";
+
+        }else if(hour < 17){
+
+            text = "Good Afternoon";
+
+        }
+
+        greeting.innerHTML = text;
+
+    }
+
+}
+
+updateClock();
+
+setInterval(updateClock,1000);
+
+</script>
+
 </body>
+
 </html>

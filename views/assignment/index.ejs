@@ -3,66 +3,208 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title><%= title %></title>
+<title><%= title %></title>
 
-    <link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
-<body class="bg-muted">
+<body>
 
-<div class="container mx-auto p-10">
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
 
-<div class="card p-6">
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
 
-<div class="flex justify-between items-center">
+<div class="wrapper">
 
-<h1 class="text-2xl font-bold">
+<%- include("../partials/sidebar") %>
 
-Data Assignment Survey
+<div class="content">
 
-</h1>
+<%- include("../partials/navbar") %>
 
-<a href="/assignment/create" class="btn">
+<!-- HEADER -->
 
-Tambah Assignment
+<div class="page-header">
 
-</a>
+    <div>
+
+        <span class="hero-badge">
+
+            Survey Assignment
+
+        </span>
+
+        <h1>
+
+            Assignment Management
+
+        </h1>
+
+        <p>
+
+            Connect surveys with their questions.
+
+        </p>
+
+    </div>
+
+    <div class="header-action">
+
+        <a
+            href="/assignment/create"
+            class="hero-btn">
+
+            ➕ New Assignment
+
+        </a>
+
+    </div>
 
 </div>
 
-<br>
+<!-- STATS -->
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            🔗
+
+        </div>
+
+        <div>
+
+            <p>Total Assignment</p>
+
+            <h2>
+
+                <%= assignments.length %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            📄
+
+        </div>
+
+        <div>
+
+            <p>Current Page</p>
+
+            <h2>
+
+                <%= page %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            📚
+
+        </div>
+
+        <div>
+
+            <p>Total Page</p>
+
+            <h2>
+
+                <%= totalPage %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            🔍
+
+        </div>
+
+        <div>
+
+            <p>Search</p>
+
+            <h2>
+
+                <%= search ? search : "-" %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+</div>
 
 <!-- SEARCH -->
 
-<form action="/assignment" method="GET">
+<div class="glass-card">
 
-    <input
-        type="text"
-        name="search"
-        placeholder="Cari survey / pertanyaan..."
-        value="<%= search || '' %>"
-        style="padding:8px;width:300px;">
+<form
+action="/assignment"
+method="GET"
+class="search-form">
 
-    <button type="submit">
+<input
+type="text"
+name="search"
+placeholder="Search survey or question..."
+value="<%= search || '' %>">
 
-        Cari
+<button
+type="submit"
+class="hero-btn">
 
-    </button>
+Search
 
-    <a href="/assignment">
+</button>
 
-        Reset
+<a
+href="/assignment"
+class="hero-btn-outline">
 
-    </a>
+Reset
+
+</a>
 
 </form>
 
-<br>
+</div>
 
-<table class="table-auto w-full mt-6 border">
+<!-- TABLE -->
+
+<div class="glass-card">
+
+<table class="modern-table">
 
 <thead>
 
@@ -72,11 +214,15 @@ Tambah Assignment
 
 <th>Survey</th>
 
-<th>Pertanyaan</th>
+<th>Question</th>
 
-<th>Urutan</th>
+<th>Order</th>
 
-<th>Aksi</th>
+<th width="180">
+
+Action
+
+</th>
 
 </tr>
 
@@ -84,13 +230,23 @@ Tambah Assignment
 
 <tbody>
 
-<% if(assignments.length==0){ %>
+<% if(assignments.length===0){ %>
 
 <tr>
 
-<td colspan="5" align="center">
+<td colspan="5" class="empty">
 
-Tidak ada data.
+<div class="empty-box">
+
+<h2>📭 No Assignment</h2>
+
+<p>
+
+No assignment available.
+
+</p>
+
+</div>
 
 </td>
 
@@ -110,7 +266,11 @@ Tidak ada data.
 
 <td>
 
+<strong>
+
 <%= assignment.survey_title %>
+
+</strong>
 
 </td>
 
@@ -122,19 +282,26 @@ Tidak ada data.
 
 <td>
 
+<span class="question-badge">
+
 <%= assignment.order %>
+
+</span>
 
 </td>
 
 <td>
 
-<a href="/assignment/edit/<%= assignment.id %>">
+<div class="action-group">
 
-Edit
+<a
+href="/assignment/edit/<%= assignment.id %>"
+class="action edit"
+title="Edit">
+
+✏️
 
 </a>
-
-|
 
 <form
 action="/assignment/delete/<%= assignment.id %>"
@@ -142,13 +309,18 @@ method="POST"
 style="display:inline;">
 
 <button
-onclick="return confirm('Yakin hapus data?')">
+type="submit"
+class="action delete"
+title="Delete"
+onclick="return confirm('Delete this assignment?')">
 
-Hapus
+🗑️
 
 </button>
 
 </form>
+
+</div>
 
 </td>
 
@@ -160,53 +332,55 @@ Hapus
 
 </table>
 
-<br>
+</div>
 
 <!-- PAGINATION -->
 
-<div>
+<div class="pagination">
 
 <% if(page>1){ %>
 
-<a href="/assignment?page=<%= page-1 %>&search=<%= search %>">
+<a
+href="/assignment?page=<%= page-1 %>&search=<%= search %>">
 
-← Sebelumnya
+← Previous
 
 </a>
 
 <% } %>
 
-&nbsp;
+<div class="page-number">
 
-Halaman
+Page
+
+<b>
 
 <%= page %>
 
-dari
+</b>
+
+of
+
+<b>
 
 <%= totalPage %>
 
-&nbsp;
+</b>
+
+</div>
 
 <% if(page<totalPage){ %>
 
-<a href="/assignment?page=<%= page+1 %>&search=<%= search %>">
+<a
+href="/assignment?page=<%= page+1 %>&search=<%= search %>">
 
-Selanjutnya →
+Next →
 
 </a>
 
 <% } %>
 
 </div>
-
-<br>
-
-<a href="/home" class="btn-outline">
-
-Kembali
-
-</a>
 
 </div>
 

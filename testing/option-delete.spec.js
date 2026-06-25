@@ -9,10 +9,10 @@ test('Tombol Hapus Opsi tampil', async ({ page }) => {
 
     await page.click('button[type="submit"]');
 
-    await page.goto('http://localhost:3000/option');
+    await page.goto('http://localhost:3000/option/question/1');
 
     await expect(
-        page.locator('button:has-text("Hapus")').first()
+        page.locator('button[title="Delete Option"]').first()
     ).toBeVisible();
 
 });

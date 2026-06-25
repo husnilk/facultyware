@@ -4,108 +4,167 @@
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title><%= title %></title>
 
 <link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
-<body class="bg-muted">
+<body>
 
-<div class="container mx-auto p-10">
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
 
-<div class="card p-6">
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
 
-<h1 class="text-2xl font-bold">
+<div class="wrapper">
 
-Tambah Assignment
+    <%- include("../partials/sidebar") %>
 
-</h1>
+    <div class="content">
 
-<form action="/assignment/create" method="POST">
+        <%- include("../partials/navbar") %>
 
-<div class="mt-4">
+        <div class="page-header">
 
-<label>Survey</label>
+            <div>
 
-<select
-name="survey_id"
-class="input w-full"
-required>
+                <span class="hero-badge">
 
-<% surveys.forEach(survey=>{ %>
+                    Survey Assignment
 
-<option value="<%= survey.id %>">
+                </span>
 
-<%= survey.title %>
+                <h1>
 
-</option>
+                    Create Assignment
 
-<% }) %>
+                </h1>
 
-</select>
+                <p>
 
-</div>
+                    Assign a question into a survey.
 
-<div class="mt-4">
+                </p>
 
-<label>Pertanyaan</label>
+            </div>
 
-<select
-name="survey_question_id"
-class="input w-full"
-required>
+            <a
+                href="/assignment"
+                class="hero-btn-outline">
 
-<% questions.forEach(question=>{ %>
+                ← Back
 
-<option value="<%= question.id %>">
+            </a>
 
-<%= question.question_text %>
+        </div>
 
-</option>
+        <div class="glass-card">
 
-<% }) %>
+            <% if(error){ %>
 
-</select>
+                <div class="alert-error">
 
-</div>
+                    <%= error %>
 
-<div class="mt-4">
+                </div>
 
-<label>Urutan</label>
+            <% } %>
 
-<input
-type="number"
-name="order"
-class="input w-full"
-value="1"
-required>
+            <form
+                action="/assignment/create"
+                method="POST">
 
-</div>
+                <div class="form-group">
 
-<div class="mt-6">
+                    <label>
 
-<button
-    type="submit"
-    class="btn">
+                        Survey
 
-    Simpan
+                    </label>
 
+                    <select
+                        name="survey_id"
+                        required>
 
-</button>
+                        <% surveys.forEach(survey=>{ %>
 
-<a href="/assignment" class="btn-outline">
+                            <option value="<%= survey.id %>">
 
-Batal
+                                <%= survey.title %>
 
-</a>
+                            </option>
 
-</div>
+                        <% }) %>
 
-</form>
+                    </select>
 
-</div>
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+
+                        Question
+
+                    </label>
+
+                    <select
+                        name="survey_question_id"
+                        required>
+
+                        <% questions.forEach(question=>{ %>
+
+                            <option value="<%= question.id %>">
+
+                                <%= question.question_text %>
+
+                            </option>
+
+                        <% }) %>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+
+                        Order
+
+                    </label>
+
+                    <input
+                        type="number"
+                        name="order"
+                        value="1"
+                        min="1"
+                        required>
+
+                </div>
+
+                <br>
+
+                <button
+                    type="submit"
+                    class="hero-btn">
+
+                    💾 Save Assignment
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 

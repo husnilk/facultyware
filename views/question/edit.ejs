@@ -3,82 +3,166 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <title><%= title %></title>
+<title><%= title %></title>
 
-    <link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
 <body>
 
-<div class="container mx-auto p-10">
+<video autoplay muted loop playsinline class="dashboard-video">
 
-    <h1 class="text-3xl font-bold mb-6">
+    <source
+        src="/assets/videos/dashboard.mp4"
+        type="video/mp4">
 
-        Edit Pertanyaan
+</video>
 
-    </h1>
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
 
-    <form action="/question/edit/<%= question.id %>" method="POST">
+<div class="wrapper">
 
-        <div class="mb-4">
+    <%- include("../partials/sidebar") %>
 
-            <label>Pertanyaan</label>
+    <div class="content">
 
-            <textarea
-                name="question_text"
-                class="border w-full p-2"
-                rows="5"
-                required><%= question.question_text %></textarea>
+        <%- include("../partials/navbar") %>
+
+        <!-- HEADER -->
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="hero-badge">
+
+                    Question Management
+
+                </span>
+
+                <h1>
+
+                    Edit Question
+
+                </h1>
+
+                <p>
+
+                    Update question information.
+
+                </p>
+
+            </div>
+
+            <a
+                href="/question"
+                class="hero-btn-outline">
+
+                ← Back
+
+            </a>
 
         </div>
 
-        <div class="mb-4">
+        <!-- FORM -->
 
-            <label>Tipe</label>
+        <div class="glass-card">
 
-            <select
-                name="type"
-                class="border w-full p-2"
-                required>
+            <% if(error){ %>
 
-                <option
-                    value="text"
-                    <%= question.type=="text" ? "selected" : "" %>>
-                    Text
-                </option>
+                <div class="alert-danger">
 
-                <option
-                    value="radio"
-                    <%= question.type=="radio" ? "selected" : "" %>>
-                    Radio
-                </option>
+                    <%= error %>
 
-                <option
-                    value="checkbox"
-                    <%= question.type=="checkbox" ? "selected" : "" %>>
-                    Checkbox
-                </option>
+                </div>
 
-            </select>
+            <% } %>
+
+            <form
+                action="/question/edit/<%= question.id %>"
+                method="POST">
+
+                <div class="form-group">
+
+                    <label>
+
+                        Question
+
+                    </label>
+
+                    <textarea
+                        name="question_text"
+                        rows="5"
+                        required><%= question.question_text %></textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+
+                        Question Type
+
+                    </label>
+
+                    <select
+                        name="type">
+
+                        <option
+                            value="text"
+                            <%= question.type=="text"?"selected":"" %>>
+
+                            Text
+
+                        </option>
+
+                        <option
+                            value="radio"
+                            <%= question.type=="radio"?"selected":"" %>>
+
+                            Radio Button
+
+                        </option>
+
+                        <option
+                            value="checkbox"
+                            <%= question.type=="checkbox"?"selected":"" %>>
+
+                            Checkbox
+
+                        </option>
+
+                        <option
+                            value="textarea"
+                            <%= question.type=="textarea"?"selected":"" %>>
+
+                            Text Area
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <button
+                    class="hero-btn">
+
+                    💾 Update Question
+
+                </button>
+
+            </form>
 
         </div>
 
-        <button class="btn">
-
-            Update
-
-        </button>
-
-        <a href="/question" class="btn">
-
-            Batal
-
-        </a>
-
-    </form>
+    </div>
 
 </div>
 

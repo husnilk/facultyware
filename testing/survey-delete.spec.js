@@ -12,7 +12,7 @@ test('Halaman Survey memiliki tombol hapus', async ({ page }) => {
     await page.goto('http://localhost:3000/survey');
 
     await expect(
-        page.locator('button:has-text("Hapus"), button:has-text("🗑")').first()
+        page.locator('.action.delete').first()
     ).toBeVisible();
 
 });

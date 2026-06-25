@@ -5,107 +5,157 @@ const db = require("../lib/db");
  * Halaman awal
  */
 const index = (req, res) => {
-  if (req.session.userId) {
-    return res.redirect("/home");
-  }
+    if (req.session.userId) {
+        return res.redirect("/home");
+    }
 
-  res.redirect("/login");
+    res.redirect("/login");
 };
 
 /**
- * Halaman home setelah login
+ * Halaman Home
  */
-const home = (req, res) => {
-  res.render("home", {
-    title: "Home",
-    user: req.session.name,
-  });
-};
+const home = async (req, res, next) => {
 
-/**
- * Menampilkan halaman login
- */
-const loginPage = (req, res) => {
-  if (req.session.userId) {
-    return res.redirect("/home");
-  }
+    try {
 
-  res.render("login", {
-    title: "Login",
-    error: null,
-  });
-};
+        const [[survey]] = await db.query(
+            "SELECT COUNT(*) total FROM surveys"
+        );
 
-/**
- * Proses login menggunakan email
- */
-const login = async (req, res, next) => {
-  const { email, password } = req.body;
+        const [[question]] = await db.query(
+            "SELECT COUNT(*) total FROM survey_questions"
+        );
 
-  try {
-    // Cari user berdasarkan email
-   const [rows] = await db.query(
-  "SELECT * FROM users WHERE email = ?",
-  [email]
+      const [[option]] = await db.query(
+    "SELECT COUNT(*) total FROM survey_question_options"
 );
 
-console.log("Email input:", email);
-console.log("Data user:", rows);
+        const [[assignment]] = await db.query(
+            "SELECT COUNT(*) total FROM survey_question_assignments"
+        );
 
-    // Jika email tidak ditemukan
-    if (rows.length === 0) {
-      return res.render("login", {
-        title: "Login",
-        error: "Email atau password salah",
-      });
+        res.render("home", {
+            title: "Dashboard",
+            user: req.session.name,
+
+            totalSurvey: survey.total,
+            totalQuestion: question.total,
+            totalOption: option.total,
+            totalAssignment: assignment.total
+
+        });
+
+    } catch (err) {
+
+        next(err);
+
     }
 
-    const user = rows[0];
+};
+/**
+ * Halaman Login
+ */
+const loginPage = (req, res) => {
 
-    // Cek password bcrypt
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
-
-    // Jika password salah
-    if (!isMatch) {
-      return res.render("login", {
-        title: "Login",
-        error: "Email atau password salah",
-      });
+    if (req.session.userId) {
+        return res.redirect("/home");
     }
 
-    // Simpan data ke session
-    req.session.userId = user.id;
-    req.session.name = user.name;
-    req.session.email = user.email;
+    res.render("login", {
+        title: "Login",
+        error: null,
+    });
 
-    // Redirect ke halaman home
-    res.redirect("/home");
+};
 
-  } catch (error) {
-    next(error);
-  }
+/**
+ * Proses Login
+ */
+const login = async (req, res, next) => {
+
+    const {
+        email,
+        password
+    } = req.body;
+
+    try {
+
+        const [rows] = await db.query(
+            "SELECT * FROM users WHERE email=?",
+            [email]
+        );
+
+        if (rows.length === 0) {
+
+            return res.render("login", {
+                title: "Login",
+                error: "Email atau password salah"
+            });
+
+        }
+
+        const user = rows[0];
+
+        const isMatch = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        if (!isMatch) {
+
+            return res.render("login", {
+                title: "Login",
+                error: "Email atau password salah"
+            });
+
+        }
+
+        req.session.userId = user.id;
+        req.session.name = user.name;
+        req.session.email = user.email;
+
+        res.redirect("/home");
+
+    }
+
+    catch (err) {
+
+        next(err);
+
+    }
+
 };
 
 /**
  * Logout
  */
 const logout = (req, res, next) => {
-  req.session.destroy((error) => {
-    if (error) {
-      return next(error);
-    }
 
-    res.redirect("/login");
-  });
+    req.session.destroy((err) => {
+
+        if (err) {
+
+            return next(err);
+
+        }
+
+        res.redirect("/login");
+
+    });
+
 };
 
 module.exports = {
-  index,
-  home,
-  loginPage,
-  login,
-  logout,
+
+    index,
+
+    home,
+
+    loginPage,
+
+    login,
+
+    logout
+
 };

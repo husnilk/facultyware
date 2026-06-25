@@ -1,92 +1,169 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <title><%= title %></title>
+<title><%= title %></title>
 
-    <link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
 <body>
 
-<div class="container mx-auto p-10">
+<video autoplay muted loop playsinline class="dashboard-video">
 
-<h1 class="text-3xl font-bold mb-6">
+<source src="/assets/videos/dashboard.mp4" type="video/mp4">
 
+</video>
+
+<div class="dashboard-bg"></div>
+
+<div class="dashboard-blur"></div>
+
+<div class="wrapper">
+
+<%- include("../partials/sidebar") %>
+
+<div class="content">
+
+<%- include("../partials/navbar") %>
+
+<div class="page-header">
+
+<div>
+
+<span class="hero-badge">
+
+Edit Survey
+
+</span>
+
+<h1 data-testid="page-title">
     Edit Survey
-
 </h1>
 
-<form action="/survey/edit/<%= survey.id %>" method="POST">
+<p>
 
-    <div class="mb-4">
+Edit survey information below.
 
-        <label>Judul Survey</label>
+</p>
 
-        <input
-            type="text"
-            name="title"
-            value="<%= survey.title %>"
-            class="border w-full p-2"
-            required>
+</div>
 
-    </div>
+<a
+href="/survey"
+class="hero-btn-outline">
 
-    <div class="mb-4">
+← Back
 
-        <label>Deskripsi</label>
+</a>
 
-        <textarea
-            name="description"
-            rows="5"
-            class="border w-full p-2"
-            required><%= survey.description %></textarea>
+</div>
 
-    </div>
+<div class="glass-card form-card">
 
-    <div class="mb-4">
+<form
+action="/survey/edit/<%= survey.id %>"
+method="POST">
 
-        <label>Tanggal Mulai</label>
+<div class="form-group">
 
-        <input
-            type="date"
-            name="start_date"
-            value="<%= survey.start_date.toISOString().split('T')[0] %>"
-            class="border w-full p-2"
-            required>
+<label>
 
-    </div>
+Survey Title
 
-    <div class="mb-4">
+</label>
 
-        <label>Tanggal Selesai</label>
+<input
+type="text"
+name="title"
+value="<%= survey.title %>"
+required>
 
-        <input
-            type="date"
-            name="end_date"
-            value="<%= survey.end_date.toISOString().split('T')[0] %>"
-            class="border w-full p-2"
-            required>
+</div>
 
-    </div>
+<div class="form-group">
 
-    <button class="btn">
+<label>
 
-        Update
+Description
 
-    </button>
+</label>
 
-    <a href="/survey" class="btn">
+<textarea
+name="description"
+rows="5"
+required><%= survey.description %></textarea>
 
-        Batal
+</div>
 
-    </a>
+<div class="date-grid">
+
+<div class="form-group">
+
+<label>
+
+Start Date
+
+</label>
+
+<input
+type="date"
+name="start_date"
+value="<%= survey.start_date.toISOString().split('T')[0] %>"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+End Date
+
+</label>
+
+<input
+type="date"
+name="end_date"
+value="<%= survey.end_date.toISOString().split('T')[0] %>"
+required>
+
+</div>
+
+</div>
+
+<div class="form-action">
+
+<button
+type="submit"
+class="hero-btn">
+
+💾 Update Survey
+
+</button>
+
+<a
+href="/survey"
+class="hero-btn-outline">
+
+Cancel
+
+</a>
+
+</div>
 
 </form>
+
+</div>
+
+</div>
 
 </div>
 

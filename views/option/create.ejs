@@ -3,94 +3,119 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title><%= title %></title>
+<title><%= title %></title>
 
-    <link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
-<body class="bg-muted">
+<body>
 
-<div class="container mx-auto p-10">
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
 
-    <div class="card p-6">
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
 
-        <h1 class="text-2xl font-bold">
-            Tambah Opsi Jawaban
-        </h1>
+<div class="wrapper">
 
-        <form action="/option/create" method="POST">
+    <%- include("../partials/sidebar") %>
 
-            <div class="mt-4">
+    <div class="content">
 
-                <label>Pertanyaan</label>
+        <%- include("../partials/navbar") %>
 
-                <select
-                    name="survey_question_id"
-                    class="input w-full"
-                    required>
+        <div class="page-header">
 
-                    <% questions.forEach(question => { %>
+            <div>
 
-                        <option value="<%= question.id %>">
-                            <%= question.question_text %>
-                        </option>
+                <span class="hero-badge">
+                    Question Option
+                </span>
 
-                    <% }) %>
+                <h1>
+                    Add New Option
+                </h1>
 
-                </select>
-
-            </div>
-
-            <div class="mt-4">
-
-                <label>Opsi Jawaban</label>
-
-                <input
-                    type="text"
-                    name="option_text"
-                    class="input w-full"
-                    required>
+                <p>
+                    Question :
+                    <strong><%= question.question_text %></strong>
+                </p>
 
             </div>
 
-            <div class="mt-4">
-
-                <label>Bobot</label>
-
-                <input
-                    type="number"
-                    step="0.01"
-                    name="weight"
-                    class="input w-full"
-                    value="0"
-                    required>
-
-            </div>
-
-            <div class="mt-6">
-
-                <button
-                    type="submit"
-                    class="btn">
-
-                    Simpan
-
-                </button>
+            <div class="header-action">
 
                 <a
-                    href="/option"
-                    class="btn-outline">
+                    href="/option/question/<%= question.id %>"
+                    class="hero-btn-outline">
 
-                    Batal
+                    ← Back
 
                 </a>
 
             </div>
 
-        </form>
+        </div>
+
+        <div class="glass-card">
+
+            <% if(error){ %>
+
+                <div class="alert-error">
+                    <%= error %>
+                </div>
+
+            <% } %>
+
+            <form
+                action="/option/create/<%= question.id %>"
+                method="POST">
+
+                <div class="form-group">
+
+                    <label>Option Text</label>
+
+                    <input
+                        type="text"
+                        name="option_text"
+                        placeholder="Example : Strongly Agree"
+                        required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Weight</label>
+
+                    <input
+                        type="number"
+                        name="weight"
+                        min="1"
+                        max="5"
+                        required>
+
+                </div>
+
+                <br>
+
+                <button
+                    type="submit"
+                    class="hero-btn">
+
+                    💾 Save Option
+
+                </button>
+
+            </form>
+
+        </div>
 
     </div>
 

@@ -7,6 +7,8 @@
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
+    "@tailwindcss/cli": "^4.3.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -18,7 +20,8 @@
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "mysql2": "^3.22.3",
-    "pdfkit": "^0.19.1"
+    "pdfkit": "^0.19.1",
+    "tailwindcss": "^4.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0"

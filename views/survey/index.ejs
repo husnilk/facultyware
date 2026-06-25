@@ -4,219 +4,368 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Data Survey</title>
+    <title><%= title %></title>
 
     <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="/assets/dashboard.css">
+    <link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
 <body>
 
-<div class="container mx-auto p-10">
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
 
-    <div class="flex justify-between mb-5">
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
 
-        <h1 class="text-3xl font-bold">
-            Data Survey
-        </h1>
+<div class="wrapper">
 
-        <div class="flex gap-2">
+    <%- include("../partials/sidebar") %>
 
-            <a href="/survey/export/pdf" class="btn-outline">
-                📄 Export PDF
-            </a>
+    <div class="content">
 
-            <a href="/survey/create" class="btn">
-                Tambah Survey
-            </a>
+        <%- include("../partials/navbar") %>
+
+        <!-- HEADER -->
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="hero-badge">
+                    Survey Management
+                </span>
+
+                <h1>
+                    Data Survey
+                </h1>
+
+                <p>
+                    Create, manage and publish faculty surveys professionally.
+                </p>
+
+            </div>
+
+            <div class="header-action">
+
+                <a href="/survey/export/pdf" class="btn-outline">
+                    📄 Export PDF
+                </a>
+
+                <a href="/survey/create" class="hero-btn">
+                    ➕ New Survey
+                </a>
+
+            </div>
 
         </div>
 
-    </div>
+        <!-- STATISTIC -->
 
-    <!-- SEARCH -->
+        <div class="stats-grid">
 
-    <form action="/survey" method="GET" style="margin-bottom:20px;">
+            <div class="stat-card">
 
-        <input
-            type="text"
-            name="search"
-            placeholder="Cari judul survey..."
-            value="<%= search || '' %>"
-            style="padding:8px;width:300px;">
+                <div class="stat-icon">📋</div>
 
-        <button class="btn">
-            Cari
-        </button>
+                <div>
 
-        <a href="/survey" class="btn-outline">
-            Reset
-        </a>
+                    <p>Total Survey</p>
 
-    </form>
+                    <h2><%= surveys.length %></h2>
 
-    <table class="table w-full border">
+                </div>
 
-        <thead>
+            </div>
 
-            <tr>
+            <div class="stat-card">
 
-                <th>No</th>
-                <th>Judul</th>
-                <th>Jumlah Pertanyaan</th>
-                <th>Tanggal Mulai</th>
-                <th>Tanggal Selesai</th>
-                <th>Status</th>
-                <th>Aksi</th>
+                <div class="stat-icon">📄</div>
 
-            </tr>
+                <div>
 
-        </thead>
+                    <p>Current Page</p>
 
-        <tbody>
+                    <h2><%= page %></h2>
 
-        <% if (surveys.length == 0) { %>
+                </div>
 
-            <tr>
+            </div>
 
-                <td colspan="7" align="center">
-                    Belum ada data Survey
-                </td>
+            <div class="stat-card">
 
-            </tr>
+                <div class="stat-icon">📚</div>
 
-        <% } %>
+                <div>
 
-        <% surveys.forEach((survey, index) => { %>
+                    <p>Total Page</p>
 
-            <tr>
+                    <h2><%= totalPage %></h2>
 
-                <td>
-                    <%= ((page - 1) * 5) + index + 1 %>
-                </td>
+                </div>
 
-                <td>
-                    <%= survey.title %>
-                </td>
+            </div>
 
-                <td>
-                    <%= survey.total_question %>
-                </td>
+            <div class="stat-card">
 
-                <td>
-                    <%= new Date(survey.start_date).toLocaleDateString("id-ID") %>
-                </td>
+                <div class="stat-icon">🔍</div>
 
-                <td>
-                    <%= new Date(survey.end_date).toLocaleDateString("id-ID") %>
-                </td>
+                <div>
 
-                <td>
+                    <p>Keyword</p>
 
-                    <% if (survey.is_active) { %>
+                    <h2><%= search ? search : "-" %></h2>
 
-                        Aktif
+                </div>
 
-                    <% } else { %>
+            </div>
 
-                        Nonaktif
+        </div>
 
-                    <% } %>
+        <!-- SEARCH -->
 
-                </td>
+        <div class="glass-card">
 
-                <td>
+            <form action="/survey" method="GET" class="search-form">
 
-                    <a href="/question/survey/<%= survey.id %>">
-                        📋 Pertanyaan
-                    </a>
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search survey..."
+                    value="<%= search || '' %>">
 
-                    |
+                <button class="hero-btn">
+                    Search
+                </button>
 
-                    <% if (!survey.is_active) { %>
+                <a href="/survey" class="hero-btn-outline">
+                    Reset
+                </a>
 
-                        <form
-                            action="/survey/publish/<%= survey.id %>"
-                            method="POST"
-                            style="display:inline;">
+            </form>
 
-                            <button onclick="return confirm('Publish survey ini?')">
-                                🚀 Publish
-                            </button>
+        </div>
 
-                        </form>
+        <!-- TABLE -->
 
-                        |
+        <div class="glass-card">
 
-                    <% } %>
+            <table class="modern-table">
 
-                    <a href="/survey/edit/<%= survey.id %>">
-                        ✏ Edit
-                    </a>
+                <thead>
 
-                    |
+                    <tr>
 
-                    <form
-                        action="/survey/delete/<%= survey.id %>"
-                        method="POST"
-                        style="display:inline;">
+                        <th>No</th>
+                        <th>Survey</th>
+                        <th>Question</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                        <th width="260">Action</th>
 
-                        <button onclick="return confirm('Yakin ingin menghapus survey?')">
-                            🗑 Hapus
-                        </button>
+                    </tr>
 
-                    </form>
+                </thead>
 
-                </td>
+                <tbody>
 
-            </tr>
+                <% if(surveys.length === 0){ %>
 
-        <% }) %>
+                    <tr>
 
-        </tbody>
+                        <td colspan="7" class="empty">
 
-    </table>
+                            <div class="empty-box">
 
-    <!-- PAGINATION -->
+                                <h2>📭 No Survey Found</h2>
 
-    <div style="margin-top:25px;">
+                                <p>
+                                    There is no survey available.
+                                </p>
 
-        <% if(page > 1){ %>
+                                <a href="/survey/create" class="hero-btn">
+                                    Create Survey
+                                </a>
 
-            <a
-                href="/survey?page=<%= page-1 %>&search=<%= search %>"
-                class="btn">
+                            </div>
 
-                ← Sebelumnya
+                        </td>
 
-            </a>
+                    </tr>
 
-        <% } %>
+                <% } %>
 
-        <span style="margin:0 15px;">
+                <% surveys.forEach((survey,index)=>{ %>
 
-            Halaman
+                    <tr>
 
-            <%= page %>
+                        <td>
+                            <%= ((page-1)*5)+index+1 %>
+                        </td>
 
-            dari
+                        <td>
 
-            <%= totalPage %>
+                            <div class="survey-title">
 
-        </span>
+                                <h3>
+                                    <%= survey.title %>
+                                </h3>
 
-        <% if(page < totalPage){ %>
+                                <small>
+                                    Faculty Survey
+                                </small>
 
-            <a
-                href="/survey?page=<%= page+1 %>&search=<%= search %>"
-                class="btn">
+                            </div>
 
-                Selanjutnya →
+                        </td>
 
-            </a>
+                        <td>
 
-        <% } %>
+                            <span class="question-badge">
+
+                                <%= survey.total_question %> Question
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <%= new Date(survey.start_date).toLocaleDateString("id-ID") %>
+
+                        </td>
+
+                        <td>
+
+                            <%= new Date(survey.end_date).toLocaleDateString("id-ID") %>
+
+                        </td>
+
+                        <td>
+
+                            <% if(survey.is_active){ %>
+
+                                <span class="status active">
+                                    🟢 Active
+                                </span>
+
+                            <% }else{ %>
+
+                                <span class="status inactive">
+                                    🔴 Inactive
+                                </span>
+
+                            <% } %>
+
+                        </td>
+
+                        <td>
+
+                            <div class="action-group">
+
+                                <a
+                                    href="/question/survey/<%= survey.id %>"
+                                    class="action view">
+
+                                    📋
+
+                                </a>
+
+                                <form
+                                    action="/survey/publish/<%= survey.id %>"
+                                    method="POST">
+
+                                    <button
+                                        type="submit"
+                                        class="action publish"
+                                        onclick="return confirm('Change survey status?')">
+
+                                        <%= survey.is_active ? "🔒" : "🚀" %>
+
+                                    </button>
+
+                                </form>
+
+                                <a
+                                    href="/survey/edit/<%= survey.id %>"
+                                    class="action edit">
+
+                                    ✏️
+
+                                </a>
+
+                                <form
+                                    action="/survey/delete/<%= survey.id %>"
+                                    method="POST">
+
+                                    <button
+                                        type="submit"
+                                        class="action delete"
+                                        onclick="return confirm('Delete this survey?')">
+
+                                        🗑️
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                <% }) %>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINATION -->
+
+        <div class="pagination">
+
+            <% if(page > 1){ %>
+
+                <a href="/survey?page=<%= page-1 %>&search=<%= search %>">
+
+                    ← Previous
+
+                </a>
+
+            <% } %>
+
+            <div class="page-number">
+
+                Page
+
+                <strong><%= page %></strong>
+
+                of
+
+                <strong><%= totalPage %></strong>
+
+            </div>
+
+            <% if(page < totalPage){ %>
+
+                <a href="/survey?page=<%= page+1 %>&search=<%= search %>">
+
+                    Next →
+
+                </a>
+
+            <% } %>
+
+        </div>
 
     </div>
 

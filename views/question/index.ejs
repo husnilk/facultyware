@@ -1,171 +1,308 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <title><%= title %></title>
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
 
 </head>
 
 <body>
 
-<h2>Data Pertanyaan Survey</h2>
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
 
-<p>
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
 
-    <a href="/home">Home</a> |
+<div class="wrapper">
 
-    <a href="/survey">Survey</a> |
+    <%- include("../partials/sidebar") %>
 
-    <a href="/question/create">Tambah Pertanyaan</a>
+    <div class="content">
 
-</p>
+        <%- include("../partials/navbar") %>
 
-<!-- SEARCH -->
+        <!-- HEADER -->
 
-<form action="/question" method="GET">
+        <div class="page-header">
 
-    <input
-        type="text"
-        name="search"
-        placeholder="Cari pertanyaan..."
-        value="<%= search || '' %>"
-    >
+            <div>
 
-    <button type="submit">
-        Cari
-    </button>
+                <span class="hero-badge">
+                    Question Management
+                </span>
 
-    <a href="/question">
-        Reset
-    </a>
+                <h1>Survey Questions</h1>
 
-</form>
+                <p>
+                    Manage every survey question in Facultyware.
+                </p>
 
-<br>
+            </div>
 
-<table border="1" cellpadding="10">
+            <div class="header-action">
 
-    <tr>
+                <a href="/survey" class="hero-btn-outline">
+                    📋 Survey
+                </a>
 
-        <th>No</th>
+            </div>
 
-        <th>Pertanyaan</th>
+        </div>
 
-        <th>Tipe</th>
+        <!-- STATS -->
 
-        <th>Aksi</th>
+        <div class="stats-grid">
 
-    </tr>
+            <div class="stat-card">
 
-    <% if(questions.length==0){ %>
+                <div class="stat-icon">❓</div>
 
-    <tr>
+                <div>
 
-        <td colspan="4" align="center">
+                    <p>Total Question</p>
 
-            Tidak ada data.
+                    <h2><%= questions.length %></h2>
 
-        </td>
+                </div>
 
-    </tr>
+            </div>
 
-    <% } %>
+            <div class="stat-card">
 
-    <% questions.forEach((question,index)=>{ %>
+                <div class="stat-icon">📄</div>
 
-    <tr>
+                <div>
 
-        <td>
+                    <p>Current Page</p>
 
-            <%= ((page-1)*5)+index+1 %>
+                    <h2><%= page %></h2>
 
-        </td>
+                </div>
 
-        <td>
+            </div>
 
-            <%= question.question_text %>
+            <div class="stat-card">
 
-        </td>
+                <div class="stat-icon">📚</div>
 
-        <td>
+                <div>
 
-            <%= question.type %>
+                    <p>Total Page</p>
 
-        </td>
+                    <h2><%= totalPage %></h2>
 
-        <td>
+                </div>
 
-            <a href="/question/edit/<%= question.id %>">
+            </div>
 
-                Edit
+            <div class="stat-card">
 
-            </a>
+                <div class="stat-icon">🔍</div>
 
-            |
+                <div>
 
-            <form
-                action="/question/delete/<%= question.id %>"
-                method="POST"
-                style="display:inline">
+                    <p>Search</p>
 
-                <button
-                    onclick="return confirm('Yakin ingin menghapus?')">
+                    <h2><%= search ? search : "-" %></h2>
 
-                    Hapus
+                </div>
 
+            </div>
+
+        </div>
+
+        <!-- SEARCH -->
+
+        <div class="glass-card">
+
+            <form action="/question" method="GET" class="search-form">
+
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search Question..."
+                    value="<%= search || '' %>">
+
+                <button class="hero-btn">
+                    Search
                 </button>
+
+                <a href="/question" class="hero-btn-outline">
+                    Reset
+                </a>
 
             </form>
 
-        </td>
+        </div>
 
-    </tr>
+        <!-- TABLE -->
 
-    <% }) %>
+        <div class="glass-card">
 
-</table>
+            <table class="modern-table">
 
-<br>
+                <thead>
 
-<!-- PAGINATION -->
+                    <tr>
 
-<div>
+                        <th>No</th>
 
-    <% if(page>1){ %>
+                        <th>Question</th>
 
-        <a href="/question?page=<%= page-1 %>&search=<%= search %>">
+                        <th>Type</th>
 
-            ← Sebelumnya
+                        <th width="180">
+                            Action
+                        </th>
 
-        </a>
+                    </tr>
 
-    <% } %>
+                </thead>
 
-    &nbsp;
+                <tbody>
 
-    Halaman
+                <% if(questions.length===0){ %>
 
-    <%= page %>
+                    <tr>
 
-    dari
+                        <td colspan="4" class="empty">
 
-    <%= totalPage %>
+                            <div class="empty-box">
 
-    &nbsp;
+                                <h2>📭 No Question</h2>
 
-    <% if(page<totalPage){ %>
+                                <p>
+                                    There are no questions available.
+                                </p>
 
-        <a href="/question?page=<%= page+1 %>&search=<%= search %>">
+                            </div>
 
-            Selanjutnya →
+                        </td>
 
-        </a>
+                    </tr>
 
-    <% } %>
+                <% } %>
+
+                <% questions.forEach((question,index)=>{ %>
+
+                    <tr>
+
+                        <td>
+
+                            <%= ((page-1)*5)+index+1 %>
+
+                        </td>
+
+                        <td>
+
+                            <strong>
+                                <%= question.question_text %>
+                            </strong>
+
+                        </td>
+
+                        <td>
+
+                            <span class="question-badge">
+
+                                <%= question.type %>
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="action-group">
+
+                                <a
+                                    href="/question/edit/<%= question.id %>"
+                                    class="action edit">
+
+                                    ✏️
+
+                                </a>
+
+                                <form
+                                    action="/question/delete/<%= question.id %>"
+                                    method="POST">
+
+                                    <button
+                                        class="action delete"
+                                        onclick="return confirm('Delete this question?')">
+
+                                        🗑️
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                <% }) %>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINATION -->
+
+        <div class="pagination">
+
+            <% if(page>1){ %>
+
+                <a href="/question?page=<%= page-1 %>&search=<%= search %>">
+
+                    ← Previous
+
+                </a>
+
+            <% } %>
+
+            <div class="page-number">
+
+                Page
+
+                <b><%= page %></b>
+
+                of
+
+                <b><%= totalPage %></b>
+
+            </div>
+
+            <% if(page<totalPage){ %>
+
+                <a href="/question?page=<%= page+1 %>&search=<%= search %>">
+
+                    Next →
+
+                </a>
+
+            <% } %>
+
+        </div>
+
+    </div>
 
 </div>
 
 </body>
+
 </html>
