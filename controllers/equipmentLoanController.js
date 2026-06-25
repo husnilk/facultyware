@@ -18,7 +18,7 @@ const index = async (req, res, next) => {
       JOIN equipments eq ON el.equipment_id = eq.id
       JOIN assets a ON eq.asset_id = a.id
       WHERE el.employee_id = ?
-      ORDER BY el.created_at DESC, el.id DESC
+      ORDER BY el.id DESC
     `, [userId]);
 
     res.render('equipment-loans/index', { 
