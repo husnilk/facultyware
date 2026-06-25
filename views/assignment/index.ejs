@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
+
+</head>
+
+<body>
+
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
+
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
+
+<div class="wrapper">
+
+<%- include("../partials/sidebar") %>
+
+<div class="content">
+
+<%- include("../partials/navbar") %>
+
+<!-- HEADER -->
+
+<div class="page-header">
+
+    <div>
+
+        <span class="hero-badge">
+
+            Survey Assignment
+
+        </span>
+
+        <h1>
+
+            Assignment Management
+
+        </h1>
+
+        <p>
+
+            Connect surveys with their questions.
+
+        </p>
+
+    </div>
+
+    <div class="header-action">
+
+        <a
+            href="/assignment/create"
+            class="hero-btn">
+
+            ➕ New Assignment
+
+        </a>
+
+    </div>
+
+</div>
+
+<!-- STATS -->
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            🔗
+
+        </div>
+
+        <div>
+
+            <p>Total Assignment</p>
+
+            <h2>
+
+                <%= assignments.length %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            📄
+
+        </div>
+
+        <div>
+
+            <p>Current Page</p>
+
+            <h2>
+
+                <%= page %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            📚
+
+        </div>
+
+        <div>
+
+            <p>Total Page</p>
+
+            <h2>
+
+                <%= totalPage %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+
+            🔍
+
+        </div>
+
+        <div>
+
+            <p>Search</p>
+
+            <h2>
+
+                <%= search ? search : "-" %>
+
+            </h2>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- SEARCH -->
+
+<div class="glass-card">
+
+<form
+action="/assignment"
+method="GET"
+class="search-form">
+
+<input
+type="text"
+name="search"
+placeholder="Search survey or question..."
+value="<%= search || '' %>">
+
+<button
+type="submit"
+class="hero-btn">
+
+Search
+
+</button>
+
+<a
+href="/assignment"
+class="hero-btn-outline">
+
+Reset
+
+</a>
+
+</form>
+
+</div>
+
+<!-- TABLE -->
+
+<div class="glass-card">
+
+<table class="modern-table">
+
+<thead>
+
+<tr>
+
+<th>No</th>
+
+<th>Survey</th>
+
+<th>Question</th>
+
+<th>Order</th>
+
+<th width="180">
+
+Action
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<% if(assignments.length===0){ %>
+
+<tr>
+
+<td colspan="5" class="empty">
+
+<div class="empty-box">
+
+<h2>📭 No Assignment</h2>
+
+<p>
+
+No assignment available.
+
+</p>
+
+</div>
+
+</td>
+
+</tr>
+
+<% } %>
+
+<% assignments.forEach((assignment,index)=>{ %>
+
+<tr>
+
+<td>
+
+<%= ((page-1)*5)+index+1 %>
+
+</td>
+
+<td>
+
+<strong>
+
+<%= assignment.survey_title %>
+
+</strong>
+
+</td>
+
+<td>
+
+<%= assignment.question_text %>
+
+</td>
+
+<td>
+
+<span class="question-badge">
+
+<%= assignment.order %>
+
+</span>
+
+</td>
+
+<td>
+
+<div class="action-group">
+
+<a
+href="/assignment/edit/<%= assignment.id %>"
+class="action edit"
+title="Edit">
+
+✏️
+
+</a>
+
+<form
+action="/assignment/delete/<%= assignment.id %>"
+method="POST"
+style="display:inline;">
+
+<button
+type="submit"
+class="action delete"
+title="Delete"
+onclick="return confirm('Delete this assignment?')">
+
+🗑️
+
+</button>
+
+</form>
+
+</div>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+
+</table>
+
+</div>
+
+<!-- PAGINATION -->
+
+<div class="pagination">
+
+<% if(page>1){ %>
+
+<a
+href="/assignment?page=<%= page-1 %>&search=<%= search %>">
+
+← Previous
+
+</a>
+
+<% } %>
+
+<div class="page-number">
+
+Page
+
+<b>
+
+<%= page %>
+
+</b>
+
+of
+
+<b>
+
+<%= totalPage %>
+
+</b>
+
+</div>
+
+<% if(page<totalPage){ %>
+
+<a
+href="/assignment?page=<%= page+1 %>&search=<%= search %>">
+
+Next →
+
+</a>
+
+<% } %>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

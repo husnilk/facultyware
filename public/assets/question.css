@@ -1,0 +1,13 @@
+@import url("/assets/survey.css");
+
+.page-header h1{
+    color:#fff;
+}
+
+.question-type{
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(79,70,229,.15);
+    color:#8B5CF6;
+    font-weight:600;
+}

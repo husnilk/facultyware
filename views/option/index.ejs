@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
+
+</head>
+
+<body>
+
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
+
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
+
+<div class="wrapper">
+
+    <%- include("../partials/sidebar") %>
+    <div class="content">
+
+        <%- include("../partials/navbar") %>
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="hero-badge">
+                    Question Options
+                </span>
+
+                <h1>
+                    Answer Options
+                </h1>
+
+                <p>
+                    <%= question.question_text %>
+                </p>
+
+            </div>
+
+            <div class="header-action">
+
+                <a href="/option/create/<%= question.id %>" class="hero-btn">
+                    ➕ Add Option
+                </a>
+
+                <a href="javascript:history.back()" class="hero-btn-outline">
+                    ← Back
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📝</div>
+
+                <div>
+                    <p>Total Option</p>
+                    <h2><%= options.length %></h2>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="glass-card">
+
+            <table class="modern-table">
+
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Option</th>
+                        <th>Weight</th>
+                        <th width="170">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                <% if(options.length === 0){ %>
+
+                    <tr>
+                        <td colspan="4" class="empty">
+                            <div class="empty-box">
+                                <h2>📭 No Option</h2>
+                                <p>No answer option has been created.</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                <% } %>
+
+                <% options.forEach((option,index)=>{ %>
+
+                    <tr>
+
+                        <td><%= index + 1 %></td>
+
+                        <td><%= option.option_text %></td>
+
+                        <td><%= option.weight %></td>
+
+                        <td>
+
+                            <div class="action-group">
+
+                                <!-- FIX TEST ID -->
+                                <a
+                                    href="/option/edit/<%= option.id %>"
+                                    class="action edit"
+                                    title="Edit Option">
+
+                                    ✏️
+
+                                </a>
+
+                                <!-- FIX TEST ID -->
+                                <form
+                                    action="/option/delete/<%= option.id %>"
+                                    method="POST"
+                                    style="display:inline;">
+
+                                    <button
+                                        type="submit"
+                                        class="action delete"
+                                        title="Delete Option"
+                                        onclick="return confirm('Delete this option?')">
+
+                                        🗑️
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                <% }) %>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

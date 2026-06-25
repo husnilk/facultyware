@@ -1,0 +1,153 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
+
+</head>
+
+<body>
+
+<video autoplay muted loop playsinline class="dashboard-video">
+
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+
+</video>
+
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
+
+<div class="wrapper">
+
+    <%- include("../partials/sidebar") %>
+
+    <div class="content">
+
+        <%- include("../partials/navbar") %>
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="hero-badge">
+                    Create Survey
+                </span>
+
+                <h1>
+                    Create New Survey
+                </h1>
+
+                <p>
+                    Fill the form below to create a new survey.
+                </p>
+
+            </div>
+
+            <a href="/survey" class="hero-btn-outline">
+                ← Back
+            </a>
+
+        </div>
+
+        <div class="glass-card form-card">
+
+            <form action="/survey/create" method="POST">
+
+                <div class="form-group">
+
+                    <label>
+                        Survey Title
+                    </label>
+
+                    <input
+                        type="text"
+                        name="title"
+                        placeholder="Example : Lecturer Satisfaction Survey"
+                        required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Description
+                    </label>
+
+                    <textarea
+                        name="description"
+                        rows="5"
+                        placeholder="Write survey description..."
+                        required></textarea>
+
+                </div>
+
+                <div class="date-grid">
+
+                    <div class="form-group">
+
+                        <label>
+                            Start Date
+                        </label>
+
+                        <input
+                            type="date"
+                            name="start_date"
+                            required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+                            End Date
+                        </label>
+
+                        <input
+                            type="date"
+                            name="end_date"
+                            required>
+
+                    </div>
+
+                </div>
+
+                <div class="form-action">
+
+                    <button
+                        type="submit"
+                        class="hero-btn">
+
+                        💾 Save Survey
+
+                    </button>
+
+                    <a
+                        href="/survey"
+                        class="hero-btn-outline">
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+```

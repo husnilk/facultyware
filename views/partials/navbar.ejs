@@ -1,0 +1,41 @@
+<div class="navbar">
+
+    <div>
+
+        <!-- FIX: pakai data-testid biar test aman -->
+       <div class="page-title">
+    Welcome Back, <%= user %> 👋
+</div>
+        <p class="page-subtitle">
+            Faculty Survey Management System
+        </p>
+
+    </div>
+
+    <div class="navbar-right">
+
+        <div class="clock-box">
+            <div id="clock"></div>
+            <small id="date"></small>
+        </div>
+
+        <div class="status">
+            <span class="dot"></span>
+            <span>System Online</span>
+        </div>
+
+        <div class="user-box">
+            <div class="avatar">
+                <%= user.charAt(0).toUpperCase() %>
+            </div>
+
+            <div>
+                <strong><%= user %></strong>
+                <br>
+                <small>Administrator</small>
+            </div>
+        </div>
+
+    </div>
+
+</div>

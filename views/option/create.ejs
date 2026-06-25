@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
+
+</head>
+
+<body>
+
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
+
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
+
+<div class="wrapper">
+
+    <%- include("../partials/sidebar") %>
+
+    <div class="content">
+
+        <%- include("../partials/navbar") %>
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="hero-badge">
+                    Question Option
+                </span>
+
+                <h1>
+                    Add New Option
+                </h1>
+
+                <p>
+                    Question :
+                    <strong><%= question.question_text %></strong>
+                </p>
+
+            </div>
+
+            <div class="header-action">
+
+                <a
+                    href="/option/question/<%= question.id %>"
+                    class="hero-btn-outline">
+
+                    ← Back
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="glass-card">
+
+            <% if(error){ %>
+
+                <div class="alert-error">
+                    <%= error %>
+                </div>
+
+            <% } %>
+
+            <form
+                action="/option/create/<%= question.id %>"
+                method="POST">
+
+                <div class="form-group">
+
+                    <label>Option Text</label>
+
+                    <input
+                        type="text"
+                        name="option_text"
+                        placeholder="Example : Strongly Agree"
+                        required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Weight</label>
+
+                    <input
+                        type="number"
+                        name="weight"
+                        min="1"
+                        max="5"
+                        required>
+
+                </div>
+
+                <br>
+
+                <button
+                    type="submit"
+                    class="hero-btn">
+
+                    💾 Save Option
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

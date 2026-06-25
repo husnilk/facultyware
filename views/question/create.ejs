@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title><%= title %></title>
+
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/survey.css">
+
+</head>
+
+<body>
+
+<video autoplay muted loop playsinline class="dashboard-video">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
+</video>
+
+<div class="dashboard-bg"></div>
+<div class="dashboard-blur"></div>
+
+<div class="wrapper">
+
+    <%- include("../partials/sidebar") %>
+
+    <div class="content">
+
+        <%- include("../partials/navbar") %>
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="hero-badge">
+
+                    Question Management
+
+                </span>
+
+                <h1 data-testid="page-title">
+
+                    Add Question
+
+                </h1>
+
+                <p>
+
+                    Create a question for this survey.
+
+                </p>
+
+            </div>
+
+            <a
+                href="/question/survey/<%= surveyId %>"
+                class="hero-btn-outline">
+
+                ← Back
+
+            </a>
+
+        </div>
+
+        <div class="glass-card">
+
+            <% if(error){ %>
+
+                <div class="alert-danger">
+
+                    <%= error %>
+
+                </div>
+
+            <% } %>
+
+            <form
+                action="/question/create/<%= surveyId %>"
+                method="POST">
+
+                <div class="form-group">
+
+                    <label>
+
+                        Question
+
+                    </label>
+
+                    <textarea
+                        name="question_text"
+                        rows="5"
+                        required
+                        placeholder="Input question..."></textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+
+                        Question Type
+
+                    </label>
+
+                   <select name="type" required>
+
+    <option value="short_answer">
+        Short Answer
+    </option>
+
+    <option value="single_choice">
+        Single Choice
+    </option>
+
+    <option value="multiple_choice">
+        Multiple Choice
+    </option>
+
+</select>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="hero-btn">
+
+                    💾 Save Question
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
