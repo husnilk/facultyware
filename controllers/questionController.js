@@ -268,6 +268,26 @@ const destroy = async (req, res, next) => {
 
         const id = req.params.id;
 
+        const [assignment] = await db.query(
+            `
+            SELECT survey_id
+            FROM survey_question_assignments
+            WHERE survey_question_id=?
+            LIMIT 1
+            `,
+            [id]
+        );
+
+        const surveyId =
+            assignment.length > 0
+                ? assignment[0].survey_id
+                : null;
+
+        await db.query(
+            "DELETE FROM survey_question_options WHERE survey_question_id=?",
+            [id]
+        );
+
         await db.query(
             "DELETE FROM survey_question_assignments WHERE survey_question_id=?",
             [id]
@@ -277,6 +297,10 @@ const destroy = async (req, res, next) => {
             "DELETE FROM survey_questions WHERE id=?",
             [id]
         );
+
+        if (surveyId) {
+            return res.redirect("/question/survey/" + surveyId);
+        }
 
         res.redirect("/question");
 

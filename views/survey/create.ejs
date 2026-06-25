@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,7 +19,7 @@
 
 <video autoplay muted loop playsinline class="dashboard-video">
 
-<source src="/assets/videos/dashboard.mp4" type="video/mp4">
+    <source src="/assets/videos/dashboard.mp4" type="video/mp4">
 
 </video>
 
@@ -27,142 +28,126 @@
 
 <div class="wrapper">
 
-<%- include("../partials/sidebar") %>
+    <%- include("../partials/sidebar") %>
 
-<div class="content">
+    <div class="content">
 
-<%- include("../partials/navbar") %>
+        <%- include("../partials/navbar") %>
 
-<div class="page-header">
+        <div class="page-header">
 
-<div>
+            <div>
 
-<span class="hero-badge">
+                <span class="hero-badge">
+                    Create Survey
+                </span>
 
-Create Survey
+                <h1>
+                    Create New Survey
+                </h1>
 
-</span>
+                <p>
+                    Fill the form below to create a new survey.
+                </p>
 
-<h1>
+            </div>
 
-Create New Survey
+            <a href="/survey" class="hero-btn-outline">
+                ← Back
+            </a>
 
-</h1>
+        </div>
 
-<p>
+        <div class="glass-card form-card">
 
-Fill the form below to create a new survey.
+            <form action="/survey/create" method="POST">
 
-</p>
+                <div class="form-group">
 
-</div>
+                    <label>
+                        Survey Title
+                    </label>
 
-<a href="/survey" class="hero-btn-outline">
+                    <input
+                        type="text"
+                        name="title"
+                        placeholder="Example : Lecturer Satisfaction Survey"
+                        required>
 
-← Back
+                </div>
 
-</a>
+                <div class="form-group">
 
-</div>
+                    <label>
+                        Description
+                    </label>
 
-<div class="glass-card form-card">
+                    <textarea
+                        name="description"
+                        rows="5"
+                        placeholder="Write survey description..."
+                        required></textarea>
 
-<form action="/survey/store" method="POST">
+                </div>
 
-<div class="form-group">
+                <div class="date-grid">
 
-<label>
+                    <div class="form-group">
 
-Survey Title
+                        <label>
+                            Start Date
+                        </label>
 
-</label>
+                        <input
+                            type="date"
+                            name="start_date"
+                            required>
 
-<input
-type="text"
-name="title"
-placeholder="Example : Lecturer Satisfaction Survey"
-required>
+                    </div>
 
-</div>
+                    <div class="form-group">
 
-<div class="form-group">
+                        <label>
+                            End Date
+                        </label>
 
-<label>
+                        <input
+                            type="date"
+                            name="end_date"
+                            required>
 
-Description
+                    </div>
 
-</label>
+                </div>
 
-<textarea
-name="description"
-rows="5"
-placeholder="Write survey description..."
-required></textarea>
+                <div class="form-action">
 
-</div>
+                    <button
+                        type="submit"
+                        class="hero-btn">
 
-<div class="date-grid">
+                        💾 Save Survey
 
-<div class="form-group">
+                    </button>
 
-<label>
+                    <a
+                        href="/survey"
+                        class="hero-btn-outline">
 
-Start Date
+                        Cancel
 
-</label>
+                    </a>
 
-<input
-type="date"
-name="start_date"
-required>
+                </div>
 
-</div>
+            </form>
 
-<div class="form-group">
+        </div>
 
-<label>
-
-End Date
-
-</label>
-
-<input
-type="date"
-name="end_date"
-required>
-
-</div>
-
-</div>
-
-<div class="form-action">
-
-<button
-type="submit"
-class="hero-btn">
-
-💾 Save Survey
-
-</button>
-
-<a
-href="/survey"
-class="hero-btn-outline">
-
-Cancel
-
-</a>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 
 </body>
-
 </html>
+```
