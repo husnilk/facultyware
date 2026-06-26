@@ -1,0 +1,652 @@
+<%
+  const safeRecaps =
+    typeof recaps !== "undefined" && Array.isArray(recaps)
+      ? recaps
+      : typeof recap !== "undefined" && Array.isArray(recap)
+        ? recap
+        : typeof recapData !== "undefined" && Array.isArray(recapData)
+          ? recapData
+          : typeof rows !== "undefined" && Array.isArray(rows)
+            ? rows
+            : typeof attendances !== "undefined" && Array.isArray(attendances)
+              ? attendances
+              : [];
+
+  const safeSummary =
+    typeof summary !== "undefined" && summary
+      ? summary
+      : typeof attendanceSummary !== "undefined" && attendanceSummary
+        ? attendanceSummary
+        : {};
+
+  const numberValue = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const getEventName = (item) => {
+    return (
+      item.event_title ||
+      item.event_name ||
+      item.nama_event ||
+      item.title ||
+      (item.event_id ? `Event #${item.event_id}` : "-")
+    );
+  };
+
+  const getRegistered = (item) => {
+    return numberValue(
+      item.total_registered ||
+      item.total_participants ||
+      item.total_peserta ||
+      item.registered_count ||
+      item.jumlah_peserta
+    );
+  };
+
+  const getPresent = (item) => {
+    return numberValue(
+      item.total_present ||
+      item.present_count ||
+      item.attended_count ||
+      item.checked_in_count ||
+      item.hadir
+    );
+  };
+
+  const getPartial = (item) => {
+    return numberValue(
+      item.partial_count ||
+      item.total_partial ||
+      item.partial
+    );
+  };
+
+  const getNoShow = (item) => {
+    return numberValue(
+      item.no_show_count ||
+      item.total_no_show ||
+      item.no_show ||
+      item.absent_count ||
+      item.tidak_hadir
+    );
+  };
+
+  const getNotCheckedIn = (item) => {
+    const explicitValue =
+      item.not_checked_in ||
+      item.not_checked_in_count ||
+      item.belum_checkin ||
+      item.belum_check_in;
+
+    if (explicitValue !== undefined && explicitValue !== null) {
+      return numberValue(explicitValue);
+    }
+
+    const registered = getRegistered(item);
+    const present = getPresent(item);
+    const partial = getPartial(item);
+    const noShow = getNoShow(item);
+
+    const result = registered - present - partial - noShow;
+    return result > 0 ? result : 0;
+  };
+
+  const getRate = (item) => {
+    const explicitRate =
+      item.attendance_rate ||
+      item.rate ||
+      item.percentage ||
+      item.persentase;
+
+    if (explicitRate !== undefined && explicitRate !== null && explicitRate !== "") {
+      const parsed = Number(explicitRate);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    const registered = getRegistered(item);
+    const present = getPresent(item);
+
+    if (registered === 0) return 0;
+    return Math.round((present / registered) * 100);
+  };
+
+  const totalRegistered =
+    numberValue(safeSummary.total_registered || safeSummary.totalParticipants || safeSummary.total_peserta) ||
+    safeRecaps.reduce((sum, item) => sum + getRegistered(item), 0);
+
+  const totalPresent =
+    numberValue(safeSummary.total_present || safeSummary.present_count || safeSummary.hadir) ||
+    safeRecaps.reduce((sum, item) => sum + getPresent(item), 0);
+
+  const totalPartial =
+    numberValue(safeSummary.total_partial || safeSummary.partial_count || safeSummary.partial) ||
+    safeRecaps.reduce((sum, item) => sum + getPartial(item), 0);
+
+  const totalNoShow =
+    numberValue(safeSummary.total_no_show || safeSummary.no_show_count || safeSummary.no_show) ||
+    safeRecaps.reduce((sum, item) => sum + getNoShow(item), 0);
+
+  const totalNotCheckedIn =
+    numberValue(safeSummary.total_not_checked_in || safeSummary.not_checked_in || safeSummary.belum_checkin) ||
+    safeRecaps.reduce((sum, item) => sum + getNotCheckedIn(item), 0);
+
+  const overallRate =
+    totalRegistered > 0
+      ? Math.round((totalPresent / totalRegistered) * 100)
+      : 0;
+
+  const rateClass = (rate) => {
+    const value = Number(rate);
+
+    if (value >= 80) return "rate-good";
+    if (value >= 50) return "rate-warning";
+    return "rate-danger";
+  };
+%>
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title><%= typeof title !== "undefined" ? title : "Rekap Attendance" %> - Facultyware</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <script>
+      (() => {
+        try {
+          if (
+            localStorage.getItem("themeMode") === "dark" ||
+            (!localStorage.getItem("themeMode") &&
+              matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme) {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+          }
+        } catch (event) {
+          console.error("Could not apply theme variant", event);
+        }
+      })();
+    </script>
+
+    <style>
+      .recap-page {
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+
+      .recap-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .recap-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        padding-top: 0.25rem;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .summary-card {
+        min-height: 118px;
+        border: 1px solid var(--border);
+        border-radius: 0.9rem;
+        background: var(--card);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+        padding: 1.15rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .summary-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--muted-foreground);
+      }
+
+      .summary-value {
+        margin-top: 0.45rem;
+        font-size: 2rem;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .summary-note {
+        margin-top: 0.6rem;
+        font-size: 0.78rem;
+        color: var(--muted-foreground);
+      }
+
+      .recap-card {
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        background: var(--card);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+      }
+
+      .recap-card-header {
+        padding: 1.4rem 1.6rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.25rem;
+      }
+
+      .recap-card-title h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .recap-card-title p {
+        margin: 0.35rem 0 0;
+        color: var(--muted-foreground);
+        font-size: 0.875rem;
+      }
+
+      .recap-tools {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .recap-search {
+        width: 280px;
+        height: 2.5rem;
+        border: 1px solid var(--input);
+        border-radius: 0.5rem;
+        background: transparent;
+        padding: 0 0.85rem;
+        font-size: 0.875rem;
+        outline: none;
+      }
+
+      .recap-search:focus {
+        border-color: var(--ring);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 25%, transparent);
+      }
+
+      .recap-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        border-radius: 999px;
+        background: var(--muted);
+        color: var(--muted-foreground);
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .recap-table-wrap {
+        overflow-x: auto;
+      }
+
+      .recap-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+
+      .recap-table thead {
+        background: color-mix(in srgb, var(--muted) 70%, transparent);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .recap-table th {
+        text-align: left;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .recap-table td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+      }
+
+      .recap-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .event-name {
+        font-weight: 700;
+      }
+
+      .event-id {
+        margin-top: 0.25rem;
+        color: var(--muted-foreground);
+        font-size: 0.75rem;
+      }
+
+      .number-cell {
+        font-weight: 700;
+      }
+
+      .muted-cell {
+        color: var(--muted-foreground);
+      }
+
+      .rate-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 54px;
+        border-radius: 999px;
+        padding: 0.25rem 0.55rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        border: 1px solid var(--border);
+      }
+
+      .rate-good {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+      }
+
+      .rate-warning {
+        background: #fef9c3;
+        color: #854d0e;
+        border-color: #fde68a;
+      }
+
+      .rate-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3.5rem 1.5rem;
+      }
+
+      .empty-state h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+      }
+
+      .empty-state p {
+        margin: 0 0 1.25rem;
+        color: var(--muted-foreground);
+        font-size: 0.875rem;
+      }
+
+      @media (max-width: 1024px) {
+        .summary-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .recap-card-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .recap-tools {
+          width: 100%;
+        }
+
+        .recap-search {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .recap-header {
+          flex-direction: column;
+        }
+
+        .recap-actions {
+          width: 100%;
+        }
+
+        .recap-actions a {
+          flex: 1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-background text-foreground antialiased p-6 md:p-10">
+    <div class="recap-page space-y-6">
+      <header class="flex justify-between items-center pb-6 border-b border-border">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-xl tracking-tight">Facultyware</span>
+          <span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">Recap</span>
+        </div>
+
+        <nav class="flex gap-4 items-center">
+          <a href="/home" class="text-sm font-medium hover:underline">Dashboard</a>
+          <a href="/checkins" class="text-sm font-medium hover:underline">Check-in</a>
+          <a href="/attendances" class="text-sm font-medium hover:underline">Attendance</a>
+          <a href="/reminders" class="text-sm font-medium hover:underline">Reminder</a>
+
+          <% if (typeof user !== "undefined" && user) { %>
+            <span class="text-sm text-muted-foreground">Halo, <strong><%= user %></strong></span>
+          <% } else { %>
+            <a href="/login" class="text-sm font-medium hover:underline">Login</a>
+          <% } %>
+        </nav>
+      </header>
+
+      <main class="space-y-6">
+        <section class="recap-header">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">Rekap Attendance</h1>
+            <p class="text-muted-foreground text-sm mt-2">
+              Ringkasan kehadiran peserta berdasarkan event.
+            </p>
+          </div>
+
+          <div class="recap-actions">
+            <a
+              href="/attendances"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
+              Attendance List
+            </a>
+
+            <a
+              href="/attendances/export/excel"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
+            >
+              Export Excel
+            </a>
+          </div>
+        </section>
+
+        <% if (typeof success !== "undefined" && success) { %>
+          <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <%= success %>
+          </div>
+        <% } %>
+
+        <% if (typeof error !== "undefined" && error) { %>
+          <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <%= error %>
+          </div>
+        <% } %>
+
+        <section class="summary-grid">
+          <div class="summary-card">
+            <div>
+              <div class="summary-label">Total Peserta</div>
+              <div class="summary-value"><%= totalRegistered %></div>
+            </div>
+            <div class="summary-note">Peserta terdaftar.</div>
+          </div>
+
+          <div class="summary-card">
+            <div>
+              <div class="summary-label">Hadir</div>
+              <div class="summary-value"><%= totalPresent %></div>
+            </div>
+            <div class="summary-note">Peserta check-in.</div>
+          </div>
+
+          <div class="summary-card">
+            <div>
+              <div class="summary-label">Partial</div>
+              <div class="summary-value"><%= totalPartial %></div>
+            </div>
+            <div class="summary-note">Status sebagian hadir.</div>
+          </div>
+
+          <div class="summary-card">
+            <div>
+              <div class="summary-label">No Show</div>
+              <div class="summary-value"><%= totalNoShow %></div>
+            </div>
+            <div class="summary-note">Tidak hadir.</div>
+          </div>
+
+          <div class="summary-card">
+            <div>
+              <div class="summary-label">Persentase Hadir</div>
+              <div class="summary-value"><%= overallRate %>%</div>
+            </div>
+            <div class="summary-note">Belum check-in: <%= totalNotCheckedIn %></div>
+          </div>
+        </section>
+
+        <section class="recap-card">
+          <div class="recap-card-header">
+            <div class="recap-card-title">
+              <h2>Rekap Per Event</h2>
+              <p>Total <%= safeRecaps.length %> event memiliki data rekap.</p>
+            </div>
+
+            <div class="recap-tools">
+              <input
+                type="text"
+                id="recapSearch"
+                placeholder="Cari nama event..."
+                class="recap-search"
+              />
+
+              <span class="recap-badge">
+                <%= safeRecaps.length %> Event
+              </span>
+            </div>
+          </div>
+
+          <% if (safeRecaps.length > 0) { %>
+            <div class="recap-table-wrap">
+              <table class="recap-table" id="recapTable">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Event</th>
+                    <th>Terdaftar</th>
+                    <th>Hadir</th>
+                    <th>Partial</th>
+                    <th>No Show</th>
+                    <th>Belum Check-in</th>
+                    <th>Persentase</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% safeRecaps.forEach((item, index) => { 
+                    const rate = getRate(item);
+                  %>
+                    <tr class="recap-row">
+                      <td class="muted-cell"><%= index + 1 %></td>
+
+                      <td>
+                        <div class="event-name"><%= getEventName(item) %></div>
+                        <% if (item.event_id) { %>
+                          <div class="event-id">Event ID: <%= item.event_id %></div>
+                        <% } %>
+                      </td>
+
+                      <td class="number-cell"><%= getRegistered(item) %></td>
+                      <td class="number-cell"><%= getPresent(item) %></td>
+                      <td class="muted-cell"><%= getPartial(item) %></td>
+                      <td class="muted-cell"><%= getNoShow(item) %></td>
+                      <td class="muted-cell"><%= getNotCheckedIn(item) %></td>
+
+                      <td>
+                        <span class="rate-pill <%= rateClass(rate) %>">
+                          <%= rate %>%
+                        </span>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="empty-state">
+              <h3>Belum ada data rekap</h3>
+              <p>Data rekap akan muncul setelah attendance peserta tercatat.</p>
+
+              <a
+                href="/checkins"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
+              >
+                Check-in Peserta
+              </a>
+            </div>
+          <% } %>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const searchInput = document.getElementById("recapSearch");
+      const rows = document.querySelectorAll(".recap-row");
+
+      if (searchInput) {
+        searchInput.addEventListener("input", function () {
+          const keyword = this.value.toLowerCase().trim();
+
+          rows.forEach((row) => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(keyword) ? "" : "none";
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

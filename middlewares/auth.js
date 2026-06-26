@@ -1,11 +1,12 @@
-// Middleware to check if user is authenticated
-function isAuthenticated(req, res, next) {
-  if (req.session.userId) {
-    return next();
+const authMiddleware = (req, res, next) => {
+  console.log("SESSION:", req.session);
+  console.log("userId:", req.session.userId);
+  if (!req.session.userId) {
+    return res.redirect('/login');
   }
-  res.redirect("/login");
-}
-
-module.exports = {
-  isAuthenticated,
+  next();
 };
+
+const isAuthenticated = authMiddleware;
+
+module.exports = { authMiddleware, isAuthenticated };
