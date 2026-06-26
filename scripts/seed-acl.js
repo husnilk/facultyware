@@ -113,6 +113,7 @@ async function seedACL() {
     const passwordHash = await bcrypt.hash('password', 10);
 
     const usersToCreate = [
+      { name: 'Administrator', email: 'admin@facultyware.com', role: 'admin' },
       { name: 'Admin Facultyware', email: 'admin@facultyware.test', role: 'admin' },
       { name: 'Panitia Demo', email: 'panitia@facultyware.test', role: 'panitia' },
       { name: 'Peserta Demo', email: 'peserta@facultyware.test', role: 'peserta' }
