@@ -19,7 +19,7 @@ const index = async (req, res, next) => {
       JOIN users u ON er.user_id = u.id
       JOIN events e ON er.event_id = e.id
       LEFT JOIN event_attendances ea ON ea.event_registration_id = er.id
-      WHERE er.attendance_status = 'attended' OR ea.status = 'present'
+      WHERE (er.attendance_status = 'attended' OR ea.status = 'present')
     `;
     const queryParams = [];
 

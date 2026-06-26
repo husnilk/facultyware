@@ -142,6 +142,68 @@ async function seedACL() {
         [roleId, uId]
       );
       console.log(`Assigned role: ${u.role} to user ID: ${uId}`);
+
+      // If user is admin or panitia, make sure they are in the employees table
+      if (u.role === 'admin' || u.role === 'panitia') {
+        const [statusRows] = await db.query("SELECT id FROM employment_statuses LIMIT 1");
+        let employmentStatusId = statusRows.length > 0 ? statusRows[0].id : null;
+        if (!employmentStatusId) {
+          const [statusResult] = await db.query(
+            "INSERT INTO employment_statuses (name, description, created_at, updated_at) VALUES (?, ?, NOW(), NOW())",
+            ["Active Staff", "Default active employee status"]
+          );
+          employmentStatusId = statusResult.insertId;
+        }
+
+        const [unitRows] = await db.query("SELECT id FROM organization_units WHERE code = ? LIMIT 1", ["FTI"]);
+        let organizationUnitId = unitRows.length > 0 ? unitRows[0].id : null;
+        if (!organizationUnitId) {
+          const [unitResult] = await db.query(
+            "INSERT INTO organization_units (name, code, parent_id, type, description, organization_unit_id, created_at, updated_at) VALUES (?, ?, NULL, ?, ?, ?, NOW(), NOW())",
+            ["Fakultas Teknologi Informasi", "FTI", "faculty", "Default faculty for event testing", 1]
+          );
+          organizationUnitId = unitResult.insertId;
+        }
+
+        const [empRows] = await db.query("SELECT id FROM employees WHERE id = ? LIMIT 1", [uId]);
+        if (empRows.length === 0) {
+          const empNum = u.role === 'admin' ? "EMP-AKRAM-001" : "EMP-PANITIA-001";
+          await db.query(
+            `INSERT INTO employees
+              (
+                id, employee_number, national_id_number, tax_id_number,
+                name, birth_place, birth_date, gender, religion, marital_status,
+                address, phone_number, organization_unit_id, hire_date,
+                employment_status_id, status, created_at, updated_at
+              )
+            VALUES
+              (?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [
+              uId,
+              empNum,
+              u.name,
+              "Padang",
+              "2000-01-01",
+              "male",
+              "Islam",
+              "single",
+              "Universitas Andalas",
+              "081234567890",
+              organizationUnitId,
+              "2026-01-01",
+              employmentStatusId,
+              "active"
+            ]
+          );
+          console.log(`Created employee record for user: ${u.email} (ID: ${uId})`);
+        } else {
+          await db.query(
+            "UPDATE employees SET status = 'active', name = ?, updated_at = NOW() WHERE id = ?",
+            [u.name, uId]
+          );
+          console.log(`Updated/Activated employee record for user: ${u.email} (ID: ${uId})`);
+        }
+      }
     }
 
     console.log('ACL Seeding Completed Successfully.');

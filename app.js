@@ -71,7 +71,8 @@ app.use(
 
 // Expose session variables to all views
 app.use((req, res, next) => {
-  res.locals.user = req.session.user || null;
+  res.locals.user = req.session.username || null;
+  res.locals.currentUser = req.session.user || null;
   res.locals.role = req.session.role || null;
   res.locals.permissions = req.session.permissions || [];
   next();
