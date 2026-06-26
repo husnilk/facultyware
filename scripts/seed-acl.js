@@ -83,8 +83,7 @@ async function seedACL() {
         'view_attendance',
         'export_attendance',
         'view_participants',
-        'view_certificates',
-        'view_reports'
+        'view_certificates'
       ],
       peserta: [
         'view_dashboard',
