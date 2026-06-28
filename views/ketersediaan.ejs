@@ -1,0 +1,412 @@
+<!-- FULLCALENDAR CDN -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<!-- CUSTOM FULLCALENDAR OVERRIDES FOR DARK MODE & SHADCN/UI STYLE -->
+<style>
+    /* Light Mode Calendar Styles */
+    .fc {
+        --fc-border-color: rgba(228, 228, 231, 0.8);
+        --fc-daygrid-event-dot-width: 8px;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+    }
+    .fc .fc-button {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.35rem 0.75rem;
+        border-radius: 0.5rem;
+        background-color: var(--background);
+        color: var(--foreground);
+        border: 1px solid rgba(228, 228, 231, 0.8);
+        text-transform: capitalize;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.2s;
+    }
+    .fc .fc-button:hover {
+        background-color: rgba(244, 244, 245, 0.8);
+        border-color: rgba(212, 212, 216, 0.8);
+    }
+    .fc .fc-button-active {
+        background-color: var(--primary) !important;
+        color: var(--primary-foreground) !important;
+        border-color: var(--primary) !important;
+    }
+    .fc .fc-button:disabled {
+        opacity: 0.5;
+    }
+    .fc .fc-col-header-cell-cushion {
+        padding: 8px 4px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #71717a;
+        text-decoration: none;
+    }
+    .fc .fc-daygrid-day-number {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #71717a;
+        text-decoration: none;
+        padding: 4px 8px;
+    }
+    .fc-theme-standard td, .fc-theme-standard th {
+        border-color: rgba(228, 228, 231, 0.8);
+    }
+    .fc-event {
+        cursor: pointer;
+        padding: 2px 4px;
+        font-size: 0.75rem;
+        border-radius: 4px;
+        border: none !important;
+        font-weight: 550;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* Dark Mode Calendar Styles */
+    .dark .fc {
+        --fc-border-color: #27272a;
+    }
+    .dark .fc .fc-button {
+        background-color: #18181b;
+        color: #f4f4f5;
+        border-color: #27272a;
+    }
+    .dark .fc .fc-button:hover {
+        background-color: #27272a;
+        border-color: #3f3f46;
+    }
+    .dark .fc .fc-button-active {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border-color: #3b82f6 !important;
+    }
+    .dark .fc .fc-col-header-cell-cushion {
+        color: #a1a1aa;
+    }
+    .dark .fc .fc-daygrid-day-number {
+        color: #a1a1aa;
+    }
+    .dark .fc-theme-standard td, .dark .fc-theme-standard th {
+        border-color: #27272a;
+    }
+    .dark .fc-day-today {
+        background-color: rgba(63, 63, 70, 0.2) !important;
+    }
+
+    /* Custom Event Styles */
+    .fc-event-completed {
+        border: 1px solid #cbd5e1 !important;
+    }
+    .dark .fc-event-completed {
+        border: 1px solid #27272a !important;
+    }
+
+    /* Status Badges */
+    .badge-status-approved {
+        background-color: #d1fae5 !important;
+        color: #065f46 !important;
+    }
+    .dark .badge-status-approved {
+        background-color: rgba(6, 95, 70, 0.3) !important;
+        color: #34d399 !important;
+    }
+
+    .badge-status-completed {
+        background-color: #f1f5f9 !important;
+        color: #334155 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .dark .badge-status-completed {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .badge-status-rejected {
+        background-color: #fee2e2 !important;
+        color: #991b1b !important;
+    }
+    .dark .badge-status-rejected {
+        background-color: rgba(153, 27, 27, 0.3) !important;
+        color: #f87171 !important;
+    }
+
+    .badge-status-requested {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+    }
+    .dark .badge-status-requested {
+        background-color: rgba(146, 64, 14, 0.3) !important;
+        color: #fbbf24 !important;
+    }
+</style>
+
+<div class="space-y-8 max-w-screen-xl mx-auto">
+    
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b pb-6 dark:border-zinc-800">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent dark:from-sky-400 dark:to-indigo-400">
+                Jadwal Ruangan Real-time
+            </h1>
+            <p class="text-muted-foreground mt-2 text-sm sm:text-base">
+                Lihat dan lacak ketersediaan serta jadwal peminjaman ruangan di Fakultas Teknologi Informasi.
+            </p>
+        </div>
+        <div class="text-left md:text-right bg-zinc-50 dark:bg-zinc-900/40 p-4 rounded-xl border dark:border-zinc-850 flex flex-col gap-1 min-w-[200px]">
+            <div id="live-clock" class="text-3xl font-mono font-bold tracking-tighter text-primary dark:text-sky-400">00:00:00</div>
+            <div id="live-date" class="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Loading date...</div>
+        </div>
+    </div>
+
+    <!-- MAIN GRID LAYOUT -->
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        
+        <!-- SIDEBAR (ROOM LIST & FILTERS) -->
+        <div class="xl:col-span-1 space-y-6">
+            
+
+            <!-- Calendar Filtering -->
+            <div class="card p-5 space-y-4 bg-card border dark:bg-zinc-900/20 dark:border-zinc-800 shadow-sm">
+                <div>
+                    <h3 class="font-bold text-base">Filter Kalender</h3>
+                    <p class="text-xs text-muted-foreground">Pilih ruangan yang ingin Anda tampilkan</p>
+                </div>
+                <div class="space-y-2.5 pt-1">
+                    <% rooms.forEach(room => { %>
+                        <label class="flex items-center gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer group">
+                            <input type="checkbox" checked value="<%= room.id %>" class="room-filter-checkbox rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-primary h-4 w-4 bg-transparent" />
+                            <span class="group-hover:translate-x-0.5 transition-transform"><%= room.name %></span>
+                        </label>
+                    <% }) %>
+                </div>
+            </div>
+
+            <!-- Legend Status -->
+            <div class="card p-4 space-y-3 bg-card border dark:bg-zinc-900/20 dark:border-zinc-800 shadow-sm text-xs text-muted-foreground">
+                <div class="font-semibold text-foreground">Keterangan Warna Kalender:</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center gap-1.5">
+                        <span style="width: 12px; height: 12px; border-radius: 4px; background-color: #f59e0b; display: inline-block; border: 1px solid rgba(245, 158, 11, 0.2);"></span>
+                        <span>Menunggu</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span style="width: 12px; height: 12px; border-radius: 4px; background-color: #10b981; display: inline-block; border: 1px solid rgba(16, 185, 129, 0.2);"></span>
+                        <span>Disetujui</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span style="width: 12px; height: 12px; border-radius: 4px; background-color: #ffffff; display: inline-block; border: 1px solid #cbd5e1;"></span>
+                        <span>Selesai</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span style="width: 12px; height: 12px; border-radius: 4px; background-color: #ef4444; display: inline-block; border: 1px solid rgba(239, 68, 68, 0.2);"></span>
+                        <span>Ditolak</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CALENDAR AREA -->
+        <div class="xl:col-span-3 card p-5 bg-card border dark:bg-zinc-900/20 dark:border-zinc-800 shadow-sm">
+            <div id="calendar" class="w-full"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- DETAILED EVENT DETAILS MODAL (POP-UP) -->
+<div id="eventModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 opacity-0 pointer-events-none transition-all duration-300" onclick="if(event.target === this) closeModal();">
+    <div class="bg-card w-full max-w-md rounded-2xl border dark:border-zinc-800 p-6 shadow-xl space-y-5 transform scale-95 transition-all duration-300 relative bg-background">
+        <div class="flex justify-between items-start border-b pb-3 dark:border-zinc-800">
+            <div>
+                <h4 class="text-base font-bold text-foreground" id="modalRoomName">Detail Peminjaman</h4>
+                <p class="text-[10px] text-muted-foreground mt-0.5">Rincian Informasi Pengajuan Ruangan</p>
+            </div>
+            <button type="button" onclick="closeModal()" class="btn-icon-ghost size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="space-y-3.5 text-xs">
+            <div class="grid grid-cols-3 gap-1">
+                <span class="text-muted-foreground font-medium">Peminjam</span>
+                <span class="col-span-2 text-foreground font-semibold" id="modalBorrower">-</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1">
+                <span class="text-muted-foreground font-medium">Waktu Mulai</span>
+                <span class="col-span-2 text-foreground font-mono" id="modalStartTime">-</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1">
+                <span class="text-muted-foreground font-medium">Waktu Selesai</span>
+                <span class="col-span-2 text-foreground font-mono" id="modalEndTime">-</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1">
+                <span class="text-muted-foreground font-medium">Keperluan</span>
+                <p class="col-span-2 text-foreground" id="modalPurpose">-</p>
+            </div>
+            <div class="grid grid-cols-3 gap-1 items-center">
+                <span class="text-muted-foreground font-medium">Status</span>
+                <div class="col-span-2">
+                    <span id="modalStatusBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"></span>
+                </div>
+            </div>
+        </div>
+        <div class="pt-4 border-t dark:border-zinc-800 flex justify-end">
+            <button type="button" onclick="closeModal()" class="inline-flex justify-center rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 border dark:border-zinc-850 px-4 py-2">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+<div id="bookingDataContainer" 
+     data-bookings="<%= JSON.stringify(locals.bookings || []) %>" 
+     style="display: none;">
+</div>
+
+<script>
+    // ─── 1. DIGITAL CLOCK ────────────────────────────────────────────────────────
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+        document.getElementById('live-date').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ─── 2. EVENT MODAL CONTROL ──────────────────────────────────────────────────
+    function openModal(eventObj) {
+        const props = eventObj.extendedProps;
+        document.getElementById("modalRoomName").innerText = props.roomName;
+        document.getElementById("modalBorrower").innerText = props.borrowerName;
+        document.getElementById("modalStartTime").innerText = props.startStr + " WIB";
+        document.getElementById("modalEndTime").innerText = props.endStr + " WIB";
+        document.getElementById("modalPurpose").innerText = props.purpose;
+
+        // Configure Status Badge styling
+        const status = props.status;
+        const badge = document.getElementById("modalStatusBadge");
+        badge.innerText = status === "requested" ? "MENUNGGU" : (status === "approved" ? "DISETUJUI (ACC)" : (status === "completed" ? "SELESAI" : "DITOLAK"));
+        
+        badge.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ";
+        if (status === "approved") {
+            badge.className += "badge-status-approved";
+        } else if (status === "completed") {
+            badge.className += "badge-status-completed";
+        } else if (status === "rejected") {
+            badge.className += "badge-status-rejected";
+        } else {
+            badge.className += "badge-status-requested";
+        }
+
+        const modal = document.getElementById("eventModal");
+        modal.classList.remove("opacity-0", "pointer-events-none");
+        modal.firstElementChild.classList.remove("scale-95");
+    }
+
+    function closeModal() {
+        const modal = document.getElementById("eventModal");
+        modal.classList.add("opacity-0", "pointer-events-none");
+        modal.firstElementChild.classList.add("scale-95");
+    }
+
+    // ─── 3. FULLCALENDAR INTEGRATION ─────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+        // Parse raw bookings data passed from EJS
+const container = document.getElementById('bookingDataContainer');
+const rawBookings = JSON.parse(container.dataset.bookings);
+        // Map raw bookings to FullCalendar event format
+        const events = rawBookings.map(b => {
+            let color = "#f59e0b"; // Default requested (Amber/Yellow)
+            let borderColor = "#f59e0b";
+            let textColor = "#ffffff";
+            let classNames = [];
+            
+            if (b.status === "approved") {
+                color = "#10b981"; // Green
+                borderColor = "#10b981";
+            } else if (b.status === "completed") {
+                color = "#ffffff"; // White
+                borderColor = "#cbd5e1";
+                textColor = "#0f172a"; // Dark text
+                classNames = ["fc-event-completed"];
+            } else if (b.status === "rejected") {
+                color = "#ef4444"; // Red
+                borderColor = "#ef4444";
+            }
+
+            return {
+                id: String(b.id),
+                roomId: String(b.room_id),
+                title: `${b.room_name} - ${b.borrower_name}`,
+                start: b.start_time,
+                end: b.end_time,
+                backgroundColor: color,
+                borderColor: borderColor,
+                textColor: textColor,
+                classNames: classNames,
+                extendedProps: {
+                    roomName: b.room_name,
+                    borrowerName: b.borrower_name,
+                    purpose: b.purpose,
+                    status: b.status,
+                    startStr: new Date(b.start_time).toLocaleString("id-ID", {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}),
+                    endStr: new Date(b.end_time).toLocaleString("id-ID", {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'})
+                }
+            };
+        });
+
+        const calendarEl = document.getElementById("calendar");
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "dayGridMonth",
+            locale: "id",
+            headerToolbar: {
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay"
+            },
+            buttonText: {
+                today: "Hari Ini",
+                month: "Bulan",
+                week: "Minggu",
+                day: "Hari"
+            },
+            events: events,
+            eventClick: function(info) {
+                openModal(info.event);
+            },
+            allDaySlot: false,
+            height: "auto",
+            nowIndicator: true,
+            slotMinTime: "07:00:00", // Start at 7 AM
+            slotMaxTime: "22:00:00"  // End at 10 PM
+        });
+
+        calendar.render();
+
+        // ─── 4. ROOM FILTER FUNCTIONALITY ──────────────────────────────────────────
+        const checkboxes = document.querySelectorAll(".room-filter-checkbox");
+        checkboxes.forEach(chk => {
+            chk.addEventListener("change", filterEvents);
+        });
+
+        function filterEvents() {
+            // Get array of room IDs that are checked
+            const checkedRoomIds = Array.from(checkboxes)
+                                        .filter(chk => chk.checked)
+                                        .map(chk => chk.value);
+
+            // Refilter events dynamically
+            calendar.getEvents().forEach(evt => {
+                if (checkedRoomIds.includes(evt.extendedProps.roomId)) {
+                    evt.setProp("display", "auto");
+                } else {
+                    evt.setProp("display", "none");
+                }
+            });
+        }
+    });
+</script>

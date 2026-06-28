@@ -1,0 +1,65 @@
+<div class="max-w-screen-lg mx-auto">
+    <header class="flex flex-col gap-2 mb-6">
+        <h1 class="text-2xl font-bold">Laporan Bulanan Peminjaman</h1>
+        <p class="text-muted-foreground text-sm">Unduh rekap laporan data peminjaman ruangan per bulan untuk arsip Dekanat.</p>
+    </header>
+
+    <div class="card p-4 bg-card border rounded-xl mb-4">
+        <form action="/bookings/laporan/bulanan" method="GET">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 align-items-end">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-muted-foreground uppercase">Pilih Bulan</label>
+                    <select name="bulan" class="form-select text-sm w-full border rounded-md h-9 px-2 bg-transparent">
+                        <% const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]; %>
+                        <% for(let i=1; i<=12; i++) { %>
+                            <option value="<%= i %>" <%= bulan == i ? 'selected' : '' %>><%= namaBulan[i-1] %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-muted-foreground uppercase">Tahun</label>
+                    <input type="number" name="tahun" value="<%= tahun %>" class="form-control text-sm w-full border rounded-md h-9 px-2 bg-transparent" min="2020" max="2035">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-dark text-sm h-9 px-4 rounded-md w-full md:w-auto">Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="mb-4 flex justify-end">
+        <a href="/bookings/laporan/bulanan/download?bulan=<%= bulan %>&tahun=<%= tahun %>" class="btn btn-primary text-sm h-9 px-4 rounded-md flex items-center text-white text-decoration-none">
+            Download PDF Bulanan
+        </a>
+    </div>
+
+    <div class="card border rounded-xl overflow-hidden bg-card">
+        <div class="p-3 bg-muted/50 border-b font-medium text-sm">Preview Data Bulan: <%= bulan %> / Tahun: <%= tahun %></div>
+        <table class="w-full text-sm">
+            <thead class="bg-muted/30 border-b text-xs font-bold text-muted-foreground uppercase">
+                <tr>
+                    <th class="p-3 text-left">No</th>
+                    <th class="p-3 text-left">Peminjam</th>
+                    <th class="p-3 text-left">Ruangan</th>
+                    <th class="p-3 text-left">Tanggal Pemakaian</th>
+                    <th class="p-3 text-left">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (bookings && bookings.length > 0) { %>
+                    <% bookings.forEach(function(booking, index) { %>
+                        <tr class="border-b hover:bg-muted/50">
+                            <td class="p-3"><%= index + 1 %></td>
+                            <td class="p-3 font-medium"><%= booking.borrower_name %></td>
+                            <td class="p-3"><%= booking.room_name %></td>
+                            <td class="p-3 text-muted-foreground"><%= new Date(booking.start_time).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) %></td>
+                            <td class="p-3 text-xs font-semibold uppercase"><%= booking.status %></td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr><td colspan="5" class="p-8 text-center text-muted-foreground">Belum ada data rekapan peminjaman pada bulan ini.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>

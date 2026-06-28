@@ -1,0 +1,476 @@
+<div class="max-w-screen-xl mx-auto space-y-8">
+    
+    <!-- HEADER -->
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-6 dark:border-zinc-800">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent dark:from-sky-400 dark:to-indigo-400">
+                Dashboard Penanggung Jawab
+            </h1>
+            <p class="text-muted-foreground mt-2 text-sm sm:text-base">
+                Selamat datang kembali, Bapak/Ibu <span class="font-semibold text-foreground"><%= user.name %></span>. Kelola dan pantau seluruh aktivitas penggunaan ruangan.
+            </p>
+        </div>
+        
+        <!-- QUICK SHORTCUTS ROW -->
+        <div class="flex flex-wrap gap-2">
+            <a href="/bookings" class="inline-flex items-center justify-center gap-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-sm px-3.5 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-square"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Verifikasi Booking
+            </a>
+            <a href="/bookings/ketersediaan" class="inline-flex items-center justify-center gap-2 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all border dark:border-zinc-850 px-3.5 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                Jadwal Real-time
+            </a>
+        </div>
+    </header>
+
+    <!-- KPI CARDS GRID -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <!-- Card: Total -->
+        <div class="card p-5 relative overflow-hidden group hover:shadow-md transition-all border-l-4 border-l-zinc-500 bg-card dark:bg-zinc-900/40 dark:border-zinc-800 dark:border-l-zinc-600">
+            <div class="flex items-center justify-between">
+                <!-- PAKAI INLINE STYLE INI BIAR LANGSUNG TEMBUS -->
+                <div class="space-y-1" style="margin-left: 24px;">
+                    <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Booking</p>
+                    <h2 class="text-3xl font-extrabold group-hover:scale-105 transition-transform origin-left"><%= stats.total %></h2>
+                </div>
+                <div class="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-600 dark:text-zinc-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folders"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M2 10V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.83.82a2 2 0 0 0 1.69.9H18a2 2 0 0 1 2 2v3"/></svg>
+                </div>
+            </div>
+            <div class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-zinc-300 to-zinc-400 dark:from-zinc-700 dark:to-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </div>
+
+        <!-- Card: Menunggu -->
+        <div class="card p-5 relative overflow-hidden group hover:shadow-md transition-all border-l-4 border-l-amber-500 bg-card dark:bg-zinc-900/40 dark:border-zinc-800 dark:border-l-amber-600">
+            <div class="flex items-center justify-between">
+                <!-- PAKAI INLINE STYLE -->
+                <div class="space-y-1" style="margin-left: 24px;">
+                    <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Menunggu</p>
+                    <h2 class="text-3xl font-extrabold text-amber-600 dark:text-amber-500 group-hover:scale-105 transition-transform origin-left"><%= stats.menunggu %></h2>
+                </div>
+                <div class="p-3 bg-amber-55/60 dark:bg-amber-950/40 rounded-xl text-amber-600 dark:text-amber-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock-3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16.5 12"/></svg>
+                </div>
+            </div>
+            <div class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </div>
+
+        <!-- Card: Disetujui -->
+        <div class="card p-5 relative overflow-hidden group hover:shadow-md transition-all border-l-4 border-l-green-500 bg-card dark:bg-zinc-900/40 dark:border-zinc-800 dark:border-l-green-600">
+            <div class="flex items-center justify-between">
+                <!-- PAKAI INLINE STYLE -->
+                <div class="space-y-1" style="margin-left: 24px;">
+                    <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Disetujui</p>
+                    <h2 class="text-3xl font-extrabold text-green-600 dark:text-green-500 group-hover:scale-105 transition-transform origin-left"><%= stats.disetujui %></h2>
+                </div>
+                <div class="p-3 bg-green-55/60 dark:bg-green-950/40 rounded-xl text-green-600 dark:text-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+            </div>
+            <div class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-green-400 to-green-500 dark:from-green-600 dark:to-green-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </div>
+
+        <!-- Card: Selesai -->
+        <div class="card p-5 relative overflow-hidden group hover:shadow-md transition-all border-l-4 border-l-blue-500 bg-card dark:bg-zinc-900/40 dark:border-zinc-800 dark:border-l-blue-600">
+            <div class="flex items-center justify-between">
+                <!-- PAKAI INLINE STYLE -->
+                <div class="space-y-1" style="margin-left: 24px;">
+                    <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Selesai</p>
+                    <h2 class="text-3xl font-extrabold text-blue-600 dark:text-blue-500 group-hover:scale-105 transition-transform origin-left"><%= stats.selesai %></h2>
+                </div>
+                <div class="p-3 bg-blue-55/60 dark:bg-blue-950/40 rounded-xl text-blue-600 dark:text-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-check"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+                </div>
+            </div>
+            <div class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-blue-400 to-blue-500 dark:from-blue-600 dark:to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </div>
+
+        <!-- Card: Ditolak -->
+        <div class="card p-5 relative overflow-hidden group hover:shadow-md transition-all border-l-4 border-l-red-500 bg-card dark:bg-zinc-900/40 dark:border-zinc-800 dark:border-l-red-600">
+            <div class="flex items-center justify-between">
+                <!-- PAKAI INLINE STYLE -->
+                <div class="space-y-1" style="margin-left: 24px;">
+                    <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ditolak</p>
+                    <h2 class="text-3xl font-extrabold text-red-600 dark:text-red-500 group-hover:scale-105 transition-transform origin-left"><%= stats.ditolak %></h2>
+                </div>
+                <div class="p-3 bg-red-55/60 dark:bg-red-950/40 rounded-xl text-red-600 dark:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-circle"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                </div>
+            </div>
+            <div class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-red-400 to-red-500 dark:from-red-600 dark:to-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </div>
+
+    </div>
+
+    <!-- CHARTS SECTION (Chart.js) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        
+        <!-- Tren Peminjaman (Line/Area Chart) -->
+        <div class="card p-5 md:col-span-2 space-y-4 bg-card dark:bg-zinc-900/20 dark:border-zinc-800 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between">
+                <div class="space-y-1" style="margin-left: 24px;">
+                    <h3 class="font-bold text-base">Tren Peminjaman Ruangan</h3>
+                    <p class="text-xs text-muted-foreground">Fluktuasi frekuensi peminjaman dalam 6 bulan terakhir</p>
+                </div>
+                <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded">6 Bulan Terakhir</span>
+            </div>
+            <!-- Tinggi dipatok fixed biar nggak kepotong -->
+            <div class="relative w-full flex-1 min-h-[260px]">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Distribusi Status (Doughnut Chart) -->
+        <div class="card p-5 space-y-4 bg-card dark:bg-zinc-900/20 dark:border-zinc-800 shadow-sm flex flex-col">
+            <div class="space-y-1" style="margin-left: 24px;">
+                <h3 class="font-bold text-base">Persentase Status</h3>
+                <p class="text-xs text-muted-foreground">Perbandingan status peminjaman saat ini</p>
+            </div>
+            <div class="relative w-full flex-1 min-h-[180px] flex items-center justify-center">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <!-- Legend Indicators Dirapikan (2 Kolom Presisi) -->
+            <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-xs pt-4 border-t dark:border-zinc-800 mt-auto">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <span class="text-muted-foreground">Menunggu: <b class="text-foreground"><%= stats.menunggu %></b></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                    <span class="text-muted-foreground">Disetujui: <b class="text-foreground"><%= stats.disetujui %></b></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    <span class="text-muted-foreground">Selesai: <b class="text-foreground"><%= stats.selesai %></b></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                    <span class="text-muted-foreground">Ditolak: <b class="text-foreground"><%= stats.ditolak %></b></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOWER LAYOUT: popular rooms & recent bookings -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        
+        <!-- Ruangan Terpopuler (Horizontal Bar Chart) -->
+        <div class="card p-5 space-y-4 bg-card dark:bg-zinc-900/20 dark:border-zinc-800 shadow-sm flex flex-col">
+            <div class="space-y-1" style="margin-left: 24px;">
+                <h3 class="font-bold text-base">Ruangan Terpopuler</h3>
+                <p class="text-xs text-muted-foreground">Ruangan yang paling sering dipinjam</p>
+            </div>
+            <!-- Tinggi disamakan dengan tabel di sebelahnya -->
+            <div class="relative w-full flex-1 min-h-[220px]">
+                <canvas id="popularRoomsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Aktivitas Peminjaman Terbaru (List) -->
+        <div class="card p-5 md:col-span-2 space-y-4 bg-card dark:bg-zinc-900/20 dark:border-zinc-800 shadow-sm">
+            <div class="flex items-center justify-between border-b pb-2 dark:border-zinc-800">
+                <div class="space-y-1" style="margin-left: 24px;">
+                    <h3 class="font-bold text-base">Aktivitas Peminjaman Terbaru</h3>
+                    <p class="text-xs text-muted-foreground">Daftar 5 pengajuan peminjaman ruangan teranyar</p>
+                </div>
+                <a href="/bookings" class="text-xs text-primary hover:underline font-semibold flex items-center gap-1">
+                    Lihat Semua
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b text-muted-foreground dark:border-zinc-800">
+                            <th class="py-2.5 font-semibold">Peminjam</th>
+                            <th class="py-2.5 font-semibold">Ruangan</th>
+                            <th class="py-2.5 font-semibold">Waktu Pemakaian</th>
+                            <th class="py-2.5 font-semibold">Keperluan</th>
+                            <th class="py-2.5 font-semibold text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        <% if (locals.recentBookings && locals.recentBookings.length > 0) { %>
+                            <% recentBookings.forEach(function(booking) { %>
+                                <tr class="hover:bg-zinc-55/30 dark:hover:bg-zinc-800/10">
+                                    <td class="py-3 font-medium text-foreground"><%= booking.borrower_name %></td>
+                                    <td class="py-3 text-muted-foreground"><%= booking.room_name %></td>
+                                    <td class="py-3 text-muted-foreground whitespace-nowrap">
+                                        <%= new Date(booking.start_time).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'}) %> 
+                                        (<%= new Date(booking.start_time).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) %> - <%= new Date(booking.end_time).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) %>)
+                                    </td>
+                                    <td class="py-3 text-muted-foreground max-w-[150px] truncate" title="<%= booking.purpose %>"><%= booking.purpose %></td>
+                                    <td class="py-3 text-center">
+                                        <% if (booking.status === 'approved') { %>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400">DISETUJUI</span>
+                                        <% } else if (booking.status === 'rejected') { %>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400">DITOLAK</span>
+                                        <% } else if (booking.status === 'completed') { %>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">SELESAI</span>
+                                        <% } else { %>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400">MENUNGGU</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="py-6 text-center text-muted-foreground">Belum ada aktivitas peminjaman terbaru.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<!-- Elemen ini nggak akan kelihatan di layar, cuma buat nyimpen data dari Node.js -->
+<div id="chartDataContainer" 
+     data-stats="<%= JSON.stringify(locals.stats || {}) %>"
+     data-popular="<%= JSON.stringify(locals.popularRooms || []) %>"
+     data-trends="<%= JSON.stringify(locals.monthlyTrends || []) %>"
+     style="display: none;">
+</div>
+
+<!-- CHART.JS INTEGRATION -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const container = document.getElementById('chartDataContainer');
+
+// Parse datanya jadi object/array JavaScript murni
+const stats = JSON.parse(container.dataset.stats);
+const popularRooms = JSON.parse(container.dataset.popular);
+const monthlyTrends = JSON.parse(container.dataset.trends);
+
+        // Configuration helpers for dark mode synchronization
+        function isDarkMode() {
+            return document.documentElement.classList.contains("dark");
+        }
+
+        function getChartColors() {
+            const dark = isDarkMode();
+            return {
+                text: dark ? "#a1a1aa" : "#71717a",
+                grid: dark ? "rgba(63, 63, 70, 0.3)" : "rgba(228, 228, 231, 0.6)",
+                border: dark ? "#27272a" : "#e4e4e7"
+            };
+        }
+
+        let charts = {};
+
+        // 1. DOUGHNUT CHART (DISTRIBUSI STATUS)
+        const ctxStatus = document.getElementById("statusChart").getContext("2d");
+        charts.status = new Chart(ctxStatus, {
+            type: "doughnut",
+            data: {
+                labels: ["Menunggu", "Disetujui", "Selesai", "Ditolak"],
+                datasets: [{
+                    data: [stats.menunggu || 0, stats.disetujui || 0, stats.selesai || 0, stats.ditolak || 0],
+                    backgroundColor: [
+                        "#f59e0b", // Amber (menunggu)
+                        "#10b981", // Green (disetujui)
+                        "#3b82f6", // Blue (selesai)
+                        "#ef4444"  // Red (ditolak)
+                    ],
+                    borderWidth: 2,
+                    borderColor: isDarkMode() ? "#18181b" : "#ffffff",
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: isDarkMode() ? "#27272a" : "#18181b",
+                        titleColor: "#ffffff",
+                        bodyColor: "#ffffff",
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                },
+                cutout: "75%"
+            }
+        });
+
+        // 2. LINE CHART (TREN PEMINJAMAN BULANAN)
+        const monthsLabelMap = {
+            "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "Mei", "06": "Jun",
+            "07": "Jul", "08": "Agu", "09": "Sep", "10": "Okt", "11": "Nov", "12": "Des"
+        };
+        
+        // Format trend labels
+        const trendLabels = monthlyTrends.map(item => {
+            const [year, month] = item.month.split("-");
+            return `${monthsLabelMap[month] || month} ${year.slice(2)}`;
+        });
+        const trendData = monthlyTrends.map(item => item.booking_count);
+
+        const colors = getChartColors();
+        const ctxTrend = document.getElementById("trendChart").getContext("2d");
+        
+        // Create subtle gradient fill
+        const gradientFill = ctxTrend.createLinearGradient(0, 0, 0, 250);
+        gradientFill.addColorStop(0, "rgba(59, 130, 246, 0.35)");
+        gradientFill.addColorStop(1, "rgba(59, 130, 246, 0.0)");
+
+        charts.trend = new Chart(ctxTrend, {
+            type: "line",
+            data: {
+                labels: trendLabels.length > 0 ? trendLabels : ["Belum ada data"],
+                datasets: [{
+                    label: "Jumlah Booking",
+                    data: trendData.length > 0 ? trendData : [0],
+                    borderColor: "#3b82f6",
+                    borderWidth: 3,
+                    pointBackgroundColor: "#3b82f6",
+                    pointBorderColor: "#ffffff",
+                    pointBorderWidth: 1.5,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    backgroundColor: gradientFill,
+                    tension: 0.35
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: isDarkMode() ? "#27272a" : "#18181b",
+                        titleColor: "#ffffff",
+                        bodyColor: "#ffffff",
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: colors.grid
+                        },
+                        ticks: {
+                            color: colors.text,
+                            stepSize: 1,
+                            precision: 0
+                        },
+                        border: {
+                            dash: [5, 5]
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: colors.text
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. HORIZONTAL BAR CHART (RUANGAN TERPOPULER)
+        const roomLabels = popularRooms.map(item => item.room_name);
+        const roomData = popularRooms.map(item => item.booking_count);
+
+        const ctxPopular = document.getElementById("popularRoomsChart").getContext("2d");
+        charts.popular = new Chart(ctxPopular, {
+            type: "bar",
+            data: {
+                labels: roomLabels.length > 0 ? roomLabels : ["Belum ada data"],
+                datasets: [{
+                    label: "Kali Dipakai",
+                    data: roomData.length > 0 ? roomData : [0],
+                    backgroundColor: "rgba(99, 102, 241, 0.85)", // Indigo-500
+                    hoverBackgroundColor: "#6366f1",
+                    borderRadius: 6,
+                    barThickness: 16
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: isDarkMode() ? "#27272a" : "#18181b",
+                        titleColor: "#ffffff",
+                        bodyColor: "#ffffff",
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: colors.grid
+                        },
+                        ticks: {
+                            color: colors.text,
+                            stepSize: 1,
+                            precision: 0
+                        },
+                        border: {
+                            dash: [5, 5]
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: colors.text,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Theme Mutation Observer to dynamically update chart colors on toggle
+        const observer = new MutationObserver(() => {
+            const newColors = getChartColors();
+            const dark = isDarkMode();
+            
+            // Update Status Chart
+            charts.status.data.datasets[0].borderColor = dark ? "#18181b" : "#ffffff";
+            charts.status.update();
+
+            // Update Trend Chart
+            charts.trend.options.scales.y.grid.color = newColors.grid;
+            charts.trend.options.scales.y.ticks.color = newColors.text;
+            charts.trend.options.scales.x.ticks.color = newColors.text;
+            charts.trend.update();
+
+            // Update Popular Rooms Chart
+            charts.popular.options.scales.x.grid.color = newColors.grid;
+            charts.popular.options.scales.x.ticks.color = newColors.text;
+            charts.popular.options.scales.y.ticks.color = newColors.text;
+            charts.popular.update();
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"]
+        });
+    ;
+</script>
