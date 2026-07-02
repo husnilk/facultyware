@@ -1,0 +1,844 @@
+<%- include('../partials/header') %>
+
+<%
+  function formatTime(timeValue) {
+    if (!timeValue) return '-';
+    return String(timeValue).substring(0, 5);
+  }
+
+  function getDateObject(dateValue) {
+    const date = new Date(dateValue);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  function formatMeetingDate(dateValue) {
+    const date = getDateObject(dateValue);
+    if (!date) return '-';
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  function getMeetingMonth(dateValue) {
+    const date = getDateObject(dateValue);
+    if (!date) return '-';
+    return date.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
+  }
+
+  function getMeetingDay(dateValue) {
+    const date = getDateObject(dateValue);
+    if (!date) return '-';
+    return String(date.getDate()).padStart(2, '0');
+  }
+
+  function getStatusLabel(status) {
+    if (status === 'scheduled') return 'Scheduled';
+    if (status === 'completed') return 'Completed';
+    if (status === 'cancelled') return 'Cancelled';
+    return 'Draft';
+  }
+
+  function getParticipantStatusLabel(status) {
+    if (status === 'confirmed') return 'Confirmed';
+    if (status === 'declined') return 'Declined';
+    if (status === 'attended') return 'Hadir';
+    if (status === 'absent') return 'Tidak Hadir';
+    return 'Invited';
+  }
+
+  function getMeetingTypeLabel(type) {
+    if (type === 'online') return 'Online';
+    if (type === 'hybrid') return 'Hybrid';
+    return 'Ruang Meeting';
+  }
+
+  function getMeetingTypeIcon(type) {
+    if (type === 'online') return '🌐';
+    if (type === 'hybrid') return '🔀';
+    return '📍';
+  }
+
+  function getStatusPillClass(status) {
+    if (status === 'scheduled') return 'detail-pill detail-pill-scheduled';
+    if (status === 'completed') return 'detail-pill detail-pill-completed';
+    if (status === 'cancelled') return 'detail-pill detail-pill-cancelled';
+    return 'detail-pill detail-pill-draft';
+  }
+
+  function getParticipantBadgeClass(status) {
+    if (status === 'attended') return 'participant-pill participant-attended';
+    if (status === 'absent' || status === 'declined') return 'participant-pill participant-danger';
+    if (status === 'confirmed') return 'participant-pill participant-confirmed';
+    return 'participant-pill participant-invited';
+  }
+
+  function getAttendanceSelectValue(status) {
+    if (status === 'attended') return 'attended';
+    if (status === 'absent') return 'absent';
+    return '';
+  }
+
+  const meetingStartTime = formatTime(meeting.start_time);
+  const meetingEndTime = formatTime(meeting.end_time);
+  const externalParticipantList = typeof externalParticipants !== 'undefined' && externalParticipants ? externalParticipants : [];
+  const minuteList = typeof minutes !== 'undefined' && minutes ? minutes : [];
+  const internalCount = participants ? participants.length : 0;
+  const externalCount = externalParticipantList.length;
+  const totalParticipantCount = internalCount + externalCount;
+  const meetingDescription = meeting.description || 'Tidak ada deskripsi atau agenda yang dicantumkan untuk meeting ini.';
+  const locationValue = meeting.online_link || meeting.location || meeting.room_name || meeting.room || '-';
+  const canEditMeeting = typeof isHost !== 'undefined'
+    && isHost
+    && meeting.status !== 'completed'
+    && meeting.status !== 'cancelled';
+  const canShowEditAttendance = typeof canEditAttendance !== 'undefined' && canEditAttendance;
+  const isDraft = meeting.status === 'draft';
+%>
+
+<style>
+.detail-shell {
+  min-height: calc(100vh - 72px);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.detail-shell * { box-sizing: border-box; }
+
+.detail-content {
+  width: min(100%, 1240px);
+  margin: 0 auto;
+  padding: 16px 22px 30px;
+}
+
+
+.detail-sticky-header {
+  position: sticky; top: 0; left: 0; right: 0; z-index: 60; width: 100%;
+  background: color-mix(in srgb, var(--background) 97%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+.detail-header-inner {
+  width: min(100%, 1240px);
+  margin: 0 auto;
+  padding: 12px 22px 13px;
+}
+
+.detail-back-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--muted-foreground); text-decoration: none;
+  font-size: 12.5px; font-weight: 850; margin-bottom: 10px;
+  transition: color 0.15s;
+}
+.detail-back-link:hover { color: #10b981; }
+
+.detail-hero {
+  display: grid; grid-template-columns: minmax(0,1fr) auto;
+  gap: 16px; align-items: center;
+}
+
+.detail-title {
+  margin: 0; color: var(--foreground);
+  font-size: 23px; line-height: 1.1; font-weight: 950; letter-spacing: -0.045em;
+}
+
+.detail-subline {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+}
+
+.detail-actions {
+  display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.detail-actions form { margin: 0; }
+
+
+.detail-button, .detail-danger-button {
+  min-height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  gap: 7px; border-radius: 11px; padding: 0 11px;
+  font-size: 12px; font-weight: 850; text-decoration: none;
+  white-space: nowrap; cursor: pointer; font-family: inherit; border: none;
+  transition: all 0.15s;
+}
+
+.detail-button {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+.detail-button:hover {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+.detail-button.primary {
+  border-color: #059669; background: #059669; color: #fff;
+  box-shadow: 0 4px 12px color-mix(in srgb, #059669 25%, transparent);
+}
+.detail-button.primary:hover { background: #047857; border-color: #047857; }
+
+.detail-button.info {
+  border-color: color-mix(in srgb, #10b981 35%, transparent);
+  background: color-mix(in srgb, #10b981 10%, transparent);
+  color: #059669;
+}
+.dark .detail-button.info { color: #34d399; }
+.detail-button.info:hover { background: color-mix(in srgb, #10b981 18%, transparent); }
+
+.detail-button.disabled {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--muted) 40%, transparent);
+  color: var(--muted-foreground); cursor: default;
+}
+.detail-button.disabled:hover { box-shadow: none; }
+
+.detail-danger-button {
+  border: 1px solid color-mix(in srgb, #ef4444 35%, transparent);
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+  color: #dc2626;
+}
+.dark .detail-danger-button { color: #f87171; }
+.detail-danger-button:hover { background: color-mix(in srgb, #ef4444 18%, transparent); }
+
+
+.detail-pill, .participant-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 22px; border-radius: 999px; padding: 0 10px;
+  font-size: 11.2px; font-weight: 850; line-height: 1; white-space: nowrap;
+}
+
+.detail-pill-scheduled, .participant-attended {
+  background: color-mix(in srgb, #10b981 15%, transparent); color: #059669;
+}
+.dark .detail-pill-scheduled, .dark .participant-attended { color: #34d399; }
+
+.detail-pill-completed {
+  background: color-mix(in srgb, var(--muted) 60%, transparent);
+  color: var(--muted-foreground);
+}
+
+.detail-pill-cancelled, .participant-danger {
+  background: color-mix(in srgb, #ef4444 14%, transparent); color: #dc2626;
+}
+.dark .detail-pill-cancelled, .dark .participant-danger { color: #f87171; }
+
+.detail-pill-draft, .participant-invited {
+  background: color-mix(in srgb, #f59e0b 14%, transparent); color: #d97706;
+}
+.dark .detail-pill-draft, .dark .participant-invited { color: #fbbf24; }
+
+.participant-confirmed {
+  background: color-mix(in srgb, #3b82f6 12%, transparent); color: #2563eb;
+}
+.dark .participant-confirmed { color: #60a5fa; }
+
+.detail-type-pill {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  color: var(--muted-foreground);
+}
+
+
+.detail-description-card {
+  border: 1px solid var(--border); border-radius: 15px;
+  background: var(--card); padding: 12px 15px; margin-bottom: 12px;
+}
+
+.detail-description-label, .detail-info-label {
+  margin: 0 0 5px; color: var(--muted-foreground);
+  font-size: 10.5px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+.detail-description-text {
+  margin: 0; color: var(--card-foreground);
+  font-size: 13px; font-weight: 650; line-height: 1.55;
+}
+
+
+.detail-draft-notice {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+  border-radius: 13px;
+  background: color-mix(in srgb, #f59e0b 8%, transparent);
+  padding: 11px 14px; margin-bottom: 12px;
+  font-size: 12.5px; font-weight: 700;
+  color: #b45309;
+}
+.dark .detail-draft-notice { color: #fbbf24; }
+.detail-draft-notice-icon { font-size: 16px; flex-shrink: 0; }
+
+
+.detail-main-card {
+  border: 1px solid var(--border); border-radius: 16px;
+  background: var(--card); overflow: hidden;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--foreground) 5%, transparent);
+  width: 100%;
+}
+
+/* Overview row */
+.detail-overview {
+  display: grid; grid-template-columns: 64px minmax(0,1fr) 240px;
+  gap: 14px; align-items: center;
+  padding: 13px 16px; border-bottom: 1px solid var(--border);
+}
+
+.detail-date-box {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: color-mix(in srgb, #10b981 12%, transparent);
+  color: #059669;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.dark .detail-date-box { color: #34d399; }
+
+.detail-date-month {
+  font-size: 10px; line-height: 1; letter-spacing: 0.08em;
+  font-weight: 850; color: var(--muted-foreground);
+}
+.detail-date-day {
+  margin-top: 5px; font-size: 24px; line-height: 0.85;
+  font-weight: 950; letter-spacing: -0.08em;
+}
+
+.detail-overview-title {
+  margin: 0 0 7px; color: var(--card-foreground);
+  font-size: 15px; font-weight: 950; letter-spacing: -0.02em;
+}
+.detail-overview-meta {
+  display: flex; align-items: center; gap: 11px; flex-wrap: wrap;
+  color: var(--muted-foreground); font-size: 12.2px; font-weight: 700;
+}
+
+/* Stats row */
+.detail-stats-row {
+  display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px;
+}
+
+.detail-stat-box, .detail-info-box {
+  border: 1px solid var(--border); border-radius: 13px;
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.detail-stat-box { padding: 10px 11px; }
+
+.detail-stat-number {
+  margin: 0; color: #059669; font-size: 17px; line-height: 1; font-weight: 950;
+}
+.dark .detail-stat-number { color: #34d399; }
+
+.detail-stat-label {
+  margin: 4px 0 0; color: var(--muted-foreground);
+  font-size: 10.5px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.03em;
+}
+
+.detail-info-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 10px; padding: 13px 16px;
+}
+
+.detail-info-box { padding: 11px 12px; min-width: 0; }
+.detail-info-box.wide { grid-column: 1 / -1; }
+
+.detail-info-value {
+  margin: 0; color: var(--card-foreground);
+  font-size: 13px; font-weight: 850; line-height: 1.4; word-break: break-word;
+}
+.detail-info-value a { color: #10b981; text-decoration: none; }
+.detail-info-value a:hover { text-decoration: underline; }
+
+/* ── Sections ── */
+.detail-section {
+  padding: 14px 16px; border-top: 1px solid var(--border);
+}
+
+#attendance-section { scroll-margin-top: 132px; }
+
+.detail-section-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 14px; margin-bottom: 11px;
+}
+
+.detail-section-title {
+  margin: 0; color: var(--card-foreground);
+  font-size: 15px; font-weight: 950; letter-spacing: -0.02em;
+}
+.detail-section-note {
+  margin: 3px 0 0; color: var(--muted-foreground);
+  font-size: 12.3px; font-weight: 600; line-height: 1.45;
+}
+
+.detail-count-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 24px; padding: 0 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  color: var(--muted-foreground); font-size: 11.5px; font-weight: 850; white-space: nowrap;
+}
+
+.min-w-0 { min-width: 0; }
+
+.participant-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 9px; }
+
+.participant-card {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; border: 1px solid var(--border); border-radius: 13px;
+  background: color-mix(in srgb, var(--card) 95%, var(--foreground));
+  padding: 10px 12px; min-width: 0;
+}
+
+.participant-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
+
+.participant-avatar {
+  width: 31px; height: 31px; border-radius: 999px;
+  background: color-mix(in srgb, #10b981 12%, transparent);
+  color: #059669;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900; flex-shrink: 0;
+}
+.dark .participant-avatar { color: #34d399; }
+
+.participant-avatar.external {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  color: var(--muted-foreground);
+}
+
+.participant-name {
+  margin: 0; color: var(--card-foreground);
+  font-size: 13px; font-weight: 850; line-height: 1.25;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.participant-meta {
+  margin: 2px 0 0; color: var(--muted-foreground);
+  font-size: 11.3px; font-weight: 600; line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.attendance-control, .attendance-save-row { display: none; }
+.attendance-editing .participant-pill { display: none; }
+.attendance-editing .attendance-control,
+.attendance-editing .attendance-save-row { display: flex; }
+
+.attendance-select {
+  min-height: 31px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--card); color: var(--foreground);
+  font-size: 12px; font-weight: 750; padding: 0 9px; outline: none; font-family: inherit;
+  transition: border-color 0.15s;
+}
+.attendance-select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #10b981 18%, transparent);
+}
+
+.attendance-save-row {
+  margin-top: 12px; justify-content: flex-end; align-items: center; gap: 8px;
+}
+
+.minute-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+
+.minute-card {
+  border: 1px solid var(--border); border-radius: 13px;
+  background: color-mix(in srgb, var(--card) 95%, var(--foreground));
+  padding: 10px 12px;
+}
+
+.minute-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 5px;
+}
+.minute-title { margin: 0; color: var(--card-foreground); font-size: 13px; font-weight: 900; }
+.minute-link {
+  color: #10b981; font-size: 11.5px; font-weight: 850; text-decoration: none; white-space: nowrap;
+}
+.minute-link:hover { text-decoration: underline; }
+.minute-summary {
+  margin: 0; color: var(--muted-foreground);
+  font-size: 12.2px; font-weight: 600; line-height: 1.45;
+}
+
+
+.detail-empty {
+  border: 1.5px dashed color-mix(in srgb, var(--border) 80%, var(--foreground));
+  border-radius: 13px; background: var(--card); padding: 18px 16px; text-align: center;
+}
+.detail-empty p {
+  margin: 0; color: var(--muted-foreground); font-size: 12.5px; font-weight: 750; line-height: 1.5;
+}
+
+input, textarea, select {
+  color: var(--foreground);
+  background-color: var(--card);
+  border-color: var(--border);
+}
+input::placeholder, textarea::placeholder { color: var(--muted-foreground); }
+
+
+@media (max-width: 1000px) {
+  .detail-overview { grid-template-columns: 68px minmax(0,1fr); }
+  .detail-stats-row { grid-column: 1 / -1; }
+}
+
+@media (max-width: 860px) {
+  .detail-hero { grid-template-columns: 1fr; }
+  .detail-actions { justify-content: flex-start; }
+  .detail-info-grid, .participant-grid, .minute-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .detail-content, .detail-header-inner { padding-left: 14px; padding-right: 14px; }
+  .detail-title { font-size: 21px; }
+  .detail-actions, .detail-button, .detail-danger-button { width: 100%; }
+  .detail-overview, .detail-info-grid, .detail-section { padding-left: 14px; padding-right: 14px; }
+  .detail-stats-row { grid-template-columns: 1fr; }
+  .detail-section-header { flex-direction: column; gap: 8px; }
+}
+</style>
+
+<div class="detail-shell">
+  <div class="detail-sticky-header">
+    <div class="detail-header-inner">
+      <a href="/meetings" class="detail-back-link">
+        <span>←</span>
+        <span>Kembali ke Daftar Meeting</span>
+      </a>
+
+      <div class="detail-hero">
+        <div>
+          <h1 class="detail-title"><%= meeting.title %></h1>
+          <div class="detail-subline">
+            <span class="<%= getStatusPillClass(meeting.status) %>"><%= getStatusLabel(meeting.status) %></span>
+            <span class="detail-pill detail-type-pill"><%= getMeetingTypeIcon(meeting.meeting_type) %> <%= getMeetingTypeLabel(meeting.meeting_type) %></span>
+          </div>
+        </div>
+
+        <% if (typeof isHost !== 'undefined' && isHost) { %>
+          <div class="detail-actions">
+
+            <%# Tombol Export hanya tampil jika status completed %>
+            <% if (meeting.status === 'completed') { %>
+              <% if (typeof canExportAttendance !== 'undefined' && canExportAttendance) { %>
+                <a
+                  href="/meetings/<%= meeting.id %>/export-attendance"
+                  class="detail-button"
+                  title="Export daftar hadir peserta meeting dalam format Excel"
+                  download
+                >
+                  <span>📤</span>
+                  <span>Export Daftar Hadir</span>
+                </a>
+              <% } else { %>
+                <%
+                  const exportAttendanceDisabledMessage =
+                    typeof exportAttendanceMessage !== 'undefined' && exportAttendanceMessage
+                      ? exportAttendanceMessage
+                      : 'Export belum tersedia.';
+                %>
+                <button
+                  type="button"
+                  class="detail-button disabled"
+                  title="<%= exportAttendanceDisabledMessage %>"
+                  data-export-message="<%= exportAttendanceDisabledMessage %>"
+                  onclick="alert(this.dataset.exportMessage)"
+                >
+                  <span>📤</span>
+                  <span>Export Daftar Hadir</span>
+                </button>
+              <% } %>
+            <% } %>
+
+            <% if (canShowEditAttendance) { %>
+              <button
+                type="button"
+                class="detail-button info"
+                title="Edit status kehadiran peserta"
+                onclick="enableAttendanceEdit()"
+              >
+                <span>✅</span>
+                <span>Edit Kehadiran</span>
+              </button>
+            <% } %>
+
+            <% if (canEditMeeting) { %>
+              <a href="/meetings/<%= meeting.id %>/edit" class="detail-button primary">
+                <span>✏️</span>
+                <span>Edit Meeting</span>
+              </a>
+            <% } %>
+
+            <form action="/meetings/<%= meeting.id %>/delete" method="POST" onsubmit="return confirm('Yakin ingin menghapus meeting ini?')">
+              <button type="submit" class="detail-danger-button">
+                <span>🗑️</span>
+                <span>Hapus</span>
+              </button>
+            </form>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-content">
+
+    <% if (typeof accessMessage !== 'undefined' && accessMessage) { %>
+      <div class="detail-description-card">
+        <p class="detail-description-text"><%= accessMessage %></p>
+      </div>
+    <% } %>
+
+    <%# Banner peringatan khusus status draft %>
+    <% if (isDraft) { %>
+      <div class="detail-draft-notice">
+        <span class="detail-draft-notice-icon">⚠️</span>
+        <span>Meeting ini masih berstatus <strong>Draft</strong>. Undangan belum dikirim ke peserta. Ubah status ke <strong>Scheduled</strong> untuk mulai menyebarkan undangan.</span>
+      </div>
+    <% } %>
+
+    <div class="detail-description-card">
+      <p class="detail-description-label">Deskripsi Meeting</p>
+      <p class="detail-description-text"><%= meetingDescription %></p>
+    </div>
+
+    <div class="detail-main-card">
+      <div class="detail-overview">
+        <div class="detail-date-box">
+          <div class="detail-date-month"><%= getMeetingMonth(meeting.meeting_date) %></div>
+          <div class="detail-date-day"><%= getMeetingDay(meeting.meeting_date) %></div>
+        </div>
+
+        <div>
+          <p class="detail-overview-title">Ringkasan Jadwal</p>
+          <div class="detail-overview-meta">
+            <span>⏰ <%= meetingStartTime %> – <%= meetingEndTime %></span>
+            <span>📍 <%= getMeetingTypeLabel(meeting.meeting_type) %></span>
+            <span>👥 <%= totalParticipantCount %> peserta</span>
+          </div>
+        </div>
+
+        <div class="detail-stats-row">
+          <div class="detail-stat-box">
+            <p class="detail-stat-number"><%= internalCount %></p>
+            <p class="detail-stat-label">Internal</p>
+          </div>
+          <div class="detail-stat-box">
+            <p class="detail-stat-number"><%= externalCount %></p>
+            <p class="detail-stat-label">Eksternal</p>
+          </div>
+          <div class="detail-stat-box">
+            <p class="detail-stat-number"><%= totalParticipantCount %></p>
+            <p class="detail-stat-label">Total</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-info-grid">
+        <div class="detail-info-box">
+          <p class="detail-info-label">Tanggal</p>
+          <p class="detail-info-value"><%= formatMeetingDate(meeting.meeting_date) %></p>
+        </div>
+
+        <div class="detail-info-box">
+          <p class="detail-info-label">Waktu Mulai</p>
+          <p class="detail-info-value"><%= meetingStartTime %></p>
+        </div>
+
+        <div class="detail-info-box">
+          <p class="detail-info-label">Waktu Selesai</p>
+          <p class="detail-info-value"><%= meetingEndTime %></p>
+        </div>
+
+        <div class="detail-info-box">
+          <p class="detail-info-label">Tipe Meeting</p>
+          <p class="detail-info-value"><%= getMeetingTypeLabel(meeting.meeting_type) %></p>
+        </div>
+
+        <div class="detail-info-box wide">
+          <p class="detail-info-label">Lokasi / Link Meeting</p>
+          <p class="detail-info-value">
+            <% if (locationValue && locationValue !== '-') { %>
+              <% if (String(locationValue).startsWith('http')) { %>
+                <a href="<%= locationValue %>" target="_blank"><%= locationValue %></a>
+              <% } else { %>
+                <%= locationValue %>
+              <% } %>
+            <% } else { %>
+              -
+            <% } %>
+          </p>
+        </div>
+      </div>
+
+      <% if (meeting.status === 'completed') { %>
+        <div id="notulen" class="detail-section">
+          <div class="detail-section-header">
+            <div>
+              <h2 class="detail-section-title">Notulen & Dokumentasi</h2>
+              <p class="detail-section-note">Notulen hanya ditampilkan setelah rapat berstatus completed.</p>
+            </div>
+            <span class="detail-count-pill"><%= minuteList.length %> file</span>
+          </div>
+
+          <% if (minuteList.length > 0) { %>
+            <div class="minute-grid">
+              <% minuteList.forEach(function(minute, index) { %>
+                <div class="minute-card">
+                  <div class="minute-title-row">
+                    <p class="minute-title">Notulen <%= index + 1 %></p>
+                    <% if (minute.file_path) { %>
+                      <a class="minute-link" href="<%= minute.file_path %>" target="_blank">Unduh</a>
+                    <% } %>
+                  </div>
+                  <p class="minute-summary">
+                    <%= minute.summary || 'Tidak ada ringkasan notulen.' %>
+                    <% if (minute.uploaded_at) { %>
+                      <br><small>Diunggah: <%= minute.uploaded_at %></small>
+                    <% } %>
+                  </p>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="detail-empty">
+              <p>Belum ada notulen atau dokumentasi yang diunggah untuk meeting ini.</p>
+            </div>
+          <% } %>
+        </div>
+      <% } %>
+
+      <% if (typeof isHost !== 'undefined' && isHost) { %>
+      <form id="attendance-form" action="/meetings/<%= meeting.id %>/attendance" method="POST">
+        <div id="attendance-section" class="detail-section">
+          <div class="detail-section-header">
+            <div>
+              <h2 class="detail-section-title">Daftar Kehadiran Peserta</h2>
+              <p class="detail-section-note">Klik Edit Kehadiran untuk mengubah status hadir atau tidak hadir.</p>
+            </div>
+            <span class="detail-count-pill"><%= totalParticipantCount %> peserta</span>
+          </div>
+
+          <div class="detail-section-header" style="margin-top: 2px;">
+            <div>
+              <h3 class="detail-section-title" style="font-size: 13.5px;">Peserta Internal</h3>
+              <p class="detail-section-note">Pegawai internal yang diundang ke meeting ini.</p>
+            </div>
+            <span class="detail-count-pill"><%= internalCount %> peserta</span>
+          </div>
+
+          <% if (participants && participants.length > 0) { %>
+            <div class="participant-grid">
+              <% participants.forEach(function(participant) { %>
+                <div class="participant-card">
+                  <div class="participant-left">
+                    <div class="participant-avatar">
+                      <%= participant.name ? participant.name.substring(0, 1).toUpperCase() : '?' %>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="participant-name"><%= participant.name %></p>
+                      <p class="participant-meta"><%= participant.employee_number || 'Tidak ada nomor pegawai' %></p>
+                    </div>
+                  </div>
+
+                  <% if (!isDraft) { %>
+                  <span class="<%= getParticipantBadgeClass(participant.status) %>">
+                    <%= getParticipantStatusLabel(participant.status) %>
+                  </span>
+                  <% } %>
+
+                  <% if (canShowEditAttendance) { %>
+                    <div class="attendance-control">
+                      <select class="attendance-select" name="internal_status_<%= participant.id %>">
+                        <option value="" <%= getAttendanceSelectValue(participant.status) === '' ? 'selected' : '' %>>Pilih</option>
+                        <option value="attended" <%= getAttendanceSelectValue(participant.status) === 'attended' ? 'selected' : '' %>>Hadir</option>
+                        <option value="absent" <%= getAttendanceSelectValue(participant.status) === 'absent' ? 'selected' : '' %>>Tidak Hadir</option>
+                      </select>
+                    </div>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="detail-empty">
+              <p>Belum ada peserta internal yang ditambahkan.</p>
+            </div>
+          <% } %>
+
+          <div class="detail-section-header" style="margin-top: 16px;">
+            <div>
+              <h3 class="detail-section-title" style="font-size: 13.5px;">Peserta Eksternal</h3>
+              <p class="detail-section-note">Peserta luar yang dicatat oleh host dan tidak memiliki akun login.</p>
+            </div>
+            <span class="detail-count-pill"><%= externalCount %> peserta</span>
+          </div>
+
+          <% if (externalParticipantList.length > 0) { %>
+            <div class="participant-grid">
+              <% externalParticipantList.forEach(function(participant) { %>
+                <div class="participant-card">
+                  <div class="participant-left">
+                    <div class="participant-avatar external">
+                      <%= participant.name ? participant.name.substring(0, 1).toUpperCase() : '?' %>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="participant-name"><%= participant.name %></p>
+                      <p class="participant-meta">
+                        <%= participant.institution || 'Instansi tidak dicantumkan' %>
+                        <% if (participant.email) { %>
+                          • <%= participant.email %>
+                        <% } %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <% if (!isDraft) { %>
+                  <span class="<%= getParticipantBadgeClass(participant.status) %>">
+                    <%= getParticipantStatusLabel(participant.status) %>
+                  </span>
+                  <% } %>
+
+                  <% if (canShowEditAttendance) { %>
+                    <div class="attendance-control">
+                      <select class="attendance-select" name="external_status_<%= participant.id %>">
+                        <option value="" <%= getAttendanceSelectValue(participant.status) === '' ? 'selected' : '' %>>Pilih</option>
+                        <option value="attended" <%= getAttendanceSelectValue(participant.status) === 'attended' ? 'selected' : '' %>>Hadir</option>
+                        <option value="absent" <%= getAttendanceSelectValue(participant.status) === 'absent' ? 'selected' : '' %>>Tidak Hadir</option>
+                      </select>
+                    </div>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="detail-empty">
+              <p>Belum ada peserta eksternal yang ditambahkan.</p>
+            </div>
+          <% } %>
+
+          <% if (canShowEditAttendance) { %>
+            <div class="attendance-save-row">
+              <button type="button" class="detail-button" onclick="cancelAttendanceEdit()">Batal</button>
+              <button type="submit" class="detail-button primary">Simpan Kehadiran</button>
+            </div>
+          <% } %>
+        </div>
+      </form>
+      <% } %>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function enableAttendanceEdit() {
+    const section = document.getElementById('attendance-section');
+    if (!section) return;
+    section.classList.add('attendance-editing');
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function cancelAttendanceEdit() {
+    const section = document.getElementById('attendance-section');
+    if (!section) return;
+    section.classList.remove('attendance-editing');
+  }
+</script>
+
+<%- include('../partials/footer') %>

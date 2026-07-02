@@ -1,4 +1,6 @@
-require('dotenv').config();
+require('dotenv').config({
+  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env'
+});
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -8,7 +10,12 @@ var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var apiRouter = require('./routes/api');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+const { setCurrentUser } = require('./middlewares/setCurrentUser');
+const meetingsRouter = require("./routes/meetings");
+const invitationsRouter = require("./routes/invitations");
+
 
 var app = express();
 
@@ -17,8 +24,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: false, limit: '15mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -28,6 +35,9 @@ const sessionStore = new MySQLStore({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  schema: {
+    tableName: 'app_sessions'
+  }
 });
 
 app.use(session({
@@ -41,13 +51,34 @@ app.use(session({
   }
 }));
 
+const flash = require('connect-flash');
+app.use(flash());
+
+// Inject current user into all views
+app.use(setCurrentUser);
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use("/meetings", meetingsRouter);
+app.use("/invitations", invitationsRouter);
+app.use("/api", apiRouter);
+
+// Tangani error Multer khusus
+const multer = require('multer');
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+    req.flash('error', 'File terlalu besar. Maksimum ukuran file adalah 10MB.');
+    return res.redirect('/meetings/upload-minutes');
+  }
+  next(err);
+});
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);
 
 // error handler
 app.use(errorHandler);
+
+
 
 module.exports = app;
