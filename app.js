@@ -7,27 +7,40 @@ var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const dashboardRouter = require('./routes/dashboard');
+const apiRouter = require('./routes/api');
+const surveyMitraRouter = require('./routes/surveyMitra');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
 
-// view engine setup
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
+app.use((req, res, next) => {
+  const fs = require('fs');
+  console.log('[REQ START]', req.method, req.url);
+  fs.appendFileSync('requests.log', `[REQ START] ${req.method} ${req.url}\n`);
+  res.on('finish', () => {
+    console.log('[REQ FINISH]', req.method, req.url);
+    fs.appendFileSync('requests.log', `[REQ FINISH] ${req.method} ${req.url}\n`);
+  });
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
+
 const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'facultyware',
 });
 
 app.use(session({
@@ -37,17 +50,19 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
+    maxAge: 1000 * 60 * 60 * 24 
   }
 }));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/admin', dashboardRouter);
+app.use('/api', apiRouter);
+app.use('/survey-mitra', surveyMitraRouter);
 
-// catch 404 and forward to error handler
+
 app.use(notFoundHandler);
 
-// error handler
+
 app.use(errorHandler);
 
 module.exports = app;

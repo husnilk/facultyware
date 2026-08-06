@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <meta name="description" content="Survei Kerja Sama Berhasil Dikirim — SUKAFTI FTI Universitas Andalas." />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Survey CSS -->
+  <link rel="stylesheet" href="/assets/survey.css" />
+  <style>
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      margin-top: 15px;
+    }
+    .meta-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .meta-table td:first-child {
+      color: #64748b;
+      font-weight: 500;
+      width: 140px;
+    }
+    .meta-table td:last-child {
+      color: #1e293b;
+      font-weight: 700;
+    }
+    .answer-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      background: #ffffff;
+      border-left: 4px solid #2d3a52;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .action-btn-custom {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex: 1;
+      max-width: 240px;
+    }
+    .btn-primary-custom {
+      background: #2d3a52;
+      color: white;
+      border: none;
+    }
+    .btn-primary-custom:hover {
+      background: #1b2537;
+    }
+    .btn-outline-custom {
+      background: white;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+    .btn-outline-custom:hover {
+      background: #f9fafb;
+    }
+    .hidden {
+      display: none !important;
+    }
+    
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+        margin: 1.5cm !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-card {
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+        color: black !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      body, p, span, h1, h2, h3, h4, th, td, strong, a, div {
+        color: black !important;
+        border-color: black !important;
+        print-color-adjust: exact;
+      }
+      .print-table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin-top: 15px !important;
+      }
+      .print-table th, .print-table td {
+        border: 1px solid #000 !important;
+        padding: 8px !important;
+        text-align: left !important;
+        background: transparent !important;
+      }
+      .print-table th {
+        background-color: #f2f2f2 !important;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .print\:block {
+        display: block !important;
+      }
+      .print\:table {
+        display: table !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="survey-container">
+
+    <!-- Success status icon -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; margin-bottom: 30px;" class="no-print">
+      <div style="width: 4.5rem; height: 4.5rem; border-radius: 50%; background: #d1fae5; border: 2px solid #a7f3d0; color: #10b981; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(16,185,129,0.1);">
+        <i data-lucide="check-circle-2" style="width: 2.5rem; height: 2.5rem;"></i>
+      </div>
+      <div>
+        <h1 style="font-size: 1.75rem; font-weight: 800; color: #111827; margin: 0;">Terima Kasih!</h1>
+        <p style="font-size: 0.875rem; color: #4b5563; margin-top: 6px;">
+          Kuesioner evaluasi survei kerja sama Anda telah berhasil disimpan di server SUKAFTI.
+        </p>
+      </div>
+    </div>
+
+    <!-- Main Card Details -->
+    <div class="form-card print-card">
+      
+      <!-- Print Title Header -->
+      <div class="hidden print:block" style="text-align: center; margin-bottom: 25px;">
+        <h1 style="font-size: 1.25rem; font-weight: 800; color: #000; text-transform: uppercase;">REKAPITULASI JAWABAN SURVEI EVALUASI KERJA SAMA</h1>
+        <p style="font-size: 0.75rem; color: #4b5563; font-family: monospace; margin-top: 4px;">ID Respon: #RSP-<%= response.id.toString().padStart(5, '0') %></p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 15px;" class="no-print">
+        <h2 style="font-size: 1.1rem; color: #2d3a52; margin: 0;">Rincian Hasil Pengisian Survei</h2>
+        <span class="pill" style="background:#d1fae5; color:#065f46; font-size:0.7rem; font-weight:700;">SELESAI</span>
+      </div>
+
+      <!-- Detail Grid Screen version -->
+      <table class="meta-table no-print">
+        <tbody>
+          <tr>
+            <td>ID Respon:</td>
+            <td style="font-family: monospace;">#RSP-<%= response.id.toString().padStart(5, '0') %></td>
+          </tr>
+          <tr>
+            <td>Mitra Industri:</td>
+            <td><%= response.partner_name %></td>
+          </tr>
+          <tr>
+            <td>Judul Survei:</td>
+            <td><%= response.survey_title %></td>
+          </tr>
+          <tr>
+            <td>Tanggal Submit:</td>
+            <td>
+              <% const dateObj = new Date(response.submitted_at); %>
+              <%= dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) %> 
+              <%= dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %> WIB
+            </td>
+          </tr>
+          <tr style="background: #f8fafc;">
+            <td style="font-weight: 600;">Skor Evaluasi:</td>
+            <td style="color:#2d3a52; font-size: 0.95rem; font-weight: 850;"><%= response.score_total %> Poin</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Meta Table Print Version -->
+      <table class="hidden print:table print-table">
+        <tbody>
+          <tr>
+            <td style="font-weight: bold; background-color: #f2f2f2; width: 180px;">Nama Instansi / Mitra</td>
+            <td><%= response.partner_name %></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; background-color: #f2f2f2;">Kategori / Judul Survei</td>
+            <td><%= response.survey_title %></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; background-color: #f2f2f2;">Tanggal &amp; Waktu Pengisian</td>
+            <td>
+              <%= dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) %> 
+              - Pukul <%= dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %> WIB
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; background-color: #f2f2f2;">Total Skor Evaluasi</td>
+            <td style="font-weight: bold;"><%= response.score_total %> Poin</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Answers Recap Screen Version -->
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;" class="no-print">
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: #2d3a52; margin-bottom: 15px; display: flex; align-items: center; gap: 6px;">
+          <i data-lucide="list-checks" style="width: 18px; height: 18px; color: #2d3a52;"></i>
+          <span>Hasil Jawaban Kuesioner Anda</span>
+        </h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <% answers.forEach(function(ans) { %>
+            <div class="answer-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; font-size: 0.7rem; color: #94a3b8; font-weight: 700;">
+                <span>PERTANYAAN <%= ans.order_number %></span>
+                <% if (ans.question_type !== 'short_answer') { %>
+                  <span class="pill" style="background:#d1fae5; color:#065f46; font-size:0.65rem; font-weight:800;">
+                    Skor: <%= ans.answer_score %>
+                  </span>
+                <% } else { %>
+                  <span class="pill" style="background:#f1f5f9; color:#475569; font-size:0.65rem; font-weight:800;">
+                    Essay
+                  </span>
+                <% } %>
+              </div>
+              
+              <p style="font-size: 0.875rem; font-weight: 700; color: #1f2937; margin: 0; line-height: 1.4;"><%= ans.question_text %></p>
+              
+              <div style="font-size: 0.75rem; margin-top: 5px;">
+                <span style="color: #94a3b8; font-weight: 600;">Jawaban Anda:</span>
+                <% if (ans.question_type !== 'short_answer') { %>
+                  <p style="color: #1e293b; font-weight: 700; margin: 5px 0 0 0; display: flex; align-items: center; gap: 6px; font-size: 0.8125rem;">
+                    <i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: #10b981; flex-shrink: 0;"></i>
+                    <span><%= ans.selected_option %></span>
+                  </p>
+                <% } else { %>
+                  <p style="color: #374151; font-style: italic; margin: 5px 0 0 0; background: #f8fafc; border: 1px solid #e5e7eb; padding: 10px; border-radius: 8px; line-height: 1.5; white-space: pre-wrap;"><%= ans.answer_text %></p>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Answers Recap Print Version -->
+      <div class="hidden print:block" style="margin-top: 25px;">
+        <h3 style="font-size: 0.85rem; font-weight: bold; color: black; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 4px;">Lampiran Rekapitulasi Jawaban</h3>
+        <table class="print-table">
+          <thead>
+            <tr>
+              <th style="text-align: center; width: 35px; font-weight: bold; background-color: #f2f2f2;">No</th>
+              <th style="text-align: left; font-weight: bold; background-color: #f2f2f2;">Butir Pertanyaan Evaluasi</th>
+              <th style="text-align: left; font-weight: bold; background-color: #f2f2f2;">Jawaban Pilihan / Uraian</th>
+              <th style="text-align: center; width: 50px; font-weight: bold; background-color: #f2f2f2;">Skor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% answers.forEach(function(ans) { %>
+              <tr>
+                <td style="text-align: center; font-weight: bold;"><%= ans.order_number %></td>
+                <td style="line-height: 1.4;"><%= ans.question_text %></td>
+                <td>
+                  <% if (ans.question_type !== 'short_answer') { %>
+                    <strong><%= ans.selected_option %></strong>
+                  <% } else { %>
+                    <span style="font-style: italic;"><%= ans.answer_text %></span>
+                  <% } %>
+                </td>
+                <td style="text-align: center; font-weight: bold;">
+                  <%= ans.question_type !== 'short_answer' ? ans.answer_score : '—' %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; font-size: 0.6875rem; color: #94a3b8; text-align: center; line-height: 1.4; margin-top: 15px;" class="no-print">
+        Bukti pengisian digital ini sah dihasilkan secara otomatis oleh sistem informasi SUKAFTI FTI Universitas Andalas.
+      </div>
+    </div>
+
+    <!-- Action Buttons Row -->
+    <div class="btn-row no-print">
+      <button onclick="window.print()" class="action-btn-custom btn-primary-custom">
+        <i data-lucide="printer" style="width: 16px; height: 16px;"></i>
+        <span>Cetak Bukti (PDF)</span>
+      </button>
+      <a href="/logout" class="action-btn-custom btn-outline-custom">
+        <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+        <span>Keluar Portal</span>
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

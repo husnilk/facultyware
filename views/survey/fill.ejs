@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Survey CSS -->
+  <link rel="stylesheet" href="/assets/survey.css" />
+  <style>
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 15px 30px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .progress-wrap {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .progress-bar-track {
+      height: 8px;
+      width: 100%;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #2d3a52, #1b2537);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    /* Rating Buttons Styling */
+    .rating-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .rating-label-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      flex: 1;
+      min-width: 60px;
+      padding: 12px 6px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #ffffff;
+      transition: all 0.2s ease;
+    }
+    .rating-label-box:hover {
+      border-color: #2d3a52;
+      background: #f8fafc;
+    }
+    .rating-btn-circle {
+      display: flex;
+      width: 2.75rem;
+      height: 2.75rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      font-weight: 700;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+    .rating-label-box input[type="radio"]:checked + .rating-btn-circle {
+      background: #2d3a52;
+      color: #ffffff;
+      border-color: #2d3a52;
+      box-shadow: 0 0 10px rgba(45, 58, 82, 0.3);
+    }
+    .rating-label-box input[type="radio"]:checked ~ span.text-desc {
+      color: #111827;
+      font-weight: 600;
+    }
+    /* Custom Select Choice radio list */
+    .radio-choice-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .radio-choice-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .radio-choice-item:hover {
+      border-color: #2d3a52;
+      background: #f8fafc;
+    }
+    .radio-choice-item input[type="radio"]:checked {
+      accent-color: #2d3a52;
+    }
+    .radio-choice-item.checked {
+      background: #f0f4f8;
+      border-color: #2d3a52;
+    }
+    .radio-choice-item.checked span {
+      font-weight: 600;
+      color: #111827;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="survey-container">
+
+    <!-- Header bar -->
+    <div class="header-bar">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="/image/fti logo.jpg" alt="Logo FTI" style="width:28px; height:28px; border-radius:6px; object-fit:contain;" />
+        <span style="font-size:0.875rem; font-weight:700; color:#1f2937;">SUKAFTI Portal</span>
+      </div>
+      <a href="/logout" style="text-decoration:none; font-size:0.75rem; font-weight:600; color:#ef4444; display:flex; align-items:center; gap:4px;">
+        <i data-lucide="log-out" style="width:14px; height:14px;"></i> Keluar
+      </a>
+    </div>
+
+    <!-- Survey Header -->
+    <div class="survey-header">
+      <span class="pill" style="background:rgba(255,255,255,0.15); color:#ffffff; font-size:0.7rem; font-weight:600; padding:0.2rem 0.5rem; display:inline-flex; align-items:center; gap:4px; margin-bottom:12px;">
+        <i data-lucide="building-2" style="width:12px; height:12px;"></i> <%= partnerName %>
+      </span>
+      <h1><%= survey.title %></h1>
+      <p>
+        <%= survey.description || "Silakan luangkan waktu sejenak untuk mengisi survei evaluasi kerja sama ini. Tanggapan Anda sangat berharga bagi peningkatan layanan akademik dan kolaborasi FTI." %>
+      </p>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="progress-wrap">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; font-weight:600; color:#64748b;">
+        <span>Progress Pengisian</span>
+        <span id="progress-text">0% Selesai (0 / <%= questions.length %> Pertanyaan)</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Errors -->
+    <% if (error) { %>
+      <div style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; border: 1px solid #fca5a5; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 20px;">
+        <i data-lucide="alert-circle" style="width: 1.25rem; height: 1.25rem; flex-shrink: 0;"></i>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <!-- Survey Form -->
+    <form action="/survey-mitra/submit" method="POST" id="survey-form" style="display: flex; flex-direction: column;">
+
+      <% questions.forEach(function(q, index) { %>
+        <div class="form-card" id="card-q-<%= q.id %>">
+          <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:15px;">
+            <span style="display:flex; width:22px; height:22px; border-radius:6px; background:#f1f5f9; color:#1e293b; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; font-family:monospace; margin-top:2px;">
+              <%= index + 1 %>
+            </span>
+            <h2 style="font-size: 1rem; font-weight: 700; color: #2d3a52; margin: 0; line-height:1.4;"><%= q.question_text %></h2>
+          </div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <% if (q.type==='rating' || (q.type==='single_choice' && q.options[0] && q.options[0].score !== undefined && (q.options[0].score === 1 || q.options[0].score === '1') && q.options.length === 5 && q.options[0].option_text.includes('Buruk'))) { %>
+              
+              <!-- Rating layout -->
+              <div class="rating-row">
+                <% q.options.forEach(function(opt) { %>
+                  <label class="rating-label-box">
+                    <input type="radio" name="question_<%= q.id %>" value="<%= opt.id %>" style="display:none;" required />
+                    <span class="rating-btn-circle">
+                      <%= opt.score %>
+                    </span>
+                    <span class="text-desc" style="font-size:0.6875rem; text-align:center; color:#64748b; font-weight:500; line-height:1.2; max-width:80px;">
+                      <%= opt.option_text %>
+                    </span>
+                  </label>
+                <% }) %>
+              </div>
+
+            <% } else if (q.type==='multiple_choice' || q.type==='single_choice') { %>
+              
+              <!-- Standard choices list layout -->
+              <div class="radio-choice-list">
+                <% q.options.forEach(function(opt) { %>
+                  <label class="radio-choice-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; background: #ffffff; cursor: pointer; transition: all 0.2s ease;">
+                    <input type="radio" name="question_<%= q.id %>" value="<%= opt.id %>" style="width: 16px !important; height: 16px !important; margin: 0 !important; padding: 0 !important; cursor: pointer; flex-shrink: 0;" required />
+                    <span style="font-size:0.875rem; font-weight:500; color:#374151;">
+                      <%= opt.option_text %>
+                    </span>
+                  </label>
+                <% }) %>
+              </div>
+
+            <% } else if (q.type==='short_answer' || q.type==='essay') { %>
+              
+              <!-- Text area essay -->
+              <textarea name="question_<%= q.id %>" rows="4" placeholder="Tuliskan jawaban deskriptif Anda secara lengkap..." required></textarea>
+
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+
+      <button type="submit" class="submit-btn" style="margin-top:10px;">
+        Kirim Survey
+      </button>
+    </form>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const totalQuestions = <%= questions.length %>;
+    const form = document.getElementById('survey-form');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+
+    function calculateProgress() {
+      let answeredCount = 0;
+      const answeredSet = new Set();
+
+      const checkedRadios = form.querySelectorAll('input[type="radio"]:checked');
+      checkedRadios.forEach(radio => {
+        answeredSet.add(radio.getAttribute('name'));
+      });
+
+      const textareas = form.querySelectorAll('textarea');
+      textareas.forEach(ta => {
+        if (ta.value.trim().length > 0) {
+          answeredSet.add(ta.getAttribute('name'));
+        }
+      });
+
+      answeredCount = answeredSet.size;
+      const percentage = Math.round((answeredCount / totalQuestions) * 100);
+
+      progressFill.style.width = percentage + '%';
+      progressText.innerText = `${percentage}% Selesai (${answeredCount} / ${totalQuestions} Pertanyaan)`;
+    }
+
+    // Toggle checked styles on rating label boxes and radio choice items
+    function updateOptionStyles() {
+      form.querySelectorAll('.rating-label-box').forEach(el => {
+        const input = el.querySelector('input');
+        if (input.checked) {
+          el.style.borderColor = '#2d3a52';
+          el.style.background = '#f0f4f8';
+        } else {
+          el.style.borderColor = '#e5e7eb';
+          el.style.background = '#ffffff';
+        }
+      });
+
+      form.querySelectorAll('.radio-choice-item').forEach(el => {
+        const input = el.querySelector('input');
+        if (input.checked) {
+          el.classList.add('checked');
+        } else {
+          el.classList.remove('checked');
+        }
+      });
+    }
+
+    form.querySelectorAll('input[type="radio"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        calculateProgress();
+        updateOptionStyles();
+      });
+    });
+
+    form.querySelectorAll('textarea').forEach(ta => {
+      ta.addEventListener('input', calculateProgress);
+    });
+
+    calculateProgress();
+    updateOptionStyles();
+  </script>
+</body>
+
+</html>
