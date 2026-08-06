@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        appbg: '#000000',
+                        panel: '#0a0a0a',
+                        surface: '#171717',
+                        edge: '#262626',
+                        primary: '#ededed',
+                        muted: '#a3a3a3',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body class="bg-appbg text-primary antialiased flex h-screen overflow-hidden font-sans">
+
+    <aside class="w-64 bg-panel border-r border-edge flex flex-col h-full flex-shrink-0 z-20">
+        <div class="h-16 flex items-center px-6 border-b border-edge">
+            <span class="text-emerald-500 font-black text-xl italic tracking-tighter mr-2">//</span>
+            <span class="font-bold text-sm tracking-widest text-primary uppercase">Facultyware</span>
+        </div>
+        
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+            <p class="px-2 text-[10px] font-semibold text-muted uppercase tracking-widest mb-3">Menu</p>
+            
+            <a href="/kategori" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-muted hover:text-primary hover:bg-surface transition-all">
+                Data Kategori
+            </a>
+            
+            <a href="/item" class="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-surface text-primary border border-edge/50">
+                Data Item
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-edge bg-panel">
+            <div class="flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-surface border border-edge flex items-center justify-center text-xs font-bold">
+                    AD
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-primary leading-none">Admin</p>
+                    <p class="text-xs text-muted mt-1">Sistem Inventaris</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-appbg relative">
+        
+        <header class="h-16 flex items-center justify-between px-8 border-b border-edge bg-appbg sticky top-0 z-10">
+            <h2 class="text-sm font-medium text-muted">Dashboard <span class="mx-2">/</span> <span class="text-primary">Data Item</span></h2>
+            <a href="/logout" class="text-sm font-medium text-muted hover:text-primary transition-colors">Logout</a>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8" id="dashboard-content">
+            
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+                <div>
+                    <h1 class="text-2xl font-semibold text-primary tracking-tight">Kelola Data Item</h1>
+                    <p class="text-sm text-muted mt-1">Manajemen barang dan stok inventaris.</p>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-3">
+                    <form action="/item/import" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+                        <input type="file" name="file" required class="text-sm text-muted file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border file:border-edge file:text-xs file:font-medium file:bg-surface file:text-primary hover:file:bg-edge cursor-pointer" />
+                        <button type="submit" class="bg-surface hover:bg-edge border border-edge text-primary px-3 py-1.5 rounded-md text-xs font-medium transition-all">Import</button>
+                    </form>
+
+                    <a href="/item/export" class="bg-surface hover:bg-edge border border-edge text-primary px-4 py-2 rounded-md text-sm font-medium transition-all">Export Excel</a>
+                    
+                    <a href="/item/create" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mb-6 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input 
+                    type="text" 
+                    name="q" 
+                    hx-get="/item/search" 
+                    hx-trigger="keyup changed delay:500ms" 
+                    hx-target="#item-table-body" 
+                    placeholder="Cari item..." 
+                    class="w-full bg-panel border border-edge text-primary text-sm rounded-md focus:ring-1 focus:ring-edge focus:border-muted block pl-9 p-2.5 transition-all placeholder-muted outline-none"
+                >
+            </div>
+
+            <div class="bg-panel rounded-md border border-edge overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-edge">
+                        <thead class="bg-surface/50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Kode</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Nama Item</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Unit</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Min. Qty</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="item-table-body" class="divide-y divide-edge">
+                            <%- include('partials/table-rows') %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>
