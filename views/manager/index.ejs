@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+        const apply = (dark) => {
+          document.documentElement.classList.toggle("dark", dark);
+          try { localStorage.setItem("themeMode", dark ? "dark" : "light"); } catch (_) {}
+        };
+        document.addEventListener("basecoat:theme", (event) => {
+          const mode = event.detail?.mode;
+          apply(mode === "dark" ? true : mode === "light" ? false : !document.documentElement.classList.contains("dark"));
+        });
+      })();
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title %> - SIMPEL</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <!-- Sidebar active-link highlight -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const sidebar = document.getElementById("sidebar");
+        if (!sidebar) return;
+        const currentPath = window.location.pathname.replace(/\/$/, "");
+        sidebar.querySelectorAll("a").forEach((a) => {
+          const href = a.getAttribute("href");
+          if (!href) return;
+          const url = new URL(href, window.location.origin);
+          if (url.pathname.replace(/\/$/, "") === currentPath) {
+            a.setAttribute("aria-current", "page");
+          } else {
+            a.removeAttribute("aria-current");
+          }
+        });
+      });
+    </script>
+
+    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
+      <nav aria-label="Sidebar navigation">
+        <header>
+          <a href="/manager" class="btn-ghost p-2 h-12 w-full justify-start">
+            <div class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" class="h-4 w-4">
+                <rect width="256" height="256" fill="none"></rect>
+                <path d="M224,115.55V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V115.55a16,16,0,0,1,5.17-11.78l80-75.48.11-.11a16,16,0,0,1,21.53,0l.11.11,80,75.48A16,16,0,0,1,224,115.55Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path>
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-bold">SIMPEL</span>
+              <span class="truncate text-xs">Penanggung Jawab</span>
+            </div>
+          </a>
+        </header>
+
+        <section class="scrollbar">
+          <div role="group" aria-labelledby="group-label-manager-menu">
+            <h3 id="group-label-manager-menu">Menu Utama</h3>
+            <ul>
+              <li>
+                <a href="/manager/ongoing">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                  <span>Peminjaman yang Sedang Berlangsung</span>
+                </a>
+              </li>
+              <li>
+                <a href="/manager">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  <span>Riwayat Peminjaman</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div role="group" class="mt-8">
+            <ul>
+              <li>
+                <a href="/logout" class="text-destructive hover:bg-destructive/10">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </nav>
+    </aside>
+
+    <main id="content">
+      <header class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10">
+        <div class="flex h-14 w-full items-center gap-2 px-4">
+          <button type="button" onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))" class="btn-sm-icon-ghost mr-auto size-7 -ml-1.5 md:hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+          </button>
+          <button type="button" onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))" class="btn-icon-outline size-8 ml-auto">
+            <span class="hidden dark:block"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span>
+            <span class="block dark:hidden"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="p-4 md:p-6 xl:p-12 bg-muted min-h-[calc(100vh-3.5rem)]">
+        <div class="max-w-6xl mx-auto flex flex-col gap-6">
+
+          <!-- Page title -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="text-3xl font-bold">Riwayat Peminjaman</h1>
+              <p class="text-muted-foreground mt-1">Tampilkan peminjaman yang telah ditolak atau dikembalikan.</p>
+            </div>
+            <div class="flex gap-2">
+              <a href="/manager/report/preview<%= Object.keys(filters).length ? '?' + new URLSearchParams(filters).toString() : '' %>"
+                 class="inline-flex items-center gap-2 border border-input bg-background px-4 py-2 rounded-md text-sm font-medium hover:bg-accent transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Preview Laporan
+              </a>
+              <a href="/manager/report/export<%= Object.keys(filters).length ? '?' + new URLSearchParams(filters).toString() : '' %>"
+                 class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export PDF
+              </a>
+            </div>
+          </div>
+
+          <!-- Stat Cards -->
+          <div class="bg-card border rounded-xl shadow-sm divide-x flex overflow-hidden">
+            <div class="flex items-center gap-3 px-6 py-4 flex-1">
+              <div class="flex items-center justify-center size-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground">Total Peminjaman Selesai</p>
+                <p class="text-2xl font-bold leading-tight" id="stat-total">—</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 px-6 py-4 flex-1">
+              <div class="flex items-center justify-center size-9 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground">Dibatalkan</p>
+                <p class="text-2xl font-bold leading-tight" id="stat-unreturned">—</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search & Filter -->
+          <form method="GET" action="/manager" class="bg-card border rounded-xl p-4 shadow-sm flex flex-col gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-4">
+                <label class="text-xs font-medium text-muted-foreground">Pencarian</label>
+                <input
+                  type="text"
+                  name="search"
+                  value="<%= filters.search || '' %>"
+                  placeholder="Cari kode aset, nama peralatan, atau peminjam…"
+                  class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="filter-status" class="text-xs font-medium text-muted-foreground">Status</label>
+                <select id="filter-status" name="status" class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                  <option value="">Semua Status</option>
+                  <option value="returned" <%= filters.status === 'returned' ? 'selected' : '' %>>Dikembalikan</option>
+                  <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>Ditolak</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="filter-date-from" class="text-xs font-medium text-muted-foreground">Tanggal Mulai</label>
+                <input id="filter-date-from" type="date" name="date_from" value="<%= filters.date_from || '' %>"
+                  class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="filter-date-to" class="text-xs font-medium text-muted-foreground">Tanggal Selesai</label>
+                <input id="filter-date-to" type="date" name="date_to" value="<%= filters.date_to || '' %>"
+                  class="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" />
+              </div>
+              <div class="flex items-end gap-2">
+                <button type="submit" class="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm transition-colors">
+                  Filter
+                </button>
+                <% if (Object.values(filters).some(v => v)) { %>
+                  <a href="/manager" class="h-9 px-4 inline-flex items-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent transition-colors">
+                    Reset
+                  </a>
+                <% } %>
+              </div>
+            </div>
+          </form>
+
+          <!-- Table -->
+          <div class="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+              <thead class="border-b bg-muted/50 font-medium">
+                <tr>
+                  <th class="p-4">Kode Aset</th>
+                  <th class="p-4">Nama Peralatan</th>
+                  <th class="p-4">Peminjam</th>
+                  <th class="p-4">Tgl Mulai</th>
+                  <th class="p-4">Tgl Selesai</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (data.length === 0) { %>
+                  <tr>
+                    <td colspan="7" class="p-8 text-center text-muted-foreground">Tidak ada data peminjaman.</td>
+                  </tr>
+                <% } else { %>
+                  <% data.forEach(item => { %>
+                    <%
+                      const badgeColor =
+                        item.status === 'requested' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                        item.status === 'approved'  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                        item.status === 'returned'  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+                      const statusLabel = { requested: 'Diminta', approved: 'Disetujui', returned: 'Dikembalikan', rejected: 'Ditolak' };
+                    %>
+                    <tr class="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                      <td class="p-4 font-medium"><%= item.asset_code %></td>
+                      <td class="p-4"><%= item.equipment_name %></td>
+                      <td class="p-4"><%= item.employee_name %></td>
+                      <td class="p-4 text-muted-foreground"><%= new Date(item.start_date).toLocaleDateString('id-ID') %></td>
+                      <td class="p-4 text-muted-foreground"><%= item.end_date ? new Date(item.end_date).toLocaleDateString('id-ID') : '-' %></td>
+                      <td class="p-4">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold border border-transparent <%= badgeColor %>">
+                          <%= statusLabel[item.status] || item.status.toUpperCase() %>
+                        </span>
+                      </td>
+                      <td class="p-4 text-right">
+                        <a href="/manager/detail/<%= item.id %>" class="text-sm font-medium text-primary hover:underline">Detail</a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+          <% if (data.length > 0) { %>
+            <div class="px-4 py-3 border-t text-xs text-muted-foreground text-right">
+              Total: <%= data.length %> data
+            </div>
+          <% } %>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <div id="toaster" class="toaster"></div>
+    <script src="/assets/js/basecoat.js"></script>
+    <script src="/assets/js/sidebar.js"></script>
+    <script>
+      // Stat cards
+      Promise.all([
+        fetch('/api/manager/loans/total').then(r => r.json()),
+        fetch('/api/manager/loans/unreturned').then(r => r.json())
+      ]).then(([total, unreturned]) => {
+        document.getElementById('stat-total').textContent = total.total;
+        document.getElementById('stat-unreturned').textContent = unreturned.total;
+      }).catch(() => {
+        document.getElementById('stat-total').textContent = '-';
+        document.getElementById('stat-unreturned').textContent = '-';
+      });
+    </script>
+  </body>
+</html>

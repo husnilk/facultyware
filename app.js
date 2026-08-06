@@ -1,6 +1,6 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 var express = require('express');
-var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
@@ -8,11 +8,11 @@ var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var apiRouter = require('./routes/api');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -22,12 +22,27 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  createDatabaseTable: true,
+  schema: {
+    tableName: 'sessions',
+    columnNames: {
+      session_id: 'id',
+      expires: 'last_activity',
+      data: 'payload'
+    }
+  }
+});
+
+sessionStore.onReady().then(() => {
+  console.log('MySQL session store ready');
+}).catch(err => {
+  console.error('MySQL session store error:', err.message);
 });
 
 app.use(session({
@@ -37,17 +52,30 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
+    maxAge: 1000 * 60 * 60 * 24
   }
 }));
 
+console.log('✓ Session middleware loaded');
+
 app.use('/', indexRouter);
+console.log('✓ Index router loaded');
+
 app.use('/users', usersRouter);
+console.log('✓ Users router loaded');
 
-// catch 404 and forward to error handler
+app.use('/api', apiRouter);
+console.log('✓ API router loaded');
+
+app.use('/equipment-loans', require('./routes/equipment-loans'));
+console.log('✓ Equipment loans router loaded');
+
+app.use('/manager', require('./routes/manager'));
+console.log('✓ Manager router loaded');
+
 app.use(notFoundHandler);
-
-// error handler
 app.use(errorHandler);
+
+console.log('✓ App fully loaded');
 
 module.exports = app;
